@@ -13,3 +13,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+build/*
+dist/*
+docs/*
+docker-compose.yml
