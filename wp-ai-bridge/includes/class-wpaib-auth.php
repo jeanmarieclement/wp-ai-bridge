@@ -26,6 +26,12 @@ class WPAIB_Auth {
 		$endpoint = $request->get_route();
 		$method   = $request->get_method();
 
+		// Prova prima l'Authorization: Bearer header (OAuth2).
+		$bearer = self::extract_bearer( $request );
+		if ( null !== $bearer ) {
+			return self::authorize_bearer( $bearer, $endpoint, $method );
+		}
+
 		// Estrae la chiave dall'header.
 		$plain_key = $request->get_header( 'x_api_key' );
 		if ( empty( $plain_key ) ) {
@@ -107,6 +113,67 @@ class WPAIB_Auth {
 				'outcome'     => 'success',
 			)
 		);
+
+		return true;
+	}
+
+	/**
+	 * Estrae il Bearer token dall'header Authorization, oppure null.
+	 *
+	 * @param WP_REST_Request $request Richiesta REST.
+	 * @return string|null
+	 */
+	private static function extract_bearer( WP_REST_Request $request ) {
+		$auth = $request->get_header( 'authorization' );
+		if ( empty( $auth ) ) {
+			return null;
+		}
+		if ( 0 !== strncasecmp( 'Bearer ', $auth, 7 ) ) {
+			return null;
+		}
+		$token = trim( substr( $auth, 7 ) );
+		return $token !== '' ? $token : null;
+	}
+
+	/**
+	 * Autentica tramite OAuth2 Bearer token.
+	 *
+	 * @param string $plain_token Token in chiaro.
+	 * @param string $endpoint    Endpoint REST.
+	 * @param string $method      Metodo HTTP.
+	 * @return true|WP_Error
+	 */
+	private static function authorize_bearer( $plain_token, $endpoint, $method ) {
+		$data = WPAIB_OAuth_Server::validate_access_token( $plain_token );
+
+		if ( ! $data ) {
+			WPAIB_Logger::log( array(
+				'endpoint'    => $endpoint,
+				'method'      => $method,
+				'status_code' => 401,
+				'outcome'     => 'bearer_invalid',
+			) );
+			return self::generic_auth_error();
+		}
+
+		wp_set_current_user( $data['user_id'] );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			WPAIB_Logger::log( array(
+				'endpoint'    => $endpoint,
+				'method'      => $method,
+				'status_code' => 403,
+				'outcome'     => 'bearer_forbidden',
+			) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+		}
+
+		WPAIB_Logger::log( array(
+			'endpoint'    => $endpoint,
+			'method'      => $method,
+			'status_code' => 200,
+			'outcome'     => 'bearer_ok',
+		) );
 
 		return true;
 	}
