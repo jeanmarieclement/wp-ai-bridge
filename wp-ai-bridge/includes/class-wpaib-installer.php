@@ -25,6 +25,9 @@ class WPAIB_Installer {
 		$charset_collate = $wpdb->get_charset_collate();
 		$keys_table      = $wpdb->prefix . 'wpaib_api_keys';
 		$log_table       = $wpdb->prefix . 'wpaib_audit_log';
+		$oauth_clients_table = $wpdb->prefix . 'wpaib_oauth_clients';
+		$oauth_codes_table   = $wpdb->prefix . 'wpaib_oauth_codes';
+		$oauth_tokens_table  = $wpdb->prefix . 'wpaib_oauth_tokens';
 
 		$sql_keys = "CREATE TABLE {$keys_table} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -55,9 +58,59 @@ class WPAIB_Installer {
 			KEY timestamp (timestamp)
 		) {$charset_collate};";
 
+		$sql_oauth_clients = "CREATE TABLE {$oauth_clients_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			client_id VARCHAR(64) NOT NULL,
+			client_secret_hash CHAR(64) NOT NULL,
+			name VARCHAR(100) NOT NULL DEFAULT '',
+			redirect_uris TEXT NOT NULL DEFAULT '',
+			created_at DATETIME NOT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY client_id (client_id)
+		) {$charset_collate};";
+
+		$sql_oauth_codes = "CREATE TABLE {$oauth_codes_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			code_hash CHAR(64) NOT NULL,
+			client_id VARCHAR(64) NOT NULL,
+			user_id BIGINT UNSIGNED NOT NULL,
+			redirect_uri TEXT NOT NULL,
+			scope VARCHAR(255) NOT NULL DEFAULT '',
+			expires_at DATETIME NOT NULL,
+			used_at DATETIME DEFAULT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY code_hash (code_hash),
+			KEY client_id (client_id),
+			KEY user_id (user_id)
+		) {$charset_collate};";
+
+		$sql_oauth_tokens = "CREATE TABLE {$oauth_tokens_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			access_token_hash CHAR(64) NOT NULL,
+			refresh_token_hash CHAR(64) NOT NULL,
+			client_id VARCHAR(64) NOT NULL,
+			user_id BIGINT UNSIGNED NOT NULL,
+			scope VARCHAR(255) NOT NULL DEFAULT '',
+			expires_at DATETIME NOT NULL,
+			revoked_at DATETIME DEFAULT NULL,
+			created_at DATETIME NOT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY access_token_hash (access_token_hash),
+			UNIQUE KEY refresh_token_hash (refresh_token_hash),
+			KEY client_id (client_id),
+			KEY user_id (user_id)
+		) {$charset_collate};";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql_keys );
 		dbDelta( $sql_log );
+		dbDelta( $sql_oauth_clients );
+		dbDelta( $sql_oauth_codes );
+		dbDelta( $sql_oauth_tokens );
+
+		// Registra rewrite rule e flush per l'endpoint authorize.
+		add_rewrite_rule( '^wpaib/oauth/authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
+		flush_rewrite_rules();
 
 		add_option( 'wpaib_db_version', WPAIB_VERSION );
 	}
