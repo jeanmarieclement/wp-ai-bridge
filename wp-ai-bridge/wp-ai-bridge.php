@@ -28,6 +28,9 @@ define( 'WPAIB_API_NAMESPACE', 'wpaib/v1' );
 define( 'WPAIB_RATE_LIMIT_REQUESTS', 300 );
 define( 'WPAIB_RATE_LIMIT_WINDOW', 60 );
 define( 'WPAIB_KEY_LENGTH_BYTES', 32 );
+define( 'WPAIB_OAUTH_CODE_TTL',    600 );      // secondi: 10 minuti
+define( 'WPAIB_OAUTH_TOKEN_TTL',   3600 );     // secondi: 1 ora
+define( 'WPAIB_OAUTH_REFRESH_TTL', 2592000 );  // secondi: 30 giorni
 
 // Autoloader minimale (no Composer, zero dipendenze esterne).
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-installer.php';
@@ -45,6 +48,10 @@ require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-mcp-controller.p
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-mcp-http-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-openapi-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'admin/class-wpaib-admin.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-client-manager.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-server.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-authorize.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-oauth-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-plugin.php';
 
 // Hook di attivazione e disattivazione.
