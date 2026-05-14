@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "wp-ai-bridge": {
+      "url": "http://localhost:8085/?rest_route=/wpaib/v1/mcp",
+      "headers": {
+        "X-API-Key": "wpaib_<la-tua-chiave-generata-dal-pannello>"
+      }
+    }
+  }
+}

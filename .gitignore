@@ -1,0 +1,15 @@
+# Credenziali locali — mai committare
+.mcp.json
+.env
+.env.local
+.env.*.local
+
+# WordPress generato da Docker
+wp-ai-bridge/vendor/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
