@@ -20,7 +20,7 @@ class WPAIB_OAuth_Server {
      * @param string $scope        Scope richiesto.
      * @return string|WP_Error Plain code da passare al client.
      */
-    public static function create_auth_code( $client_id, $user_id, $redirect_uri, $scope = '' ) {
+    public static function create_auth_code( $client_id, $user_id, $redirect_uri, $scope = '', $code_challenge = '', $code_challenge_method = '' ) {
         global $wpdb;
 
         try {
@@ -32,18 +32,24 @@ class WPAIB_OAuth_Server {
         $code_hash  = hash( 'sha256', $plain_code );
         $expires_at = gmdate( 'Y-m-d H:i:s', time() + WPAIB_OAUTH_CODE_TTL );
 
-        $result = $wpdb->insert(
-            $wpdb->prefix . 'wpaib_oauth_codes',
-            array(
-                'code_hash'    => $code_hash,
-                'client_id'    => $client_id,
-                'user_id'      => (int) $user_id,
-                'redirect_uri' => $redirect_uri,
-                'scope'        => substr( sanitize_text_field( $scope ), 0, 255 ),
-                'expires_at'   => $expires_at,
-            ),
-            array( '%s', '%s', '%d', '%s', '%s', '%s' )
+        $data    = array(
+            'code_hash'    => $code_hash,
+            'client_id'    => $client_id,
+            'user_id'      => (int) $user_id,
+            'redirect_uri' => $redirect_uri,
+            'scope'        => substr( sanitize_text_field( $scope ), 0, 255 ),
+            'expires_at'   => $expires_at,
         );
+        $formats = array( '%s', '%s', '%d', '%s', '%s', '%s' );
+
+        if ( ! empty( $code_challenge ) ) {
+            $data['code_challenge']        = substr( $code_challenge, 0, 128 );
+            $data['code_challenge_method'] = in_array( $code_challenge_method, array( 'S256', 'plain' ), true ) ? $code_challenge_method : 'S256';
+            $formats[]                     = '%s';
+            $formats[]                     = '%s';
+        }
+
+        $result = $wpdb->insert( $wpdb->prefix . 'wpaib_oauth_codes', $data, $formats );
 
         if ( false === $result ) {
             return new WP_Error( 'wpaib_db_error', __( 'Cannot save auth code.', 'wp-ai-bridge' ) );
@@ -94,8 +100,10 @@ class WPAIB_OAuth_Server {
         );
 
         return array(
-            'user_id' => (int) $row->user_id,
-            'scope'   => $row->scope,
+            'user_id'               => (int) $row->user_id,
+            'scope'                 => $row->scope,
+            'code_challenge'        => $row->code_challenge ?? '',
+            'code_challenge_method' => $row->code_challenge_method ?? '',
         );
     }
 

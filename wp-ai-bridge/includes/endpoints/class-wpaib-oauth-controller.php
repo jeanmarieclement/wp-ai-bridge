@@ -41,14 +41,24 @@ class WPAIB_OAuth_Controller {
 		$grant_type    = sanitize_key( $request->get_param( 'grant_type' ) );
 		$client_id     = sanitize_text_field( (string) $request->get_param( 'client_id' ) );
 		$client_secret = sanitize_text_field( (string) $request->get_param( 'client_secret' ) );
+		$code_verifier = sanitize_text_field( (string) $request->get_param( 'code_verifier' ) );
 
-		$client = WPAIB_OAuth_Client_Manager::validate( $client_id, $client_secret );
+		// Confidential client: richiede client_secret.
+		// Public client (PKCE): nessun secret, verifica tramite code_verifier.
+		if ( ! empty( $client_secret ) ) {
+			$client = WPAIB_OAuth_Client_Manager::validate( $client_id, $client_secret );
+		} elseif ( ! empty( $code_verifier ) && 'authorization_code' === $grant_type ) {
+			$client = WPAIB_OAuth_Client_Manager::get_public( $client_id );
+		} else {
+			$client = false;
+		}
+
 		if ( ! $client ) {
 			return $this->oauth_error( 'invalid_client', 401 );
 		}
 
 		if ( 'authorization_code' === $grant_type ) {
-			return $this->handle_authorization_code( $request, $client );
+			return $this->handle_authorization_code( $request, $client, $code_verifier );
 		}
 
 		if ( 'refresh_token' === $grant_type ) {
@@ -75,7 +85,7 @@ class WPAIB_OAuth_Controller {
 		return rest_ensure_response( array() );
 	}
 
-	private function handle_authorization_code( WP_REST_Request $request, $client ) {
+	private function handle_authorization_code( WP_REST_Request $request, $client, $code_verifier = '' ) {
 		$code         = sanitize_text_field( (string) $request->get_param( 'code' ) );
 		$redirect_uri = esc_url_raw( (string) $request->get_param( 'redirect_uri' ) );
 
@@ -88,12 +98,39 @@ class WPAIB_OAuth_Controller {
 			return $this->oauth_error( 'invalid_grant', 400 );
 		}
 
+		// Verifica PKCE se il codice aveva un challenge.
+		if ( ! empty( $data['code_challenge'] ) ) {
+			if ( empty( $code_verifier ) ) {
+				return $this->oauth_error( 'invalid_grant', 400 );
+			}
+			if ( ! $this->verify_pkce( $code_verifier, $data['code_challenge'], $data['code_challenge_method'] ) ) {
+				return $this->oauth_error( 'invalid_grant', 400 );
+			}
+		}
+
 		$tokens = WPAIB_OAuth_Server::create_token_pair( $client->client_id, $data['user_id'], $data['scope'] );
 		if ( is_wp_error( $tokens ) ) {
 			return $this->oauth_error( 'server_error', 500 );
 		}
 
 		return rest_ensure_response( $tokens );
+	}
+
+	/**
+	 * Verifica PKCE code_verifier contro code_challenge (RFC 7636).
+	 *
+	 * @param string $verifier   Verifier in chiaro dal client.
+	 * @param string $challenge  Challenge salvato all'authorize.
+	 * @param string $method     'S256' o 'plain'.
+	 * @return bool
+	 */
+	private function verify_pkce( $verifier, $challenge, $method ) {
+		if ( 'plain' === $method ) {
+			return hash_equals( $challenge, $verifier );
+		}
+		// S256: BASE64URL(SHA256(verifier))
+		$computed = rtrim( strtr( base64_encode( hash( 'sha256', $verifier, true ) ), '+/', '-_' ), '=' );
+		return hash_equals( $challenge, $computed );
 	}
 
 	private function handle_refresh_token( WP_REST_Request $request, $client ) {

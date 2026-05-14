@@ -71,11 +71,15 @@ h1 { font-size: 1.25rem; margin-bottom: 1rem; color: #1d2327; }
 	</div>
 
 	<form method="post" action="<?php echo esc_url( home_url( '/wpaib/oauth/authorize' ) ); ?>">
-		<input type="hidden" name="_wpnonce"     value="<?php echo esc_attr( $nonce_value ); ?>">
-		<input type="hidden" name="client_id"    value="<?php echo esc_attr( $params['client_id'] ); ?>">
-		<input type="hidden" name="redirect_uri" value="<?php echo esc_attr( $params['redirect_uri'] ); ?>">
-		<input type="hidden" name="state"        value="<?php echo esc_attr( $params['state'] ); ?>">
-		<input type="hidden" name="scope"        value="<?php echo esc_attr( $params['scope'] ); ?>">
+		<input type="hidden" name="_wpnonce"              value="<?php echo esc_attr( $nonce_value ); ?>">
+		<input type="hidden" name="client_id"             value="<?php echo esc_attr( $params['client_id'] ); ?>">
+		<input type="hidden" name="redirect_uri"          value="<?php echo esc_attr( $params['redirect_uri'] ); ?>">
+		<input type="hidden" name="state"                 value="<?php echo esc_attr( $params['state'] ); ?>">
+		<input type="hidden" name="scope"                 value="<?php echo esc_attr( $params['scope'] ); ?>">
+		<?php if ( ! empty( $params['code_challenge'] ) ) : ?>
+		<input type="hidden" name="code_challenge"        value="<?php echo esc_attr( $params['code_challenge'] ); ?>">
+		<input type="hidden" name="code_challenge_method" value="<?php echo esc_attr( $params['code_challenge_method'] ); ?>">
+		<?php endif; ?>
 
 		<div class="actions">
 			<button type="submit" name="decision" value="allow" class="btn btn-primary">

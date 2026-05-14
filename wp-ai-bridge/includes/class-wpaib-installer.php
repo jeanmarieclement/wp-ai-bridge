@@ -76,6 +76,8 @@ class WPAIB_Installer {
 			user_id BIGINT UNSIGNED NOT NULL,
 			redirect_uri TEXT NOT NULL,
 			scope VARCHAR(255) NOT NULL DEFAULT '',
+			code_challenge VARCHAR(128) DEFAULT NULL,
+			code_challenge_method VARCHAR(10) DEFAULT NULL,
 			expires_at DATETIME NOT NULL,
 			used_at DATETIME DEFAULT NULL,
 			PRIMARY KEY (id),
@@ -108,11 +110,27 @@ class WPAIB_Installer {
 		dbDelta( $sql_oauth_codes );
 		dbDelta( $sql_oauth_tokens );
 
-		// Registra rewrite rule e flush per l'endpoint authorize.
+		// Registra rewrite rules OAuth2 e discovery.
 		add_rewrite_rule( '^wpaib/oauth/authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
+		add_rewrite_rule( '^authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
+		add_rewrite_rule( '^\.well-known/oauth-authorization-server$', 'index.php?wpaib_discovery=oauth-authorization-server', 'top' );
+		add_rewrite_rule( '^\.well-known/oauth-protected-resource$', 'index.php?wpaib_discovery=oauth-protected-resource', 'top' );
+		add_rewrite_rule( '^token/?$', 'index.php?wpaib_discovery=token', 'top' );
 		flush_rewrite_rules();
 
-		add_option( 'wpaib_db_version', WPAIB_VERSION );
+		update_option( 'wpaib_db_version', WPAIB_VERSION );
+	}
+
+	/**
+	 * Esegue dbDelta se la versione DB è inferiore alla versione corrente.
+	 *
+	 * @return void
+	 */
+	public static function maybe_upgrade() {
+		if ( get_option( 'wpaib_db_version' ) === WPAIB_VERSION ) {
+			return;
+		}
+		self::activate();
 	}
 
 	/**

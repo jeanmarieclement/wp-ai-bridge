@@ -20,29 +20,27 @@ class WPAIB_MCP_Controller {
 	 * @return void
 	 */
 	public function register_routes() {
-		register_rest_route(
-			WPAIB_API_NAMESPACE,
-			'/tools',
+		$tools_args = array(
 			array(
-				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_tools' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
-				),
-			)
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_tools' ),
+				'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+			),
 		);
 
-		register_rest_route(
-			WPAIB_API_NAMESPACE,
-			'/tools/execute',
+		$execute_args = array(
 			array(
-				array(
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'execute_tool' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
-				),
-			)
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'execute_tool' ),
+				'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+			),
 		);
+
+		register_rest_route( WPAIB_API_NAMESPACE, '/tools', $tools_args );
+		register_rest_route( WPAIB_API_NAMESPACE, '/mcp', $tools_args );
+
+		register_rest_route( WPAIB_API_NAMESPACE, '/tools/execute', $execute_args );
+		register_rest_route( WPAIB_API_NAMESPACE, '/mcp/execute', $execute_args );
 	}
 
 	/**

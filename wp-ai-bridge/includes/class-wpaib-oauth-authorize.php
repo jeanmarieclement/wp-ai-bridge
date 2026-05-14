@@ -21,6 +21,7 @@ class WPAIB_OAuth_Authorize {
 
     public static function add_rewrite_rule() {
         add_rewrite_rule( '^wpaib/oauth/authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
+        add_rewrite_rule( '^authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
     }
 
     public static function register_query_var( $vars ) {
@@ -83,10 +84,12 @@ class WPAIB_OAuth_Authorize {
             wp_die( esc_html__( 'Authentication required.', 'wp-ai-bridge' ), 401 );
         }
 
-        $redirect_uri = isset( $_POST['redirect_uri'] ) ? esc_url_raw( wp_unslash( $_POST['redirect_uri'] ) ) : '';
-        $state        = isset( $_POST['state'] )        ? sanitize_text_field( wp_unslash( $_POST['state'] ) ) : '';
-        $scope        = isset( $_POST['scope'] )        ? sanitize_text_field( wp_unslash( $_POST['scope'] ) ) : '';
-        $decision     = isset( $_POST['decision'] )     ? sanitize_key( $_POST['decision'] ) : '';
+        $redirect_uri           = isset( $_POST['redirect_uri'] )          ? esc_url_raw( wp_unslash( $_POST['redirect_uri'] ) ) : '';
+        $state                  = isset( $_POST['state'] )                 ? sanitize_text_field( wp_unslash( $_POST['state'] ) ) : '';
+        $scope                  = isset( $_POST['scope'] )                 ? sanitize_text_field( wp_unslash( $_POST['scope'] ) ) : '';
+        $decision               = isset( $_POST['decision'] )              ? sanitize_key( $_POST['decision'] ) : '';
+        $code_challenge         = isset( $_POST['code_challenge'] )        ? sanitize_text_field( wp_unslash( $_POST['code_challenge'] ) ) : '';
+        $code_challenge_method  = isset( $_POST['code_challenge_method'] ) ? sanitize_key( $_POST['code_challenge_method'] ) : '';
 
         // Valida redirect_uri PRIMA di usarla in qualsiasi redirect (sia allow che deny).
         if ( ! WPAIB_OAuth_Client_Manager::validate_redirect_uri( $client_id, $redirect_uri ) ) {
@@ -103,7 +106,7 @@ class WPAIB_OAuth_Authorize {
         }
 
         $user_id = get_current_user_id();
-        $code    = WPAIB_OAuth_Server::create_auth_code( $client_id, $user_id, $redirect_uri, $scope );
+        $code    = WPAIB_OAuth_Server::create_auth_code( $client_id, $user_id, $redirect_uri, $scope, $code_challenge, $code_challenge_method );
 
         if ( is_wp_error( $code ) ) {
             wp_die( esc_html( $code->get_error_message() ), 500 );
@@ -123,11 +126,13 @@ class WPAIB_OAuth_Authorize {
 
     private static function get_authorize_params() {
         return array(
-            'response_type' => isset( $_GET['response_type'] ) ? sanitize_key( $_GET['response_type'] ) : '',
-            'client_id'     => isset( $_GET['client_id'] )     ? sanitize_text_field( wp_unslash( $_GET['client_id'] ) ) : '',
-            'redirect_uri'  => isset( $_GET['redirect_uri'] )  ? esc_url_raw( wp_unslash( $_GET['redirect_uri'] ) ) : '',
-            'scope'         => isset( $_GET['scope'] )         ? sanitize_text_field( wp_unslash( $_GET['scope'] ) ) : '',
-            'state'         => isset( $_GET['state'] )         ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '',
+            'response_type'         => isset( $_GET['response_type'] )         ? sanitize_key( $_GET['response_type'] ) : '',
+            'client_id'             => isset( $_GET['client_id'] )             ? sanitize_text_field( wp_unslash( $_GET['client_id'] ) ) : '',
+            'redirect_uri'          => isset( $_GET['redirect_uri'] )          ? esc_url_raw( wp_unslash( $_GET['redirect_uri'] ) ) : '',
+            'scope'                 => isset( $_GET['scope'] )                 ? sanitize_text_field( wp_unslash( $_GET['scope'] ) ) : '',
+            'state'                 => isset( $_GET['state'] )                 ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '',
+            'code_challenge'        => isset( $_GET['code_challenge'] )        ? sanitize_text_field( wp_unslash( $_GET['code_challenge'] ) ) : '',
+            'code_challenge_method' => isset( $_GET['code_challenge_method'] ) ? sanitize_key( $_GET['code_challenge_method'] ) : '',
         );
     }
 

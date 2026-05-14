@@ -3,7 +3,7 @@
  * Plugin Name:       WP AI Bridge
  * Plugin URI:        https://jmclement.net
  * Description:       Espone endpoint REST sicuri per gestione contenuti tramite API key per utente. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni).
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Jean-Marie Clément
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Costanti del plugin.
-define( 'WPAIB_VERSION', '1.1.0' );
+define( 'WPAIB_VERSION', '1.2.0' );
 define( 'WPAIB_PLUGIN_FILE', __FILE__ );
 define( 'WPAIB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPAIB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -52,11 +52,15 @@ require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-client-manager.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-server.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-authorize.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-oauth-controller.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-discovery.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-plugin.php';
 
 // Hook di attivazione e disattivazione.
 register_activation_hook( __FILE__, array( 'WPAIB_Installer', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'WPAIB_Installer', 'deactivate' ) );
+
+// Migrazione DB se la versione è cambiata.
+add_action( 'plugins_loaded', array( 'WPAIB_Installer', 'maybe_upgrade' ), 5 );
 
 // Bootstrap del plugin.
 add_action( 'plugins_loaded', array( 'WPAIB_Plugin', 'init' ) );

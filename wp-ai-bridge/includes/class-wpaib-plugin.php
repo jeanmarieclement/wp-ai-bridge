@@ -36,6 +36,9 @@ class WPAIB_Plugin {
 
 		// Inizializza endpoint authorize OAuth2 (rewrite rule + template_redirect).
 		WPAIB_OAuth_Authorize::init_hooks();
+
+		// Inizializza discovery OAuth2 (.well-known + /token shortcut).
+		WPAIB_OAuth_Discovery::init_hooks();
 	}
 
 	/**

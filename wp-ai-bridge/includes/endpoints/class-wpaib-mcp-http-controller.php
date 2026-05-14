@@ -121,8 +121,10 @@ class WPAIB_MCP_HTTP_Controller {
 		switch ( $method ) {
 
 			case 'initialize':
+				$client_version = isset( $params['protocolVersion'] ) ? $params['protocolVersion'] : '2024-11-05';
+				$protocol       = version_compare( $client_version, '2025-03-26', '>=' ) ? '2025-03-26' : '2024-11-05';
 				return $this->build_response( $id, array(
-					'protocolVersion' => '2024-11-05',
+					'protocolVersion' => $protocol,
 					'capabilities'    => array( 'tools' => new stdClass() ),
 					'serverInfo'      => array(
 						'name'    => 'wp-ai-bridge',
@@ -297,9 +299,26 @@ class WPAIB_MCP_HTTP_Controller {
 	 * @return WP_REST_Response
 	 */
 	private function wp_error_to_rpc( $id, WP_Error $error ) {
-		$data   = $error->get_error_data();
-		$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 401;
-		$code   = 429 === $status ? -32000 : -32001;
-		return $this->rpc_error( $id, $code, $error->get_error_message() );
+		$data       = $error->get_error_data();
+		$http_status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 401;
+		$rpc_code   = 429 === $http_status ? -32000 : -32001;
+
+		$response = new WP_REST_Response( array(
+			'jsonrpc' => '2.0',
+			'id'      => $id,
+			'error'   => array( 'code' => $rpc_code, 'message' => $error->get_error_message() ),
+		), $http_status );
+
+		foreach ( self::$cors as $header => $value ) {
+			$response->header( $header, $value );
+		}
+
+		// RFC 6750 + MCP OAuth discovery: indica dove fare auth.
+		if ( 401 === $http_status ) {
+			$resource_metadata_url = home_url( '/.well-known/oauth-protected-resource' );
+			$response->header( 'WWW-Authenticate', 'Bearer realm="wp-ai-bridge", resource_metadata="' . $resource_metadata_url . '"' );
+		}
+
+		return $response;
 	}
 }
