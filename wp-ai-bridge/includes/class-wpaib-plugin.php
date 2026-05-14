@@ -33,6 +33,9 @@ class WPAIB_Plugin {
 
 		// Forza HTTPS sugli endpoint del plugin.
 		add_filter( 'rest_pre_dispatch', array( __CLASS__, 'enforce_https' ), 10, 3 );
+
+		// Inizializza endpoint authorize OAuth2 (rewrite rule + template_redirect).
+		WPAIB_OAuth_Authorize::init_hooks();
 	}
 
 	/**
@@ -60,6 +63,9 @@ class WPAIB_Plugin {
 		$mcp_controller->register_routes();
 		$mcp_http_controller->register_routes();
 		$openapi_controller->register_routes();
+
+		$oauth_controller = new WPAIB_OAuth_Controller();
+		$oauth_controller->register_routes();
 	}
 
 	/**
