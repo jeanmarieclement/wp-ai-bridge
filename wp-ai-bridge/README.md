@@ -1,8 +1,8 @@
 # WP AI Bridge
 
-A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys**. Designed for integration with external AI services (Claude, ChatGPT, custom automations).
+A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys** or **OAuth2** (Authorization Code flow). Designed for integration with external AI services (Claude.ai, ChatGPT, custom automations).
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Compatibility:** WordPress 6.0+, PHP 7.4+  
 **License:** MIT
 
@@ -12,13 +12,19 @@ A WordPress plugin that exposes secure REST endpoints for content management via
 
 Exposes a REST API under the `/wp-json/wpaib/v1/` namespace for:
 
-- Listing, creating, reading, updating, and deleting posts
-- Uploading images (multipart or base64) to the media library
+- Listing, creating, reading, updating, and deleting posts and pages
+- Uploading images (base64) to the media library
 - Listing and creating categories and tags
+- Reading site info and full-text search
 - MCP/function-calling tool execution (`/tools`, `/tools/execute`)
-- Dynamic OpenAPI 3.0.3 schema (`/openapi.json`) — import-ready for ChatGPT, Gemini, Claude
+- Dynamic OpenAPI 3.0.3 schema (`/openapi.json`) — import-ready for ChatGPT, Gemini, Claude.ai
 
-Every request is authenticated with a personal API key shown **only once** at generation time and stored in the database as a SHA-256 hash only.
+Two authentication methods are supported and can be used interchangeably on any endpoint:
+
+| Method | Header | Use when |
+|--------|--------|----------|
+| **API Key** | `X-API-Key: wpaib_...` | Scripts, automations, direct integrations |
+| **OAuth2 Bearer** | `Authorization: Bearer wpaib_at_...` | ChatGPT Custom Actions, Claude.ai tools, user-facing flows |
 
 ---
 
@@ -26,24 +32,114 @@ Every request is authenticated with a personal API key shown **only once** at ge
 
 1. Upload the `wp-ai-bridge` folder to `wp-content/plugins/`
 2. Go to **WordPress → Plugins** and activate "WP AI Bridge"
-3. Go to your **User Profile** (Users → Profile)
-4. Scroll down to the **"WP AI Bridge — API Keys"** section
-5. Enter a label (e.g. `Home laptop`) and click **Generate key**
-6. **Copy the key immediately** — it will not be shown again
+
+---
+
+## Authentication — API Key
+
+1. Go to **Users → Profile** (or edit any user as admin)
+2. Scroll down to **"WP AI Bridge — API Keys"**
+3. Enter a label (e.g. `Home laptop`) and click **Generate key**
+4. **Copy the key immediately** — it will not be shown again
+
+```bash
+curl https://your-site.com/wp-json/wpaib/v1/posts \
+  -H "X-API-Key: wpaib_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+---
+
+## Authentication — OAuth2
+
+WP AI Bridge acts as an **OAuth2 Authorization Server** (Authorization Code flow). Use this when connecting via ChatGPT Custom Actions, Claude.ai tools, or any OAuth2-capable client.
+
+### Setup
+
+1. Go to **Settings → WP AI Bridge → OAuth2 Clients**
+2. Click **Aggiungi client**, enter a name and the redirect URI(s) provided by the platform
+3. Copy the `client_id` and `client_secret` shown immediately (secret not shown again)
+
+### Endpoints
+
+| Role | URL |
+|------|-----|
+| **Authorization** | `https://your-site.com/wpaib/oauth/authorize` |
+| **Token** | `https://your-site.com/wp-json/wpaib/v1/oauth/token` |
+| **Revoke** | `https://your-site.com/wp-json/wpaib/v1/oauth/revoke` |
+| **OpenAPI schema** | `https://your-site.com/wp-json/wpaib/v1/openapi.json` |
+
+### Redirect URIs by platform
+
+| Platform | Redirect URI |
+|----------|-------------|
+| ChatGPT Custom Actions | `https://chat.openai.com/aip/g-<id>/oauth/callback` |
+| Claude.ai tools | `https://claude.ai/api/oauth/callback` |
+
+### Flow summary
+
+```
+Client → GET /wpaib/oauth/authorize?response_type=code&client_id=...&redirect_uri=...&state=...
+       ← WordPress login (if not logged in)
+       ← Consent page (Autorizza / Nega)
+       → POST /wpaib/oauth/authorize (user clicks Autorizza)
+       ← redirect_uri?code=wpaib_ac_...&state=...
+
+Client → POST /wp-json/wpaib/v1/oauth/token
+         grant_type=authorization_code&code=...&client_id=...&client_secret=...&redirect_uri=...
+       ← { "access_token": "wpaib_at_...", "refresh_token": "wpaib_rt_...", "token_type": "Bearer", "expires_in": 3600 }
+
+Client → GET /wp-json/wpaib/v1/posts
+         Authorization: Bearer wpaib_at_...
+       ← posts JSON
+```
+
+### Token lifetimes
+
+| Token | Lifetime |
+|-------|---------|
+| Authorization code | 10 minutes (one-shot) |
+| Access token | 1 hour |
+| Refresh token | 30 days (rotated on each use) |
+
+### Token refresh
+
+```bash
+curl -X POST https://your-site.com/wp-json/wpaib/v1/oauth/token \
+  -d "grant_type=refresh_token&refresh_token=wpaib_rt_...&client_id=...&client_secret=..."
+```
+
+### Token revoke
+
+```bash
+curl -X POST https://your-site.com/wp-json/wpaib/v1/oauth/revoke \
+  -d "token=wpaib_at_...&client_id=...&client_secret=..."
+```
+
+Returns `{}` with 200 even if the token did not exist (RFC 7009).
 
 ---
 
 ## Security Architecture
 
-Every request passes 5 cascading checks:
+Every REST request passes these cascading checks:
 
 | # | Check | What it does |
 |---|-------|-------------|
-| 1 | HTTPS check | Rejects plain HTTP requests |
-| 2 | Rate limiter | Max 60 requests/min per key |
-| 3 | API key validation | SHA-256 hash against DB, regex format pre-check |
-| 4 | WordPress capability | Verifies permissions of the user linked to the key |
+| 1 | HTTPS check | Rejects plain HTTP (bypassed for localhost/dev) |
+| 2 | Rate limiter | Max 300 requests/min per key/token |
+| 3 | Auth — Bearer | Validates OAuth2 access token: hash lookup + expiry + revocation |
+| 3 | Auth — API Key | SHA-256 hash against DB, regex format pre-check |
+| 4 | WordPress capability | Verifies `edit_posts` on the user linked to the credential |
 | 5 | Input sanitization | `sanitize_*` + `wp_kses_post` on all data |
+
+**OAuth2 security properties:**
+- Authorization codes are one-shot (invalidated immediately after use)
+- Client secrets stored as SHA-256 hashes only
+- Access and refresh tokens stored as SHA-256 hashes only
+- Refresh token rotation on every use
+- `redirect_uri` validated against pre-registered list on both GET and POST
+- CSRF protection via WP nonce on consent form
+- Cross-client revoke prevention: `revoke_token` validates client ownership
 
 **Audit log:** every access (success, auth failure, rate limit, forbidden) is logged to `wp_wpaib_audit_log` with timestamp, IP, user-agent, endpoint, and outcome.
 
@@ -57,9 +153,9 @@ Every request passes 5 cascading checks:
 
 ## API Examples
 
-All requests require the `X-API-Key` header.
+Both auth methods work on all endpoints.
 
-### Create a draft post
+### Create a draft post (API key)
 
 ```bash
 curl -X POST https://your-site.com/wp-json/wpaib/v1/posts \
@@ -73,6 +169,15 @@ curl -X POST https://your-site.com/wp-json/wpaib/v1/posts \
     "categories": [5],
     "tags": ["ai", "wordpress", "automation"]
   }'
+```
+
+### Create a draft post (OAuth2 Bearer)
+
+```bash
+curl -X POST https://your-site.com/wp-json/wpaib/v1/posts \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer wpaib_at_xxxxxxxx..." \
+  -d '{ "title": "Post via OAuth2", "status": "draft" }'
 ```
 
 ### Upload an image (base64)
@@ -92,15 +197,6 @@ curl -X POST https://your-site.com/wp-json/wpaib/v1/media \
 ```bash
 curl https://your-site.com/wp-json/wpaib/v1/categories \
   -H "X-API-Key: wpaib_xxxx..."
-```
-
-### Update a post
-
-```bash
-curl -X PUT https://your-site.com/wp-json/wpaib/v1/posts/123 \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: wpaib_xxxx..." \
-  -d '{ "status": "publish" }'
 ```
 
 ### Python example
@@ -141,14 +237,14 @@ print(f"Draft created: {post['link']}")
 | 200 | OK |
 | 201 | Resource created |
 | 400 | Invalid body or missing parameters |
-| 401 | Missing or invalid API key |
+| 401 | Missing or invalid credential (API key or Bearer token) |
 | 403 | Insufficient capability or HTTPS required |
 | 404 | Resource not found |
 | 413 | File too large |
 | 429 | Rate limit exceeded |
 | 500 | Server error |
 
-For security reasons, 401 errors do not distinguish between a missing, invalid, or revoked key (anti-enumeration).
+For security reasons, 401 errors do not distinguish between missing, invalid, expired, or revoked credentials (anti-enumeration).
 
 ---
 
@@ -177,22 +273,26 @@ The plugin does its part, but security is a chain. Also verify:
 - [ ] `wp-config.php` permissions set to 600
 - [ ] XML-RPC disabled if unused
 - [ ] Monitor `wp_wpaib_audit_log` periodically
-- [ ] Revoke API keys that are no longer in use
+- [ ] Revoke API keys and OAuth2 clients that are no longer in use
+- [ ] Rotate OAuth2 client secrets periodically
+
+---
+
+## Database Tables
+
+| Table | Purpose |
+|-------|---------|
+| `wp_wpaib_api_keys` | Per-user API keys (SHA-256 hash, label, timestamps) |
+| `wp_wpaib_audit_log` | Audit log of all API requests |
+| `wp_wpaib_oauth_clients` | Registered OAuth2 clients (name, secret hash, redirect URIs) |
+| `wp_wpaib_oauth_codes` | Authorization codes (one-shot, 10-min TTL) |
+| `wp_wpaib_oauth_tokens` | Access + refresh token pairs (hash, expiry, revocation) |
 
 ---
 
 ## Uninstallation
 
-Deactivating the plugin leaves data in the database. **To remove everything** (keys, logs, options), use **Delete** from the Plugins page: the `uninstall.php` script will clean up everything.
-
----
-
-## Roadmap
-
-- v1.1: outgoing webhooks for events (new post created via API, etc.)
-- v1.2: optional key expiration (TTL)
-- v1.3: per-key granular scopes (e.g. "read-only")
-- v2.0: native embedded MCP server
+Deactivating the plugin leaves data in the database. **To remove everything** (keys, OAuth2 clients, tokens, logs, options), use **Delete** from the Plugins page: the `uninstall.php` script will clean up everything.
 
 ---
 
@@ -201,6 +301,7 @@ Deactivating the plugin leaves data in the database. **To remove everything** (k
 - No at-rest encryption for audit logs (log queries are in plaintext in the DB, but contain no sensitive data)
 - Rate limiter uses WordPress transients: benefits automatically from an external object cache (Redis/Memcached), otherwise falls back to DB
 - Upload limited to 5 MB; supported types: jpg, png, gif, webp
+- OAuth2 token endpoint does not yet appear in the Connections audit log tab
 
 ---
 

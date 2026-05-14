@@ -110,11 +110,11 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		<a href="<?php echo esc_url( $tab_tools_url ); ?>" class="nav-tab">
 			<?php esc_html_e( 'Tool MCP', 'wp-ai-bridge' ); ?>
 		</a>
-		<a href="<?php echo esc_url( $tab_conn_url ); ?>" class="nav-tab nav-tab-active">
-			<?php esc_html_e( 'Connessioni', 'wp-ai-bridge' ); ?>
-		</a>
 		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab">
 			<?php esc_html_e( 'OAuth2 Clients', 'wp-ai-bridge' ); ?>
+		</a>
+		<a href="<?php echo esc_url( $tab_conn_url ); ?>" class="nav-tab nav-tab-active">
+			<?php esc_html_e( 'Connessioni', 'wp-ai-bridge' ); ?>
 		</a>
 	</nav>
 
