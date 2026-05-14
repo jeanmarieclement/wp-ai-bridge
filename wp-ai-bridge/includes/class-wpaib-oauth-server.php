@@ -122,7 +122,7 @@ class WPAIB_OAuth_Server {
         $expires_at = gmdate( 'Y-m-d H:i:s', time() + WPAIB_OAUTH_TOKEN_TTL );
         $now        = current_time( 'mysql', true );
 
-        $wpdb->insert(
+        $result = $wpdb->insert(
             $wpdb->prefix . 'wpaib_oauth_tokens',
             array(
                 'access_token_hash'  => $at_hash,
@@ -135,6 +135,10 @@ class WPAIB_OAuth_Server {
             ),
             array( '%s', '%s', '%s', '%d', '%s', '%s', '%s' )
         );
+
+        if ( false === $result ) {
+            return new WP_Error( 'wpaib_db_error', __( 'Cannot save tokens.', 'wp-ai-bridge' ) );
+        }
 
         return array(
             'access_token'  => $plain_at,
@@ -214,7 +218,11 @@ class WPAIB_OAuth_Server {
             array( '%d' )
         );
 
-        return self::create_token_pair( $row->client_id, (int) $row->user_id, $row->scope );
+        $new_pair = self::create_token_pair( $row->client_id, (int) $row->user_id, $row->scope );
+        if ( is_wp_error( $new_pair ) ) {
+            return false;
+        }
+        return $new_pair;
     }
 
     /**
