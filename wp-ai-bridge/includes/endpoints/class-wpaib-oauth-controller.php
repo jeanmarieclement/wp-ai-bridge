@@ -63,12 +63,13 @@ class WPAIB_OAuth_Controller {
 		$client_id     = sanitize_text_field( (string) $request->get_param( 'client_id' ) );
 		$client_secret = sanitize_text_field( (string) $request->get_param( 'client_secret' ) );
 
-		if ( ! WPAIB_OAuth_Client_Manager::validate( $client_id, $client_secret ) ) {
+		$client = WPAIB_OAuth_Client_Manager::validate( $client_id, $client_secret );
+		if ( ! $client ) {
 			return $this->oauth_error( 'invalid_client', 401 );
 		}
 
 		if ( ! empty( $token ) ) {
-			WPAIB_OAuth_Server::revoke_token( $token );
+			WPAIB_OAuth_Server::revoke_token( $token, $client->client_id );
 		}
 
 		return rest_ensure_response( array() );

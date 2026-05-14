@@ -88,6 +88,11 @@ class WPAIB_OAuth_Authorize {
         $scope        = isset( $_POST['scope'] )        ? sanitize_text_field( wp_unslash( $_POST['scope'] ) ) : '';
         $decision     = isset( $_POST['decision'] )     ? sanitize_key( $_POST['decision'] ) : '';
 
+        // Valida redirect_uri PRIMA di usarla in qualsiasi redirect (sia allow che deny).
+        if ( ! WPAIB_OAuth_Client_Manager::validate_redirect_uri( $client_id, $redirect_uri ) ) {
+            wp_die( esc_html__( 'Invalid redirect URI.', 'wp-ai-bridge' ), 400 );
+        }
+
         if ( 'deny' === $decision ) {
             wp_redirect( add_query_arg( array( 'error' => 'access_denied', 'state' => $state ), $redirect_uri ) );
             exit;
@@ -95,10 +100,6 @@ class WPAIB_OAuth_Authorize {
 
         if ( 'allow' !== $decision ) {
             wp_die( esc_html__( 'Invalid decision.', 'wp-ai-bridge' ), 400 );
-        }
-
-        if ( ! WPAIB_OAuth_Client_Manager::validate_redirect_uri( $client_id, $redirect_uri ) ) {
-            wp_die( esc_html__( 'Invalid redirect URI.', 'wp-ai-bridge' ), 400 );
         }
 
         $user_id = get_current_user_id();

@@ -195,13 +195,16 @@ class WPAIB_OAuth_Server {
 
         $rt_hash = hash( 'sha256', $plain_rt );
 
+        $refresh_not_before = gmdate( 'Y-m-d H:i:s', time() - WPAIB_OAUTH_REFRESH_TTL );
+
         $row = $wpdb->get_row(
             $wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}wpaib_oauth_tokens
-                 WHERE refresh_token_hash = %s AND client_id = %s AND revoked_at IS NULL
+                 WHERE refresh_token_hash = %s AND client_id = %s AND revoked_at IS NULL AND created_at >= %s
                  LIMIT 1",
                 $rt_hash,
-                $client_id
+                $client_id,
+                $refresh_not_before
             )
         );
 
@@ -227,11 +230,13 @@ class WPAIB_OAuth_Server {
 
     /**
      * Revoca un token (access o refresh) dato il valore in chiaro.
+     * Verifica che il token appartenga al client specificato.
      *
      * @param string $plain_token Token in chiaro (access o refresh).
+     * @param string $client_id   Client ID autenticato.
      * @return void
      */
-    public static function revoke_token( $plain_token ) {
+    public static function revoke_token( $plain_token, $client_id ) {
         global $wpdb;
 
         $hash = hash( 'sha256', $plain_token );
@@ -241,18 +246,18 @@ class WPAIB_OAuth_Server {
         $wpdb->update(
             $wpdb->prefix . 'wpaib_oauth_tokens',
             array( 'revoked_at' => $now ),
-            array( 'access_token_hash' => $hash ),
+            array( 'access_token_hash' => $hash, 'client_id' => $client_id ),
             array( '%s' ),
-            array( '%s' )
+            array( '%s', '%s' )
         );
 
-        // Prova come refresh token (se non era un access token).
+        // Prova come refresh token.
         $wpdb->update(
             $wpdb->prefix . 'wpaib_oauth_tokens',
             array( 'revoked_at' => $now ),
-            array( 'refresh_token_hash' => $hash ),
+            array( 'refresh_token_hash' => $hash, 'client_id' => $client_id ),
             array( '%s' ),
-            array( '%s' )
+            array( '%s', '%s' )
         );
     }
 
