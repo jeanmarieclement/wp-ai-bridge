@@ -33,6 +33,8 @@ Two authentication methods are supported and can be used interchangeably on any 
 1. Upload the `wp-ai-bridge` folder to `wp-content/plugins/`
 2. Go to **WordPress → Plugins** and activate "WP AI Bridge"
 
+> **Troubleshooting:** If OAuth2 endpoints (`/authorize`, `/token`) or the MCP endpoint return 404 after installation or update, go to **Settings → Permalinks** and click **Save Changes** to flush WordPress rewrite rules.
+
 ---
 
 ## Authentication — API Key
