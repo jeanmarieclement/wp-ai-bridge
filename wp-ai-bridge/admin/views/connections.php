@@ -13,6 +13,7 @@ global $wpdb;
 
 $tab_tools_url = admin_url( 'options-general.php?page=wpaib-tools' );
 $tab_conn_url  = admin_url( 'options-general.php?page=wpaib-tools&tab=connections' );
+$tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 
 $per_page = 20;
 $paged    = max( 1, isset( $_GET['paged'] ) ? (int) $_GET['paged'] : 1 );
@@ -111,6 +112,9 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		</a>
 		<a href="<?php echo esc_url( $tab_conn_url ); ?>" class="nav-tab nav-tab-active">
 			<?php esc_html_e( 'Connessioni', 'wp-ai-bridge' ); ?>
+		</a>
+		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab">
+			<?php esc_html_e( 'OAuth2 Clients', 'wp-ai-bridge' ); ?>
 		</a>
 	</nav>
 

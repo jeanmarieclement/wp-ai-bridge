@@ -22,6 +22,7 @@ $categories = array(
 
 $tab_tools_url = admin_url( 'options-general.php?page=wpaib-tools' );
 $tab_conn_url  = admin_url( 'options-general.php?page=wpaib-tools&tab=connections' );
+$tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 ?>
 <div class="wrap">
 	<h1><?php esc_html_e( 'WP AI Bridge', 'wp-ai-bridge' ); ?></h1>
@@ -33,6 +34,9 @@ $tab_conn_url  = admin_url( 'options-general.php?page=wpaib-tools&tab=connection
 		<a href="<?php echo esc_url( $tab_conn_url ); ?>"
 		   class="nav-tab">
 			<?php esc_html_e( 'Connessioni', 'wp-ai-bridge' ); ?>
+		</a>
+		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab">
+			<?php esc_html_e( 'OAuth2 Clients', 'wp-ai-bridge' ); ?>
 		</a>
 	</nav>
 

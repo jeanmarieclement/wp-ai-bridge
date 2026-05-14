@@ -27,6 +27,8 @@ class WPAIB_Admin {
 		add_action( 'admin_post_wpaib_save_tools', array( __CLASS__, 'handle_save_tools' ) );
 		add_action( 'wp_ajax_wpaib_generate_key', array( __CLASS__, 'ajax_generate_key' ) );
 		add_action( 'wp_ajax_wpaib_revoke_key', array( __CLASS__, 'ajax_revoke_key' ) );
+		add_action( 'admin_post_wpaib_create_oauth_client', array( __CLASS__, 'handle_create_oauth_client' ) );
+		add_action( 'admin_post_wpaib_delete_oauth_client', array( __CLASS__, 'handle_delete_oauth_client' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'register_admin_menu' ) );
 	}
 
@@ -76,6 +78,11 @@ class WPAIB_Admin {
 			return;
 		}
 
+		if ( 'oauth' === $tab ) {
+			self::render_oauth_page();
+			return;
+		}
+
 		$saved    = isset( $_GET['wpaib_saved'] ) ? (int) $_GET['wpaib_saved'] : 0;
 		$disabled = get_option( 'wpaib_disabled_tools', array() );
 
@@ -95,6 +102,77 @@ class WPAIB_Admin {
 		if ( file_exists( $view_file ) ) {
 			include $view_file;
 		}
+	}
+
+	/**
+	 * Renderizza la pagina OAuth2 Clients.
+	 *
+	 * @return void
+	 */
+	public static function render_oauth_page() {
+		$view_file = WPAIB_PLUGIN_DIR . 'admin/views/oauth-clients.php';
+		if ( file_exists( $view_file ) ) {
+			include $view_file;
+		}
+	}
+
+	/**
+	 * Handler per creare un nuovo OAuth2 client.
+	 *
+	 * @return void
+	 */
+	public static function handle_create_oauth_client() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Accesso non consentito.', 'wp-ai-bridge' ) );
+		}
+
+		check_admin_referer( 'wpaib_create_oauth_client' );
+
+		$name          = isset( $_POST['client_name'] )          ? sanitize_text_field( wp_unslash( $_POST['client_name'] ) )          : '';
+		$redirect_uris = isset( $_POST['client_redirect_uris'] ) ? sanitize_textarea_field( wp_unslash( $_POST['client_redirect_uris'] ) ) : '';
+
+		$result = WPAIB_OAuth_Client_Manager::create( $name, $redirect_uris );
+
+		if ( is_wp_error( $result ) ) {
+			wp_safe_redirect( add_query_arg(
+				array( 'page' => 'wpaib-tools', 'tab' => 'oauth', 'wpaib_oauth_error' => urlencode( $result->get_error_message() ) ),
+				admin_url( 'options-general.php' )
+			) );
+			exit;
+		}
+
+		wp_safe_redirect( add_query_arg(
+			array(
+				'page'             => 'wpaib-tools',
+				'tab'              => 'oauth',
+				'wpaib_new_client' => rawurlencode( $result['client_id'] ),
+				'wpaib_new_secret' => rawurlencode( $result['client_secret'] ),
+			),
+			admin_url( 'options-general.php' )
+		) );
+		exit;
+	}
+
+	/**
+	 * Handler per eliminare un OAuth2 client.
+	 *
+	 * @return void
+	 */
+	public static function handle_delete_oauth_client() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Accesso non consentito.', 'wp-ai-bridge' ) );
+		}
+
+		check_admin_referer( 'wpaib_delete_oauth_client' );
+
+		$client_id = isset( $_POST['client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['client_id'] ) ) : '';
+		WPAIB_OAuth_Client_Manager::delete( $client_id );
+
+		wp_safe_redirect( add_query_arg(
+			array( 'page' => 'wpaib-tools', 'tab' => 'oauth' ),
+			admin_url( 'options-general.php' )
+		) );
+		exit;
 	}
 
 	/**
