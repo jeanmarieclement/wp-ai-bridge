@@ -61,12 +61,23 @@ class WPAIB_OpenAPI_Controller {
 						'in'   => 'header',
 						'name' => 'X-API-Key',
 					),
+					'OAuth2' => array(
+						'type'  => 'oauth2',
+						'flows' => array(
+							'authorizationCode' => array(
+								'authorizationUrl' => home_url( '/wpaib/oauth/authorize' ),
+								'tokenUrl'         => rest_url( WPAIB_API_NAMESPACE . '/oauth/token' ),
+								'scopes'           => array(
+									'edit_posts' => 'Crea e modifica post, pagine, media, categorie e tag',
+								),
+							),
+						),
+					),
 				),
 			),
 			'security' => array(
-				array(
-					'ApiKeyAuth' => array(),
-				),
+				array( 'ApiKeyAuth' => array() ),
+				array( 'OAuth2'     => array( 'edit_posts' ) ),
 			),
 			'paths' => array(
 				'/posts' => array(
