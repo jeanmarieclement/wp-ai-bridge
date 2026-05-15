@@ -26,19 +26,32 @@ class WPAIB_Rate_Limiter {
 			return false;
 		}
 
-		$key   = 'wpaib_rl_' . md5( $identifier );
-		$count = get_transient( $key );
+		$key  = 'wpaib_rl_' . md5( $identifier );
+		$data = get_transient( $key );
 
-		if ( false === $count ) {
-			set_transient( $key, 1, WPAIB_RATE_LIMIT_WINDOW );
+		$now = time();
+
+		// Se non esiste il transient o è scaduto (caso fallback per cache persistenti)
+		if ( false === $data || ! is_array( $data ) || $now > $data['expires'] ) {
+			$data = array(
+				'count'   => 1,
+				'expires' => $now + WPAIB_RATE_LIMIT_WINDOW,
+			);
+			set_transient( $key, $data, WPAIB_RATE_LIMIT_WINDOW );
 			return true;
 		}
 
-		if ( (int) $count >= WPAIB_RATE_LIMIT_REQUESTS ) {
+		if ( $data['count'] >= WPAIB_RATE_LIMIT_REQUESTS ) {
 			return false;
 		}
 
-		set_transient( $key, (int) $count + 1, WPAIB_RATE_LIMIT_WINDOW );
+		$data['count']++;
+		$ttl = $data['expires'] - $now;
+		if ( $ttl < 1 ) {
+			$ttl = 1;
+		}
+
+		set_transient( $key, $data, $ttl );
 		return true;
 	}
 }
