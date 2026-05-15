@@ -1,0 +1,838 @@
+# Copyright (C) 2026 Jean-Marie Clément
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP AI Bridge 1.2.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-ai-bridge\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-14T17:05:40+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: wp-ai-bridge\n"
+
+#. Plugin Name of the plugin
+#: wp-ai-bridge.php
+#: admin/views/connections.php:108
+#: admin/views/oauth-clients.php:26
+#: admin/views/tools-settings.php:28
+msgid "WP AI Bridge"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: wp-ai-bridge.php
+msgid "https://jmclement.net"
+msgstr ""
+
+#. Description of the plugin
+#: wp-ai-bridge.php
+msgid "Espone endpoint REST sicuri per gestione contenuti tramite API key per utente. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni)."
+msgstr ""
+
+#. Author of the plugin
+#: wp-ai-bridge.php
+msgid "Jean-Marie Clément"
+msgstr ""
+
+#: admin/class-wpaib-admin.php:71
+#: admin/class-wpaib-admin.php:126
+#: admin/class-wpaib-admin.php:163
+#: admin/class-wpaib-admin.php:185
+msgid "Accesso non consentito."
+msgstr ""
+
+#: admin/class-wpaib-admin.php:245
+#: admin/class-wpaib-admin.php:278
+#: admin/class-wpaib-admin.php:306
+#: admin/class-wpaib-admin.php:340
+msgid "Unauthorized."
+msgstr ""
+
+#: admin/class-wpaib-admin.php:253
+#: admin/class-wpaib-admin.php:286
+#: admin/class-wpaib-admin.php:316
+msgid "Forbidden."
+msgstr ""
+
+#: admin/views/api-keys-section.php:18
+msgid "WP AI Bridge — API Keys & MCP Connector"
+msgstr ""
+
+#: admin/views/api-keys-section.php:23
+msgid "Permalink non configurati."
+msgstr ""
+
+#. translators: 1: link apertura, 2: link chiusura
+#: admin/views/api-keys-section.php:27
+#, php-format
+msgid "Gli URL REST usano il formato query string (?rest_route=…) invece di /wp-json/…. %1$sAbilita i permalink%2$s per URL più puliti e compatibili con tutti i client AI."
+msgstr ""
+
+#: admin/views/api-keys-section.php:39
+#: admin/views/api-keys-section.php:557
+msgid "Nuova API key generata con successo!"
+msgstr ""
+
+#: admin/views/api-keys-section.php:40
+#: admin/views/api-keys-section.php:558
+msgid "Copia la chiave ora: per motivi di sicurezza non sarà mai più visualizzabile in chiaro."
+msgstr ""
+
+#: admin/views/api-keys-section.php:47
+#: admin/views/api-keys-section.php:563
+msgid "Conservala in un password manager sicuro."
+msgstr ""
+
+#: admin/views/api-keys-section.php:50
+msgid "✨ Visualizza Configurazione MCP Completa"
+msgstr ""
+
+#: admin/views/api-keys-section.php:58
+msgid "Genera nuova chiave"
+msgstr ""
+
+#: admin/views/api-keys-section.php:62
+msgid "Etichetta (es. Server MCP, App Mobile)"
+msgstr ""
+
+#: admin/views/api-keys-section.php:63
+msgid "Genera chiave"
+msgstr ""
+
+#: admin/views/api-keys-section.php:67
+msgid "Ogni chiave è personale, protetta da crittografia SHA-256 e provvista di rate limiting nativo."
+msgstr ""
+
+#: admin/views/api-keys-section.php:73
+msgid "Le tue chiavi attive e configurazioni"
+msgstr ""
+
+#: admin/views/api-keys-section.php:76
+msgid "Nessuna chiave generata al momento."
+msgstr ""
+
+#: admin/views/api-keys-section.php:82
+msgid "Etichetta"
+msgstr ""
+
+#: admin/views/api-keys-section.php:83
+msgid "Creata il"
+msgstr ""
+
+#: admin/views/api-keys-section.php:84
+msgid "Ultimo utilizzo"
+msgstr ""
+
+#: admin/views/api-keys-section.php:85
+#: admin/views/connections.php:206
+msgid "IP"
+msgstr ""
+
+#: admin/views/api-keys-section.php:86
+msgid "Stato"
+msgstr ""
+
+#: admin/views/api-keys-section.php:87
+msgid "Azioni & MCP"
+msgstr ""
+
+#: admin/views/api-keys-section.php:100
+#: admin/views/api-keys-section.php:592
+msgid "Attiva"
+msgstr ""
+
+#: admin/views/api-keys-section.php:102
+#: admin/views/api-keys-section.php:656
+msgid "Revocata"
+msgstr ""
+
+#: admin/views/api-keys-section.php:107
+#: admin/views/api-keys-section.php:594
+msgid "🌐 Integrazione AI (OpenAPI)"
+msgstr ""
+
+#: admin/views/api-keys-section.php:108
+#: admin/views/api-keys-section.php:595
+msgid "Revoca"
+msgstr ""
+
+#: admin/views/api-keys-section.php:218
+msgid "Impossibile copiare il testo automaticamente."
+msgstr ""
+
+#: admin/views/api-keys-section.php:219
+msgid "Impossibile generare la chiave."
+msgstr ""
+
+#: admin/views/api-keys-section.php:220
+msgid "Errore di rete durante la generazione della chiave."
+msgstr ""
+
+#: admin/views/api-keys-section.php:221
+msgid "Impossibile revocare la chiave."
+msgstr ""
+
+#: admin/views/api-keys-section.php:222
+msgid "Errore di rete durante la revoca della chiave."
+msgstr ""
+
+#: admin/views/api-keys-section.php:223
+msgid "Errore: "
+msgstr ""
+
+#: admin/views/api-keys-section.php:566
+msgid "✨ Guida Integrazione OpenAPI"
+msgstr ""
+
+#: admin/views/api-keys-section.php:627
+msgid "Confermi la revoca? Non sarà più reversibile."
+msgstr ""
+
+#: admin/views/connections.php:111
+#: admin/views/oauth-clients.php:29
+#: admin/views/tools-settings.php:32
+msgid "Tool MCP"
+msgstr ""
+
+#: admin/views/connections.php:114
+#: admin/views/oauth-clients.php:32
+#: admin/views/tools-settings.php:35
+msgid "OAuth2 Clients"
+msgstr ""
+
+#: admin/views/connections.php:117
+#: admin/views/oauth-clients.php:35
+#: admin/views/tools-settings.php:39
+msgid "Connessioni"
+msgstr ""
+
+#: admin/views/connections.php:126
+msgid "Utente / Chiave"
+msgstr ""
+
+#: admin/views/connections.php:128
+msgid "— Tutte —"
+msgstr ""
+
+#: admin/views/connections.php:132
+msgid "senza etichetta"
+msgstr ""
+
+#: admin/views/connections.php:139
+#: admin/views/connections.php:202
+msgid "Endpoint"
+msgstr ""
+
+#: admin/views/connections.php:145
+#: admin/views/connections.php:205
+msgid "Outcome"
+msgstr ""
+
+#: admin/views/connections.php:147
+#: admin/views/connections.php:159
+msgid "— Tutti —"
+msgstr ""
+
+#: admin/views/connections.php:157
+#: admin/views/connections.php:203
+msgid "Metodo"
+msgstr ""
+
+#: admin/views/connections.php:169
+msgid "Da"
+msgstr ""
+
+#: admin/views/connections.php:174
+msgid "A"
+msgstr ""
+
+#: admin/views/connections.php:178
+msgid "Filtra"
+msgstr ""
+
+#: admin/views/connections.php:182
+msgid "Reset"
+msgstr ""
+
+#: admin/views/connections.php:188
+msgid "Nessuna connessione registrata."
+msgstr ""
+
+#. translators: %d: number of connections
+#: admin/views/connections.php:193
+#, php-format
+msgid "%d connessioni totali."
+msgstr ""
+
+#: admin/views/connections.php:199
+msgid "Timestamp"
+msgstr ""
+
+#: admin/views/connections.php:200
+msgid "Utente"
+msgstr ""
+
+#: admin/views/connections.php:201
+msgid "Chiave"
+msgstr ""
+
+#: admin/views/connections.php:204
+msgid "Status"
+msgstr ""
+
+#: admin/views/connections.php:240
+msgid "Precedente"
+msgstr ""
+
+#. translators: 1: current page, 2: total pages
+#: admin/views/connections.php:247
+#, php-format
+msgid "Pagina %1$d di %2$d"
+msgstr ""
+
+#: admin/views/connections.php:265
+msgid "Successiva"
+msgstr ""
+
+#: admin/views/oauth-clients.php:45
+msgid "Client creato. Salva subito queste credenziali — il secret non verrà più mostrato."
+msgstr ""
+
+#: admin/views/oauth-clients.php:47
+#: admin/views/oauth-clients.php:138
+msgid "Client ID"
+msgstr ""
+
+#: admin/views/oauth-clients.php:48
+msgid "Client Secret"
+msgstr ""
+
+#: admin/views/oauth-clients.php:49
+#: admin/views/oauth-clients.php:122
+msgid "Authorization URL"
+msgstr ""
+
+#: admin/views/oauth-clients.php:50
+#: admin/views/oauth-clients.php:123
+msgid "Token URL"
+msgstr ""
+
+#: admin/views/oauth-clients.php:56
+msgid "Come configurare i client AI"
+msgstr ""
+
+#: admin/views/oauth-clients.php:57
+msgid "WP AI Bridge funge da Authorization Server OAuth2. Segui i passaggi per la piattaforma che vuoi collegare."
+msgstr ""
+
+#: admin/views/oauth-clients.php:65
+msgid "Crea un client qui sotto con:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:66
+msgid "Redirect URI:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:68
+msgid "In Claude.ai → Impostazioni → Connettori → Aggiungi connettore personalizzato"
+msgstr ""
+
+#: admin/views/oauth-clients.php:69
+msgid "Compila i campi:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:71
+msgid "URL server MCP"
+msgstr ""
+
+#: admin/views/oauth-clients.php:76
+msgid "Clicca Aggiungi → accedi a WP → Autorizza. Fine."
+msgstr ""
+
+#: admin/views/oauth-clients.php:84
+msgid "In ChatGPT → Esplora GPT → Crea GPT → Configura → Aggiungi azioni"
+msgstr ""
+
+#: admin/views/oauth-clients.php:85
+msgid "Importa lo schema OpenAPI da:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:88
+msgid "In Autenticazione scegli OAuth → annota la Callback URL mostrata da ChatGPT (es. "
+msgstr ""
+
+#: admin/views/oauth-clients.php:89
+msgid "Crea un client qui sotto con quella Redirect URI esatta"
+msgstr ""
+
+#: admin/views/oauth-clients.php:90
+msgid "Torna in ChatGPT e compila:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:105
+msgid "Gemini non supporta ancora OAuth2 per le integrazioni esterne. Usa l'autenticazione tramite API Key."
+msgstr ""
+
+#: admin/views/oauth-clients.php:107
+msgid "Vai su Utenti → Il tuo profilo → WP AI Bridge — API Keys → Genera chiave"
+msgstr ""
+
+#: admin/views/oauth-clients.php:108
+msgid "Importa lo schema OpenAPI in Google AI Studio o Gemini Gems:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:111
+msgid "Imposta l'header di autenticazione:"
+msgstr ""
+
+#: admin/views/oauth-clients.php:120
+msgid "URL OAuth2 di questo sito"
+msgstr ""
+
+#: admin/views/oauth-clients.php:124
+msgid "MCP Server URL"
+msgstr ""
+
+#: admin/views/oauth-clients.php:125
+msgid "OpenAPI Schema"
+msgstr ""
+
+#: admin/views/oauth-clients.php:129
+msgid "Client registrati"
+msgstr ""
+
+#: admin/views/oauth-clients.php:132
+msgid "Nessun client OAuth2 registrato."
+msgstr ""
+
+#: admin/views/oauth-clients.php:137
+msgid "Nome"
+msgstr ""
+
+#: admin/views/oauth-clients.php:139
+#: admin/views/oauth-clients.php:189
+msgid "Redirect URI"
+msgstr ""
+
+#: admin/views/oauth-clients.php:140
+msgid "Creato"
+msgstr ""
+
+#: admin/views/oauth-clients.php:159
+msgid "Eliminare questo client?"
+msgstr ""
+
+#: admin/views/oauth-clients.php:164
+msgid "Elimina"
+msgstr ""
+
+#: admin/views/oauth-clients.php:175
+msgid "Aggiungi client"
+msgstr ""
+
+#: admin/views/oauth-clients.php:182
+msgid "Nome client"
+msgstr ""
+
+#: admin/views/oauth-clients.php:185
+msgid "es. Claude.ai"
+msgstr ""
+
+#: admin/views/oauth-clients.php:193
+msgid "Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali)."
+msgstr ""
+
+#: admin/views/oauth-clients.php:198
+msgid "Crea client"
+msgstr ""
+
+#: admin/views/tools-settings.php:15
+msgid "Post"
+msgstr ""
+
+#: admin/views/tools-settings.php:16
+msgid "Pagine"
+msgstr ""
+
+#: admin/views/tools-settings.php:17
+msgid "Media"
+msgstr ""
+
+#: admin/views/tools-settings.php:18
+msgid "Commenti"
+msgstr ""
+
+#: admin/views/tools-settings.php:19
+msgid "Tassonomie"
+msgstr ""
+
+#: admin/views/tools-settings.php:20
+msgid "Sito & Ricerca"
+msgstr ""
+
+#: admin/views/tools-settings.php:43
+msgid "Seleziona i tool che vuoi esporre tramite le API. I tool non selezionati vengono rimossi dall'elenco e bloccati in esecuzione."
+msgstr ""
+
+#: admin/views/tools-settings.php:47
+msgid "Impostazioni salvate."
+msgstr ""
+
+#: admin/views/tools-settings.php:58
+msgid "Attivo"
+msgstr ""
+
+#: admin/views/tools-settings.php:59
+msgid "Tool"
+msgstr ""
+
+#: admin/views/tools-settings.php:60
+msgid "Categoria"
+msgstr ""
+
+#: admin/views/tools-settings.php:85
+msgid "Salva impostazioni"
+msgstr ""
+
+#: includes/class-wpaib-api-key-manager.php:30
+msgid "Invalid user."
+msgstr ""
+
+#: includes/class-wpaib-api-key-manager.php:36
+msgid "Cannot generate secure random key."
+msgstr ""
+
+#: includes/class-wpaib-api-key-manager.php:55
+msgid "Unable to save API key."
+msgstr ""
+
+#: includes/class-wpaib-api-key-manager.php:137
+msgid "API key not found."
+msgstr ""
+
+#: includes/class-wpaib-api-key-manager.php:142
+msgid "Not allowed to revoke this key."
+msgstr ""
+
+#: includes/class-wpaib-auth.php:66
+msgid "Too many requests."
+msgstr ""
+
+#: includes/class-wpaib-auth.php:101
+#: includes/class-wpaib-auth.php:168
+#: includes/endpoints/class-wpaib-mcp-controller.php:687
+#: includes/endpoints/class-wpaib-mcp-controller.php:701
+#: includes/endpoints/class-wpaib-mcp-controller.php:728
+#: includes/endpoints/class-wpaib-mcp-controller.php:741
+#: includes/endpoints/class-wpaib-mcp-controller.php:755
+#: includes/endpoints/class-wpaib-mcp-controller.php:767
+#: includes/endpoints/class-wpaib-mcp-controller.php:788
+#: includes/endpoints/class-wpaib-mcp-controller.php:800
+#: includes/endpoints/class-wpaib-posts-controller.php:407
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/class-wpaib-auth.php:189
+#: includes/class-wpaib-oauth-authorize.php:84
+msgid "Authentication required."
+msgstr ""
+
+#: includes/class-wpaib-oauth-authorize.php:54
+msgid "OAuth2 Error: invalid client or redirect URI."
+msgstr ""
+
+#: includes/class-wpaib-oauth-authorize.php:80
+msgid "Security check failed."
+msgstr ""
+
+#: includes/class-wpaib-oauth-authorize.php:96
+msgid "Invalid redirect URI."
+msgstr ""
+
+#: includes/class-wpaib-oauth-authorize.php:105
+msgid "Invalid decision."
+msgstr ""
+
+#: includes/class-wpaib-oauth-client-manager.php:30
+msgid "Client name required."
+msgstr ""
+
+#: includes/class-wpaib-oauth-client-manager.php:35
+msgid "At least one redirect URI required."
+msgstr ""
+
+#: includes/class-wpaib-oauth-client-manager.php:42
+msgid "Cannot generate secure random values."
+msgstr ""
+
+#: includes/class-wpaib-oauth-client-manager.php:62
+msgid "Unable to save OAuth2 client."
+msgstr ""
+
+#: includes/class-wpaib-oauth-server.php:29
+msgid "Cannot generate auth code."
+msgstr ""
+
+#: includes/class-wpaib-oauth-server.php:55
+msgid "Cannot save auth code."
+msgstr ""
+
+#: includes/class-wpaib-oauth-server.php:125
+msgid "Cannot generate tokens."
+msgstr ""
+
+#: includes/class-wpaib-oauth-server.php:148
+msgid "Cannot save tokens."
+msgstr ""
+
+#: includes/class-wpaib-plugin.php:97
+msgid "HTTPS is required for this endpoint."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:566
+msgid "Tool name is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:574
+msgid "Tool not available."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:588
+#: includes/endpoints/class-wpaib-mcp-controller.php:604
+#: includes/endpoints/class-wpaib-mcp-controller.php:615
+msgid "Missing post ID."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:618
+msgid "Insufficient permissions to delete posts."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:630
+msgid "Insufficient permissions to upload files."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:644
+msgid "Insufficient permissions to manage categories."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:673
+msgid "Post ID and content are required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:684
+msgid "Comment ID and status are required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:698
+msgid "Comment IDs and status are required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:719
+#: includes/endpoints/class-wpaib-mcp-controller.php:738
+#: includes/endpoints/class-wpaib-mcp-controller.php:752
+msgid "Missing page ID."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:785
+msgid "Missing media ID."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:815
+msgid "Query is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:825
+#, php-format
+msgid "Tool \"%s\" is not supported."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:157
+msgid "Media not found."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:160
+msgid "Cannot delete this media."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:165
+msgid "Could not delete media."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:202
+msgid "No file provided."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:213
+#: includes/endpoints/class-wpaib-media-controller.php:253
+msgid "File too large."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:239
+msgid "Invalid filename."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:249
+msgid "Invalid base64 content."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:260
+msgid "File type not allowed."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:277
+msgid "Could not write file."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-media-controller.php:302
+msgid "Could not create attachment."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:133
+#: includes/endpoints/class-wpaib-pages-controller.php:199
+#: includes/endpoints/class-wpaib-pages-controller.php:252
+msgid "Page not found."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:136
+msgid "Cannot read this page."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:151
+#: includes/endpoints/class-wpaib-pages-controller.php:207
+#: includes/endpoints/class-wpaib-posts-controller.php:192
+#: includes/endpoints/class-wpaib-posts-controller.php:302
+msgid "Invalid JSON body."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:156
+#: includes/endpoints/class-wpaib-posts-controller.php:212
+msgid "Title is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:202
+msgid "Cannot edit this page."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:255
+msgid "Cannot delete this page."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-pages-controller.php:260
+msgid "Could not delete page."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:230
+#: includes/endpoints/class-wpaib-posts-controller.php:333
+msgid "Invalid date format. Use ISO 8601."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:274
+#: includes/endpoints/class-wpaib-posts-controller.php:294
+#: includes/endpoints/class-wpaib-posts-controller.php:374
+#: includes/endpoints/class-wpaib-posts-controller.php:474
+#: includes/endpoints/class-wpaib-posts-controller.php:511
+msgid "Post not found."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:278
+msgid "Cannot read this post."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:297
+msgid "Cannot edit this post."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:377
+msgid "Cannot delete this post."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:382
+msgid "Could not delete post."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:398
+#: includes/endpoints/class-wpaib-posts-controller.php:582
+msgid "IDs array and status are required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:404
+#: includes/endpoints/class-wpaib-posts-controller.php:562
+#: includes/endpoints/class-wpaib-posts-controller.php:588
+msgid "Invalid status."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:506
+msgid "Comment content is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:529
+msgid "Could not create comment."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:556
+msgid "Status is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:566
+msgid "Could not update comment status."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-search-controller.php:61
+msgid "Search query is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-taxonomy-controller.php:138
+msgid "Name is required."
+msgstr ""
+
+#: includes/views/oauth-consent.php:25
+#, php-format
+msgid "Autorizza %s — %s"
+msgstr ""
+
+#: includes/views/oauth-consent.php:51
+msgid "vuole accedere al tuo account"
+msgstr ""
+
+#. translators: 1: user display name, 2: user email
+#: includes/views/oauth-consent.php:57
+#, php-format
+msgid "Stai autorizzando come: %1$s (%2$s)"
+msgstr ""
+
+#: includes/views/oauth-consent.php:64
+msgid "L'applicazione potrà:"
+msgstr ""
+
+#: includes/views/oauth-consent.php:66
+msgid "Leggere e creare post e pagine"
+msgstr ""
+
+#: includes/views/oauth-consent.php:67
+msgid "Caricare immagini nella media library"
+msgstr ""
+
+#: includes/views/oauth-consent.php:68
+msgid "Gestire categorie e tag"
+msgstr ""
+
+#: includes/views/oauth-consent.php:69
+msgid "Leggere le informazioni del sito"
+msgstr ""
+
+#: includes/views/oauth-consent.php:86
+msgid "Autorizza"
+msgstr ""
+
+#: includes/views/oauth-consent.php:89
+msgid "Nega"
+msgstr ""
+
+#. translators: %s: site name
+#: includes/views/oauth-consent.php:97
+#, php-format
+msgid "Sito: %s"
+msgstr ""
