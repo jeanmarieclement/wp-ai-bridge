@@ -37,6 +37,7 @@ INCLUDE=(
     "uninstall.php"
     "wp-ai-bridge.php"
     "README.md"
+    "CHANGELOG.md"
 )
 
 for item in "${INCLUDE[@]}"; do
