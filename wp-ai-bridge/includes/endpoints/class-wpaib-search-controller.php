@@ -30,7 +30,8 @@ class WPAIB_Search_Controller {
 					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
 					'args'                => array(
 						'query'    => array(
-							'required'          => true,
+							'required'          => false,
+							'default'           => '',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'types'    => array(
@@ -53,13 +54,9 @@ class WPAIB_Search_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function search( WP_REST_Request $request ) {
-		$query    = sanitize_text_field( $request->get_param( 'query' ) );
+		$query    = sanitize_text_field( (string) $request->get_param( 'query' ) );
 		$per_page = min( 50, max( 1, (int) $request->get_param( 'per_page' ) ) );
 		$types    = $request->get_param( 'types' );
-
-		if ( empty( $query ) ) {
-			return new WP_Error( 'wpaib_missing_query', __( 'Search query is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
-		}
 
 		if ( ! is_array( $types ) ) {
 			$types = array( 'posts', 'pages' );
@@ -111,14 +108,15 @@ class WPAIB_Search_Controller {
 			? array( 'publish', 'draft', 'pending', 'private', 'future' )
 			: array( 'publish' );
 
-		$posts = get_posts(
-			array(
-				'post_type'      => $post_type,
-				'post_status'    => $statuses,
-				's'              => $query,
-				'posts_per_page' => $per_page,
-			)
+		$args = array(
+			'post_type'      => $post_type,
+			'post_status'    => $statuses,
+			'posts_per_page' => $per_page,
 		);
+		if ( ! empty( $query ) ) {
+			$args['s'] = $query;
+		}
+		$posts = get_posts( $args );
 
 		$results = array();
 		foreach ( $posts as $post ) {

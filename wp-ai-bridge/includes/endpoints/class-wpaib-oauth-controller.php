@@ -48,7 +48,7 @@ class WPAIB_OAuth_Controller {
 		if ( ! empty( $client_secret ) ) {
 			$client = WPAIB_OAuth_Client_Manager::validate( $client_id, $client_secret );
 		} elseif ( ! empty( $code_verifier ) && 'authorization_code' === $grant_type ) {
-			$client = WPAIB_OAuth_Client_Manager::get_public( $client_id );
+			$client = WPAIB_OAuth_Client_Manager::get( $client_id );
 		} else {
 			$client = false;
 		}
@@ -98,14 +98,9 @@ class WPAIB_OAuth_Controller {
 			return $this->oauth_error( 'invalid_grant', 400 );
 		}
 
-		// Verifica PKCE se il codice aveva un challenge.
-		if ( ! empty( $data['code_challenge'] ) ) {
-			if ( empty( $code_verifier ) ) {
-				return $this->oauth_error( 'invalid_grant', 400 );
-			}
-			if ( ! $this->verify_pkce( $code_verifier, $data['code_challenge'], $data['code_challenge_method'] ) ) {
-				return $this->oauth_error( 'invalid_grant', 400 );
-			}
+		if ( ! empty( $data['code_challenge'] ) &&
+			( empty( $code_verifier ) || ! $this->verify_pkce( $code_verifier, $data['code_challenge'], $data['code_challenge_method'] ) ) ) {
+			return $this->oauth_error( 'invalid_grant', 400 );
 		}
 
 		$tokens = WPAIB_OAuth_Server::create_token_pair( $client->client_id, $data['user_id'], $data['scope'] );
@@ -128,7 +123,6 @@ class WPAIB_OAuth_Controller {
 		if ( 'plain' === $method ) {
 			return hash_equals( $challenge, $verifier );
 		}
-		// S256: BASE64URL(SHA256(verifier))
 		$computed = rtrim( strtr( base64_encode( hash( 'sha256', $verifier, true ) ), '+/', '-_' ), '=' );
 		return hash_equals( $challenge, $computed );
 	}

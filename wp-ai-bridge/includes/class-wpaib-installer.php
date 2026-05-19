@@ -15,16 +15,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPAIB_Installer {
 
 	/**
-	 * Hook di attivazione: crea le tabelle.
+	 * Hook di attivazione: crea le tabelle e svuota le rewrite rules.
+	 * Questo hook gira con WP completamente avviato (admin), quindi
+	 * add_rewrite_rule() e flush_rewrite_rules() sono sicuri.
 	 *
 	 * @return void
 	 */
 	public static function activate() {
+		self::run_db_delta();
+		WPAIB_OAuth_Authorize::add_rewrite_rule();
+		WPAIB_OAuth_Discovery::add_rewrite_rules();
+		flush_rewrite_rules();
+		update_option( 'wpaib_db_version', WPAIB_VERSION );
+	}
+
+	/**
+	 * Esegue dbDelta se la versione DB è inferiore alla versione corrente.
+	 * Chiamato a plugins_loaded (priority 5): $wp_rewrite non è ancora pronto,
+	 * quindi rewrite rules e flush vengono schedulati su init.
+	 *
+	 * @return void
+	 */
+	public static function maybe_upgrade() {
+		if ( get_option( 'wpaib_db_version' ) === WPAIB_VERSION ) {
+			return;
+		}
+		self::run_db_delta();
+		update_option( 'wpaib_db_version', WPAIB_VERSION );
+		add_action( 'init', 'flush_rewrite_rules', 20 );
+	}
+
+	/**
+	 * Crea/aggiorna le tabelle tramite dbDelta.
+	 *
+	 * @return void
+	 */
+	private static function run_db_delta() {
 		global $wpdb;
 
-		$charset_collate = $wpdb->get_charset_collate();
-		$keys_table      = $wpdb->prefix . 'wpaib_api_keys';
-		$log_table       = $wpdb->prefix . 'wpaib_audit_log';
+		$charset_collate     = $wpdb->get_charset_collate();
+		$keys_table          = $wpdb->prefix . 'wpaib_api_keys';
+		$log_table           = $wpdb->prefix . 'wpaib_audit_log';
 		$oauth_clients_table = $wpdb->prefix . 'wpaib_oauth_clients';
 		$oauth_codes_table   = $wpdb->prefix . 'wpaib_oauth_codes';
 		$oauth_tokens_table  = $wpdb->prefix . 'wpaib_oauth_tokens';
@@ -58,12 +89,13 @@ class WPAIB_Installer {
 			KEY timestamp (timestamp)
 		) {$charset_collate};";
 
+		// TEXT/BLOB columns cannot have DEFAULT values in MySQL — omit DEFAULT.
 		$sql_oauth_clients = "CREATE TABLE {$oauth_clients_table} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			client_id VARCHAR(64) NOT NULL,
 			client_secret_hash CHAR(64) NOT NULL,
 			name VARCHAR(100) NOT NULL DEFAULT '',
-			redirect_uris TEXT NOT NULL DEFAULT '',
+			redirect_uris TEXT NOT NULL,
 			created_at DATETIME NOT NULL,
 			PRIMARY KEY (id),
 			UNIQUE KEY client_id (client_id)
@@ -109,28 +141,6 @@ class WPAIB_Installer {
 		dbDelta( $sql_oauth_clients );
 		dbDelta( $sql_oauth_codes );
 		dbDelta( $sql_oauth_tokens );
-
-		// Registra rewrite rules OAuth2 e discovery.
-		add_rewrite_rule( '^wpaib/oauth/authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
-		add_rewrite_rule( '^authorize/?$', 'index.php?wpaib_oauth_action=authorize', 'top' );
-		add_rewrite_rule( '^\.well-known/oauth-authorization-server$', 'index.php?wpaib_discovery=oauth-authorization-server', 'top' );
-		add_rewrite_rule( '^\.well-known/oauth-protected-resource$', 'index.php?wpaib_discovery=oauth-protected-resource', 'top' );
-		add_rewrite_rule( '^token/?$', 'index.php?wpaib_discovery=token', 'top' );
-		flush_rewrite_rules();
-
-		update_option( 'wpaib_db_version', WPAIB_VERSION );
-	}
-
-	/**
-	 * Esegue dbDelta se la versione DB è inferiore alla versione corrente.
-	 *
-	 * @return void
-	 */
-	public static function maybe_upgrade() {
-		if ( get_option( 'wpaib_db_version' ) === WPAIB_VERSION ) {
-			return;
-		}
-		self::activate();
 	}
 
 	/**
@@ -140,7 +150,6 @@ class WPAIB_Installer {
 	 * @return void
 	 */
 	public static function deactivate() {
-		// Pulisce eventuali transient di rate limiting.
 		global $wpdb;
 		$wpdb->query(
 			"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_wpaib_rl_%' OR option_name LIKE '_transient_timeout_wpaib_rl_%'"

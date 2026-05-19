@@ -103,21 +103,6 @@ class WPAIB_OAuth_Client_Manager {
 	}
 
 	/**
-	 * Valida client_id senza secret (per PKCE public clients).
-	 * La verifica della identità avviene tramite code_verifier al token endpoint.
-	 *
-	 * @param string $client_id Client ID.
-	 * @return object|false Record DB oppure false se non trovato.
-	 */
-	public static function get_public( $client_id ) {
-		if ( empty( $client_id ) ) {
-			return false;
-		}
-		$row = self::get( $client_id );
-		return $row ?: false;
-	}
-
-	/**
 	 * Recupera un client OAuth2 per ID (senza secret).
 	 *
 	 * @param string $client_id Client ID.

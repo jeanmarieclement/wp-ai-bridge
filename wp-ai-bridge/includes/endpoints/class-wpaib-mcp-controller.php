@@ -518,13 +518,13 @@ class WPAIB_MCP_Controller {
 			// Search.
 			array(
 				'name'        => 'search',
-				'description' => 'Cerca contenuti nel sito WordPress su post, pagine, media, commenti e termini.',
+				'description' => 'Cerca o lista contenuti WordPress (post, pagine, media, commenti, termini). Senza query lista tutti i contenuti del tipo richiesto.',
 				'inputSchema' => array(
 					'type'       => 'object',
 					'properties' => array(
 						'query'    => array(
 							'type'        => 'string',
-							'description' => 'Testo da cercare',
+							'description' => 'Testo da cercare (opzionale — ometti per listare tutti)',
 						),
 						'types'    => array(
 							'type'        => 'array',
@@ -539,7 +539,7 @@ class WPAIB_MCP_Controller {
 							'description' => 'Massimo risultati per tipo (default: 10, max: 50)',
 						),
 					),
-					'required'   => array( 'query' ),
+					'required'   => array(),
 				),
 			),
 		);
@@ -811,9 +811,6 @@ class WPAIB_MCP_Controller {
 				return $controller->get_site_info( $sub_req );
 
 			case 'search':
-				if ( empty( $args['query'] ) ) {
-					return new WP_Error( 'wpaib_missing_query', __( 'Query is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
-				}
 				$controller = new WPAIB_Search_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/search' );
 				foreach ( $args as $k => $v ) {

@@ -64,9 +64,13 @@ class WPAIB_OAuth_Discovery {
 		exit;
 	}
 
-	private static function serve_authorization_server_metadata() {
+	private static function serve_json( array $data ) {
 		header( 'Content-Type: application/json' );
-		echo wp_json_encode( array(
+		echo wp_json_encode( $data );
+	}
+
+	private static function serve_authorization_server_metadata() {
+		self::serve_json( array(
 			'issuer'                                => home_url( '/' ),
 			'authorization_endpoint'                => home_url( '/authorize' ),
 			'token_endpoint'                        => home_url( '/token' ),
@@ -79,16 +83,14 @@ class WPAIB_OAuth_Discovery {
 	}
 
 	private static function serve_protected_resource_metadata() {
-		header( 'Content-Type: application/json' );
-		echo wp_json_encode( array(
-			'resource'              => rest_url( WPAIB_API_NAMESPACE . '/mcp' ),
-			'authorization_servers' => array( home_url( '/' ) ),
+		self::serve_json( array(
+			'resource'                 => rest_url( WPAIB_API_NAMESPACE . '/mcp' ),
+			'authorization_servers'    => array( home_url( '/' ) ),
 			'bearer_methods_supported' => array( 'header' ),
 		) );
 	}
 
 	private static function handle_token() {
-		// Legge sia application/x-www-form-urlencoded che application/json.
 		$content_type = isset( $_SERVER['CONTENT_TYPE'] ) ? strtolower( sanitize_text_field( wp_unslash( $_SERVER['CONTENT_TYPE'] ) ) ) : '';
 
 		if ( false !== strpos( $content_type, 'application/json' ) ) {
@@ -103,7 +105,7 @@ class WPAIB_OAuth_Discovery {
 
 		$request = new WP_REST_Request( 'POST', '/' . WPAIB_API_NAMESPACE . '/oauth/token' );
 		foreach ( $params as $key => $value ) {
-			$request->set_param( sanitize_key( $key ), sanitize_text_field( (string) $value ) );
+			$request->set_param( sanitize_key( $key ), wp_unslash( (string) $value ) );
 		}
 
 		$controller = new WPAIB_OAuth_Controller();
