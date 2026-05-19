@@ -1,8 +1,14 @@
 # WP AI Bridge
 
+[![GitHub Release](https://img.shields.io/github/v/release/jeanmarieclement/wp-ai-bridge?style=flat-square&color=blue)](https://github.com/jeanmarieclement/wp-ai-bridge/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/jeanmarieclement/wp-ai-bridge/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/jeanmarieclement/wp-ai-bridge/actions)
+[![WordPress Compatibility](https://img.shields.io/badge/WordPress-6.0%2B-blue?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org)
+[![PHP Compatibility](https://img.shields.io/badge/PHP-%3E%3D%207.4-8892BF?style=flat-square&logo=php&logoColor=white)](https://php.net)
+[![License](https://img.shields.io/github/license/jeanmarieclement/wp-ai-bridge?style=flat-square&color=orange)](LICENSE)
+
 A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys** or **OAuth2** (Authorization Code flow). Designed for integration with external AI services (Claude.ai, ChatGPT, custom automations).
 
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Compatibility:** WordPress 6.0+, PHP 7.4+  
 **License:** MIT
 
