@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-06-13
+
+### Security
+- **OAuth2 client authentication bypass**: blocked redemption of an authorization code that has no PKCE `code_challenge` by callers not authenticated with the client secret.
+- **Bearer rate limiting**: requests authenticated via OAuth2 Bearer token are now rate limited (previously exempt).
+- **Bearer capability enforcement**: the Bearer auth path now honors the per-endpoint required capability instead of hardcoding `edit_posts`.
+- **Token race conditions (TOCTOU)**: `consume_auth_code` and `consume_refresh_token` now use atomic guarded updates, preventing concurrent double-consumption of one-time codes and refresh tokens.
+- **Secret exposure**: generated API keys and OAuth2 client secrets are passed through one-shot transients instead of the redirect querystring (no longer leaked to logs/history/Referer).
+- **Privacy**: the `/site` endpoint exposes `admin_email` only to administrators (`manage_options`).
+
+### Fixed
+- `uninstall.php` now drops the three OAuth2 tables and removes the `wpaib_disabled_tools` option and scheduled cron.
+- Scheduled a daily WP-Cron event for `cleanup_expired` (expired OAuth2 codes/tokens were never purged).
+
+---
+
 ## [1.2.0] - 2026-05-19
 
 ### Added
