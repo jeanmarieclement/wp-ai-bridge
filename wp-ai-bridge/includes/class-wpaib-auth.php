@@ -29,7 +29,12 @@ class WPAIB_Auth {
 		// Prova prima l'Authorization: Bearer header (OAuth2).
 		$bearer = self::extract_bearer( $request );
 		if ( null !== $bearer ) {
-			return self::authorize_bearer( $bearer, $endpoint, $method );
+			// Rate limit anche sul path Bearer, keyed sull'hash del token.
+			$rate_check = self::enforce_rate_limit( hash( 'sha256', $bearer ), $endpoint, $method );
+			if ( is_wp_error( $rate_check ) ) {
+				return $rate_check;
+			}
+			return self::authorize_bearer( $bearer, $capability, $endpoint, $method );
 		}
 
 		// Estrae la chiave dall'header.
@@ -51,21 +56,9 @@ class WPAIB_Auth {
 		}
 
 		// Rate limit basato sull'hash della chiave per non rivelare la chiave nel transient.
-		$rate_id = hash( 'sha256', $plain_key );
-		if ( ! WPAIB_Rate_Limiter::check( $rate_id ) ) {
-			WPAIB_Logger::log(
-				array(
-					'endpoint'    => $endpoint,
-					'method'      => $method,
-					'status_code' => 429,
-					'outcome'     => 'rate_limited',
-				)
-			);
-			return new WP_Error(
-				'wpaib_rate_limited',
-				__( 'Too many requests.', 'wp-ai-bridge' ),
-				array( 'status' => 429 )
-			);
+		$rate_check = self::enforce_rate_limit( hash( 'sha256', $plain_key ), $endpoint, $method );
+		if ( is_wp_error( $rate_check ) ) {
+			return $rate_check;
 		}
 
 		// Valida la chiave.
@@ -118,6 +111,34 @@ class WPAIB_Auth {
 	}
 
 	/**
+	 * Applica il rate limit per un identificatore e logga il blocco.
+	 *
+	 * @param string $rate_id  Hash dell'identificatore (chiave o token).
+	 * @param string $endpoint Endpoint REST.
+	 * @param string $method   Metodo HTTP.
+	 * @return true|WP_Error True se permesso, WP_Error 429 se bloccato.
+	 */
+	private static function enforce_rate_limit( $rate_id, $endpoint, $method ) {
+		if ( WPAIB_Rate_Limiter::check( $rate_id ) ) {
+			return true;
+		}
+
+		WPAIB_Logger::log(
+			array(
+				'endpoint'    => $endpoint,
+				'method'      => $method,
+				'status_code' => 429,
+				'outcome'     => 'rate_limited',
+			)
+		);
+		return new WP_Error(
+			'wpaib_rate_limited',
+			__( 'Too many requests.', 'wp-ai-bridge' ),
+			array( 'status' => 429 )
+		);
+	}
+
+	/**
 	 * Estrae il Bearer token dall'header Authorization, oppure null.
 	 *
 	 * @param WP_REST_Request $request Richiesta REST.
@@ -139,11 +160,12 @@ class WPAIB_Auth {
 	 * Autentica tramite OAuth2 Bearer token.
 	 *
 	 * @param string $plain_token Token in chiaro.
+	 * @param string $capability  Capability WP richiesta dall'endpoint.
 	 * @param string $endpoint    Endpoint REST.
 	 * @param string $method      Metodo HTTP.
 	 * @return true|WP_Error
 	 */
-	private static function authorize_bearer( $plain_token, $endpoint, $method ) {
+	private static function authorize_bearer( $plain_token, $capability, $endpoint, $method ) {
 		$data = WPAIB_OAuth_Server::validate_access_token( $plain_token );
 
 		if ( ! $data ) {
@@ -158,7 +180,7 @@ class WPAIB_Auth {
 
 		wp_set_current_user( $data['user_id'] );
 
-		if ( ! current_user_can( 'edit_posts' ) ) {
+		if ( ! current_user_can( $capability ) ) {
 			WPAIB_Logger::log( array(
 				'endpoint'    => $endpoint,
 				'method'      => $method,

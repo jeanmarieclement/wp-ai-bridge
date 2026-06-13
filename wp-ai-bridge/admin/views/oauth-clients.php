@@ -14,8 +14,20 @@ $tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 $tab_conn_url  = admin_url( 'options-general.php?page=wpaib-tools&tab=connections' );
 
 $clients       = WPAIB_OAuth_Client_Manager::get_all();
-$new_client_id = isset( $_GET['wpaib_new_client'] ) ? sanitize_text_field( wp_unslash( $_GET['wpaib_new_client'] ) ) : '';
-$new_secret    = isset( $_GET['wpaib_new_secret'] )  ? sanitize_text_field( wp_unslash( $_GET['wpaib_new_secret'] ) )  : '';
+
+// Il secret appena creato è letto da un transient one-shot (non dalla querystring),
+// poi rimosso: evita di esporlo in URL/log/history/Referer.
+$new_client_id = '';
+$new_secret    = '';
+if ( isset( $_GET['wpaib_client_created'] ) ) {
+	$transient_key = 'wpaib_new_client_' . get_current_user_id();
+	$new_client    = get_transient( $transient_key );
+	delete_transient( $transient_key );
+	if ( is_array( $new_client ) ) {
+		$new_client_id = isset( $new_client['client_id'] ) ? sanitize_text_field( $new_client['client_id'] ) : '';
+		$new_secret    = isset( $new_client['client_secret'] ) ? sanitize_text_field( $new_client['client_secret'] ) : '';
+	}
+}
 $oauth_error   = isset( $_GET['wpaib_oauth_error'] )  ? sanitize_text_field( wp_unslash( $_GET['wpaib_oauth_error'] ) )  : '';
 
 $auth_url  = home_url( '/wpaib/oauth/authorize' );

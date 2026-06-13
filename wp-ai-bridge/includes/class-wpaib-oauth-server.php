@@ -90,14 +90,19 @@ class WPAIB_OAuth_Server {
             return false;
         }
 
-        // Marca come usato (one-shot).
-        $wpdb->update(
-            $wpdb->prefix . 'wpaib_oauth_codes',
-            array( 'used_at' => current_time( 'mysql', true ) ),
-            array( 'id' => (int) $row->id ),
-            array( '%s' ),
-            array( '%d' )
+        // Marca come usato (one-shot) in modo atomico: il guard `used_at IS NULL`
+        // nell'UPDATE evita la race TOCTOU dove due richieste concorrenti
+        // passano entrambe la SELECT. Solo chi modifica 1 riga vince.
+        $updated = $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE {$wpdb->prefix}wpaib_oauth_codes SET used_at = %s WHERE id = %d AND used_at IS NULL",
+                current_time( 'mysql', true ),
+                (int) $row->id
+            )
         );
+        if ( 1 !== (int) $updated ) {
+            return false;
+        }
 
         return array(
             'user_id'               => (int) $row->user_id,
@@ -220,14 +225,19 @@ class WPAIB_OAuth_Server {
             return false;
         }
 
-        // Revoca il vecchio token (refresh token rotation).
-        $wpdb->update(
-            $wpdb->prefix . 'wpaib_oauth_tokens',
-            array( 'revoked_at' => current_time( 'mysql', true ) ),
-            array( 'id' => (int) $row->id ),
-            array( '%s' ),
-            array( '%d' )
+        // Revoca il vecchio token (refresh token rotation) in modo atomico:
+        // il guard `revoked_at IS NULL` evita che due refresh concorrenti dello
+        // stesso token emettano entrambi una nuova coppia. Solo il vincitore prosegue.
+        $revoked = $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE {$wpdb->prefix}wpaib_oauth_tokens SET revoked_at = %s WHERE id = %d AND revoked_at IS NULL",
+                current_time( 'mysql', true ),
+                (int) $row->id
+            )
         );
+        if ( 1 !== (int) $revoked ) {
+            return false;
+        }
 
         $new_pair = self::create_token_pair( $row->client_id, (int) $row->user_id, $row->scope );
         if ( is_wp_error( $new_pair ) ) {

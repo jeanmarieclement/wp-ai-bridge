@@ -141,12 +141,22 @@ class WPAIB_Admin {
 			exit;
 		}
 
+		// Il client_secret in chiaro NON va in querystring: salvato in un transient
+		// one-shot user-scoped, letto e cancellato al render della vista.
+		set_transient(
+			'wpaib_new_client_' . get_current_user_id(),
+			array(
+				'client_id'     => $result['client_id'],
+				'client_secret' => $result['client_secret'],
+			),
+			MINUTE_IN_SECONDS
+		);
+
 		wp_safe_redirect( add_query_arg(
 			array(
-				'page'             => 'wpaib-tools',
-				'tab'              => 'oauth',
-				'wpaib_new_client' => rawurlencode( $result['client_id'] ),
-				'wpaib_new_secret' => rawurlencode( $result['client_secret'] ),
+				'page'                 => 'wpaib-tools',
+				'tab'                  => 'oauth',
+				'wpaib_client_created' => 1,
 			),
 			admin_url( 'options-general.php' )
 		) );
@@ -224,8 +234,15 @@ class WPAIB_Admin {
 
 		$keys = WPAIB_API_Key_Manager::get_user_keys( $user->ID );
 
-		// Mostra chiave appena generata (passata in querystring una sola volta dopo redirect).
-		$just_generated = isset( $_GET['wpaib_new_key'] ) ? sanitize_text_field( wp_unslash( $_GET['wpaib_new_key'] ) ) : '';
+		// Mostra chiave appena generata: letta dal transient one-shot e subito rimossa,
+		// così non resta esposta in URL/log/history. Il flag in querystring è innocuo.
+		$just_generated = '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['wpaib_key_generated'] ) ) {
+			$transient_key  = 'wpaib_new_key_' . (int) $user->ID;
+			$just_generated = (string) get_transient( $transient_key );
+			delete_transient( $transient_key );
+		}
 
 		$view_file = WPAIB_PLUGIN_DIR . 'admin/views/api-keys-section.php';
 		if ( file_exists( $view_file ) ) {
@@ -321,9 +338,12 @@ class WPAIB_Admin {
 			wp_die( esc_html( $result->get_error_message() ) );
 		}
 
-		// Redirect col plain key in querystring (verrà mostrato UNA SOLA VOLTA e rimosso dopo).
+		// La chiave in chiaro NON va in querystring (finirebbe in log/history/Referer).
+		// La salviamo in un transient one-shot user-scoped, letto e cancellato al render.
+		set_transient( 'wpaib_new_key_' . $user_id, $result['key'], MINUTE_IN_SECONDS );
+
 		$redirect = add_query_arg(
-			array( 'wpaib_new_key' => rawurlencode( $result['key'] ) ),
+			array( 'wpaib_key_generated' => 1 ),
 			get_edit_user_link( $user_id )
 		);
 		wp_safe_redirect( $redirect );

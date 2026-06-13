@@ -39,6 +39,9 @@ class WPAIB_Plugin {
 
 		// Inizializza discovery OAuth2 (.well-known + /token shortcut).
 		WPAIB_OAuth_Discovery::init_hooks();
+
+		// Cron giornaliero: rimuove codici/token OAuth2 scaduti.
+		add_action( 'wpaib_cleanup_expired', array( 'WPAIB_OAuth_Server', 'cleanup_expired' ) );
 	}
 
 	/**
