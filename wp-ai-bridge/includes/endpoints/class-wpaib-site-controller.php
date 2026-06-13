@@ -49,21 +49,24 @@ class WPAIB_Site_Controller {
 			$tz_string  = 'UTC' . $sign . abs( $gmt_offset );
 		}
 
-		return new WP_REST_Response(
-			array(
-				'name'         => get_bloginfo( 'name' ),
-				'tagline'      => get_bloginfo( 'description' ),
-				'url'          => get_bloginfo( 'url' ),
-				'language'     => get_bloginfo( 'language' ),
-				'timezone'     => $tz_string,
-				'admin_email'  => get_bloginfo( 'admin_email' ),
-				'wp_version'   => get_bloginfo( 'version' ),
-				'active_theme' => $theme->get( 'Name' ),
-				'posts_count'  => (int) wp_count_posts( 'post' )->publish,
-				'pages_count'  => (int) wp_count_posts( 'page' )->publish,
-				'users_count'  => (int) count_users()['total_users'],
-			),
-			200
+		$data = array(
+			'name'         => get_bloginfo( 'name' ),
+			'tagline'      => get_bloginfo( 'description' ),
+			'url'          => get_bloginfo( 'url' ),
+			'language'     => get_bloginfo( 'language' ),
+			'timezone'     => $tz_string,
+			'wp_version'   => get_bloginfo( 'version' ),
+			'active_theme' => $theme->get( 'Name' ),
+			'posts_count'  => (int) wp_count_posts( 'post' )->publish,
+			'pages_count'  => (int) wp_count_posts( 'page' )->publish,
+			'users_count'  => (int) count_users()['total_users'],
 		);
+
+		// L'email dell'admin è un dato sensibile: esposta solo agli amministratori.
+		if ( current_user_can( 'manage_options' ) ) {
+			$data['admin_email'] = get_bloginfo( 'admin_email' );
+		}
+
+		return new WP_REST_Response( $data, 200 );
 	}
 }

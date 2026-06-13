@@ -27,6 +27,11 @@ class WPAIB_Installer {
 		WPAIB_OAuth_Discovery::add_rewrite_rules();
 		flush_rewrite_rules();
 		update_option( 'wpaib_db_version', WPAIB_VERSION );
+
+		// Pulizia giornaliera di codici/token OAuth2 scaduti.
+		if ( ! wp_next_scheduled( 'wpaib_cleanup_expired' ) ) {
+			wp_schedule_event( time(), 'daily', 'wpaib_cleanup_expired' );
+		}
 	}
 
 	/**
@@ -154,5 +159,7 @@ class WPAIB_Installer {
 		$wpdb->query(
 			"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_wpaib_rl_%' OR option_name LIKE '_transient_timeout_wpaib_rl_%'"
 		);
+
+		wp_clear_scheduled_hook( 'wpaib_cleanup_expired' );
 	}
 }

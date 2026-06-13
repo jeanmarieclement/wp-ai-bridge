@@ -57,8 +57,13 @@ class WPAIB_OAuth_Controller {
 			return $this->oauth_error( 'invalid_client', 401 );
 		}
 
+		// Traccia se il client è stato autenticato col secret (confidential)
+		// o solo via PKCE (public). Serve a impedire che un code senza
+		// code_challenge venga riscattato senza secret.
+		$authed_with_secret = ! empty( $client_secret );
+
 		if ( 'authorization_code' === $grant_type ) {
-			return $this->handle_authorization_code( $request, $client, $code_verifier );
+			return $this->handle_authorization_code( $request, $client, $code_verifier, $authed_with_secret );
 		}
 
 		if ( 'refresh_token' === $grant_type ) {
@@ -85,7 +90,7 @@ class WPAIB_OAuth_Controller {
 		return rest_ensure_response( array() );
 	}
 
-	private function handle_authorization_code( WP_REST_Request $request, $client, $code_verifier = '' ) {
+	private function handle_authorization_code( WP_REST_Request $request, $client, $code_verifier = '', $authed_with_secret = false ) {
 		$code         = sanitize_text_field( (string) $request->get_param( 'code' ) );
 		$redirect_uri = esc_url_raw( (string) $request->get_param( 'redirect_uri' ) );
 
@@ -95,6 +100,14 @@ class WPAIB_OAuth_Controller {
 
 		$data = WPAIB_OAuth_Server::consume_auth_code( $code, $client->client_id, $redirect_uri );
 		if ( ! $data ) {
+			return $this->oauth_error( 'invalid_grant', 400 );
+		}
+
+		// Se il client non si è autenticato col secret, il code DEVE avere un
+		// code_challenge da verificare via PKCE. Senza questo vincolo un code di
+		// un client confidenziale (emesso senza challenge) sarebbe riscattabile
+		// da chiunque conosca il client_id passando un code_verifier qualsiasi.
+		if ( ! $authed_with_secret && empty( $data['code_challenge'] ) ) {
 			return $this->oauth_error( 'invalid_grant', 400 );
 		}
 

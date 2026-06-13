@@ -14,6 +14,9 @@ global $wpdb;
 $tables = array(
 	$wpdb->prefix . 'wpaib_api_keys',
 	$wpdb->prefix . 'wpaib_audit_log',
+	$wpdb->prefix . 'wpaib_oauth_clients',
+	$wpdb->prefix . 'wpaib_oauth_codes',
+	$wpdb->prefix . 'wpaib_oauth_tokens',
 );
 
 foreach ( $tables as $table ) {
@@ -22,6 +25,10 @@ foreach ( $tables as $table ) {
 }
 
 delete_option( 'wpaib_db_version' );
+delete_option( 'wpaib_disabled_tools' );
+
+// Rimuove il cron di pulizia OAuth2 schedulato.
+wp_clear_scheduled_hook( 'wpaib_cleanup_expired' );
 
 // Pulizia transient di rate limiting.
 $wpdb->query(

@@ -18,6 +18,12 @@ class WPAIB_Rate_Limiter {
 	 * Verifica se l'identificatore ha superato il limite.
 	 * Se non l'ha superato, incrementa il contatore.
 	 *
+	 * NOTA: l'incremento è best-effort. Il pattern get/set su transient non è
+	 * atomico, quindi sotto forte concorrenza (più worker PHP simultanei) il
+	 * limite può essere superato di un margine pari al numero di worker che
+	 * leggono lo stesso contatore prima della scrittura. Accettabile per un
+	 * limite di throttling; un controllo hard richiederebbe lock DB o INCR atomico.
+	 *
 	 * @param string $identifier Identificatore (hash chiave o IP).
 	 * @return bool True se permesso, false se bloccato.
 	 */
