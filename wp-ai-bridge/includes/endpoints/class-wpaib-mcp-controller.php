@@ -544,6 +544,62 @@ class WPAIB_MCP_Controller {
 			),
 		);
 
+		// Plugin management — esposto solo agli amministratori con activate_plugins.
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$tools[] = array(
+				'name'        => 'get_plugins',
+				'description' => 'Elenca tutti i plugin WordPress installati con nome, versione, stato (active/inactive) e descrizione.',
+				'inputSchema' => array(
+					'type' => 'object',
+				),
+			);
+			$tools[] = array(
+				'name'        => 'activate_plugin',
+				'description' => 'Attiva un plugin WordPress tramite il suo percorso (es. akismet/akismet.php).',
+				'inputSchema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'plugin' => array(
+							'type'        => 'string',
+							'description' => 'Percorso del plugin relativo alla cartella plugins (es. akismet/akismet.php)',
+						),
+					),
+					'required'   => array( 'plugin' ),
+				),
+			);
+			$tools[] = array(
+				'name'        => 'deactivate_plugin',
+				'description' => 'Disattiva un plugin WordPress. Non può essere usato per disattivare WP AI Bridge.',
+				'inputSchema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'plugin' => array(
+							'type'        => 'string',
+							'description' => 'Percorso del plugin relativo alla cartella plugins (es. akismet/akismet.php)',
+						),
+					),
+					'required'   => array( 'plugin' ),
+				),
+			);
+
+			if ( current_user_can( 'delete_plugins' ) ) {
+				$tools[] = array(
+					'name'        => 'delete_plugin',
+					'description' => 'Elimina definitivamente un plugin dal filesystem. Il plugin viene prima disattivato. Non può essere usato per eliminare WP AI Bridge.',
+					'inputSchema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'plugin' => array(
+								'type'        => 'string',
+								'description' => 'Percorso del plugin relativo alla cartella plugins (es. akismet/akismet.php)',
+							),
+						),
+						'required'   => array( 'plugin' ),
+					),
+				);
+			}
+		}
+
 		$disabled = get_option( 'wpaib_disabled_tools', array() );
 		if ( ! empty( $disabled ) ) {
 			$tools = array_values( array_filter( $tools, function ( $t ) use ( $disabled ) {
@@ -817,6 +873,50 @@ class WPAIB_MCP_Controller {
 					$sub_req->set_param( $k, $v );
 				}
 				return $controller->search( $sub_req );
+
+			case 'get_plugins':
+				if ( ! current_user_can( 'activate_plugins' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Plugins_Controller();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/plugins' );
+				return $controller->list_plugins( $sub_req );
+
+			case 'activate_plugin':
+				if ( empty( $args['plugin'] ) ) {
+					return new WP_Error( 'wpaib_missing_params', __( 'Plugin path is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+				}
+				if ( ! current_user_can( 'activate_plugins' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to activate plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Plugins_Controller();
+				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/plugins/activate' );
+				$sub_req->set_param( 'plugin', $args['plugin'] );
+				return $controller->activate_plugin_handler( $sub_req );
+
+			case 'deactivate_plugin':
+				if ( empty( $args['plugin'] ) ) {
+					return new WP_Error( 'wpaib_missing_params', __( 'Plugin path is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+				}
+				if ( ! current_user_can( 'activate_plugins' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to deactivate plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Plugins_Controller();
+				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/plugins/deactivate' );
+				$sub_req->set_param( 'plugin', $args['plugin'] );
+				return $controller->deactivate_plugin_handler( $sub_req );
+
+			case 'delete_plugin':
+				if ( empty( $args['plugin'] ) ) {
+					return new WP_Error( 'wpaib_missing_params', __( 'Plugin path is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+				}
+				if ( ! current_user_can( 'delete_plugins' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to delete plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Plugins_Controller();
+				$sub_req    = new WP_REST_Request( 'DELETE', '/wpaib/v1/plugins' );
+				$sub_req->set_param( 'plugin', $args['plugin'] );
+				return $controller->delete_plugin( $sub_req );
 
 			default:
 				return new WP_Error( 'wpaib_unknown_tool', sprintf( __( 'Tool "%s" is not supported.', 'wp-ai-bridge' ), esc_html( $tool ) ), array( 'status' => 404 ) );
