@@ -394,6 +394,211 @@ class WPAIB_OpenAPI_Controller {
 						),
 					),
 				),
+				'/updates' => array(
+					'get' => array(
+						'summary'     => 'Panoramica aggiornamenti disponibili',
+						'description' => 'Restituisce tutti gli aggiornamenti disponibili per core WordPress, plugin e temi installati.',
+						'operationId' => 'getAllUpdates',
+						'parameters'  => array(
+							array(
+								'name'        => 'force_check',
+								'in'          => 'query',
+								'required'    => false,
+								'description' => 'Se true forza un nuovo controllo presso i server di aggiornamento.',
+								'schema'      => array( 'type' => 'boolean', 'default' => false ),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Panoramica aggiornamenti restituita.',
+								'content'     => array(
+									'application/json' => array(
+										'schema' => array(
+											'type'       => 'object',
+											'properties' => array(
+												'core'    => array( 'type' => 'object', 'nullable' => true ),
+												'plugins' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
+												'themes'  => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
+												'total'   => array( 'type' => 'integer' ),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+				'/updates/core' => array(
+					'get' => array(
+						'summary'     => 'Stato aggiornamento WordPress core',
+						'description' => 'Verifica se è disponibile un aggiornamento del core WordPress.',
+						'operationId' => 'getCoreUpdates',
+						'parameters'  => array(
+							array(
+								'name'     => 'force_check',
+								'in'       => 'query',
+								'required' => false,
+								'schema'   => array( 'type' => 'boolean', 'default' => false ),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Stato aggiornamento core.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+						),
+					),
+				),
+				'/updates/plugins' => array(
+					'get' => array(
+						'summary'     => 'Lista aggiornamenti plugin',
+						'description' => 'Elenca tutti i plugin installati per cui è disponibile un aggiornamento, con versione corrente, nuova versione e changelog URL.',
+						'operationId' => 'getPluginUpdates',
+						'parameters'  => array(
+							array(
+								'name'     => 'force_check',
+								'in'       => 'query',
+								'required' => false,
+								'schema'   => array( 'type' => 'boolean', 'default' => false ),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Lista aggiornamenti plugin.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+						),
+					),
+				),
+				'/updates/themes' => array(
+					'get' => array(
+						'summary'     => 'Lista aggiornamenti temi',
+						'description' => 'Elenca tutti i temi installati per cui è disponibile un aggiornamento.',
+						'operationId' => 'getThemeUpdates',
+						'parameters'  => array(
+							array(
+								'name'     => 'force_check',
+								'in'       => 'query',
+								'required' => false,
+								'schema'   => array( 'type' => 'boolean', 'default' => false ),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Lista aggiornamenti temi.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+						),
+					),
+				),
+				'/updates/changelog/{type}/{slug}' => array(
+					'get' => array(
+						'summary'     => 'Changelog di plugin, tema o core',
+						'description' => 'Recupera il changelog dell\'aggiornamento disponibile per un plugin, tema o il core WordPress da wordpress.org.',
+						'operationId' => 'getChangelog',
+						'parameters'  => array(
+							array(
+								'name'     => 'type',
+								'in'       => 'path',
+								'required' => true,
+								'schema'   => array( 'type' => 'string', 'enum' => array( 'plugin', 'theme', 'core' ) ),
+							),
+							array(
+								'name'        => 'slug',
+								'in'          => 'path',
+								'required'    => true,
+								'description' => 'Slug del plugin o tema (es. akismet). Per il core usa "wordpress".',
+								'schema'      => array( 'type' => 'string' ),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Changelog restituito.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+							'404' => array( 'description' => 'Componente non trovato su wordpress.org.' ),
+						),
+					),
+				),
+				'/updates/apply' => array(
+					'post' => array(
+						'summary'     => 'Applica un singolo aggiornamento',
+						'description' => 'Aggiorna un plugin, tema o il core WordPress alla versione più recente disponibile.',
+						'operationId' => 'applyUpdate',
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'required'   => array( 'type' ),
+										'properties' => array(
+											'type' => array(
+												'type'        => 'string',
+												'enum'        => array( 'plugin', 'theme', 'core' ),
+												'description' => 'Tipo di componente da aggiornare.',
+											),
+											'slug' => array(
+												'type'        => 'string',
+												'description' => 'Slug del plugin o tema. Non richiesto per type=core.',
+											),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Risultato aggiornamento.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+						),
+					),
+				),
+				'/updates/bulk' => array(
+					'post' => array(
+						'summary'     => 'Aggiornamento multiplo in un\'unica chiamata',
+						'description' => 'Aggiorna più plugin, temi e/o il core WordPress in un\'unica richiesta. Restituisce il risultato per ciascun elemento.',
+						'operationId' => 'bulkUpdate',
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'required'   => array( 'items' ),
+										'properties' => array(
+											'items' => array(
+												'type'        => 'array',
+												'description' => 'Lista di aggiornamenti da applicare.',
+												'items'       => array(
+													'type'       => 'object',
+													'required'   => array( 'type' ),
+													'properties' => array(
+														'type' => array(
+															'type' => 'string',
+															'enum' => array( 'plugin', 'theme', 'core' ),
+														),
+														'slug' => array(
+															'type'        => 'string',
+															'description' => 'Slug del plugin o tema.',
+														),
+													),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Risultati aggiornamento multiplo.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+						),
+					),
+				),
 				'/tags' => array(
 					'get' => array(
 						'summary'     => 'Elenca i tag',
