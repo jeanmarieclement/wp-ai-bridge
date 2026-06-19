@@ -139,9 +139,8 @@ class WPAIB_Plugins_Controller {
 	public function list_plugins( WP_REST_Request $request ) {
 		$this->maybe_load_plugin_functions();
 
-		$all_plugins    = get_plugins();
-		$active_plugins = (array) get_option( 'active_plugins', array() );
-		$result         = array();
+		$all_plugins = get_plugins();
+		$result      = array();
 
 		foreach ( $all_plugins as $plugin_file => $data ) {
 			$result[] = array(
@@ -150,7 +149,7 @@ class WPAIB_Plugins_Controller {
 				'version'     => $data['Version'],
 				'description' => wp_strip_all_tags( $data['Description'] ),
 				'author'      => wp_strip_all_tags( $data['Author'] ),
-				'status'      => in_array( $plugin_file, $active_plugins, true ) ? 'active' : 'inactive',
+				'status'      => is_plugin_active( $plugin_file ) ? 'active' : 'inactive',
 			);
 		}
 
