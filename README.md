@@ -8,7 +8,7 @@
 
 A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys** or **OAuth2** (Authorization Code flow). Designed for integration with external AI services (Claude.ai, ChatGPT, custom automations).
 
-**Version:** 1.3.0  
+**Version:** 1.4.0  
 **Compatibility:** WordPress 6.0+, PHP 7.4+  
 **License:** MIT
 
