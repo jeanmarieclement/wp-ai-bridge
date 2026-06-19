@@ -8,7 +8,7 @@
 
 A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys** or **OAuth2** (Authorization Code flow). Designed for integration with external AI services (Claude.ai, ChatGPT, custom automations).
 
-**Version:** 1.2.0  
+**Version:** 1.3.0  
 **Compatibility:** WordPress 6.0+, PHP 7.4+  
 **License:** MIT
 
@@ -22,6 +22,8 @@ Exposes a REST API under the `/wp-json/wpaib/v1/` namespace for:
 - Uploading images (base64) to the media library
 - Listing and creating categories and tags
 - Reading site info and full-text search
+- Managing plugins — list, activate, deactivate, delete (`/plugins`, admin-only)
+- Managing updates — check and apply core, plugin, and theme updates (`/updates`, admin-only)
 - MCP/function-calling tool execution (`/tools`, `/tools/execute`)
 - Dynamic OpenAPI 3.0.3 schema (`/openapi.json`) — import-ready for ChatGPT, Gemini, Claude.ai
 
@@ -152,7 +154,8 @@ Every REST request passes these cascading checks:
 **Audit log:** every access (success, auth failure, rate limit, forbidden) is logged to `wp_wpaib_audit_log` with timestamp, IP, user-agent, endpoint, and outcome.
 
 **What the plugin does NOT do (by design):**
-- Does not expose endpoints to manage users, roles, options, plugins, or themes
+- Does not expose endpoints to manage users, roles, or options
+- Plugin, theme, and update management require the matching WordPress capability (`activate_plugins`, `delete_plugins`, `update_plugins`, `update_themes`, `update_core`) on the credential's user — administrators only
 - Does not allow arbitrary code execution
 - Does not serve files from the server
 - Does not trust proxy headers unless explicitly configured
