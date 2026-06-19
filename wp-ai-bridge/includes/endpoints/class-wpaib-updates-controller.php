@@ -28,7 +28,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_all_updates' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_core' ),
 					'args'                => array(
 						'force_check' => array(
 							'required'    => false,
@@ -49,7 +49,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_core_updates' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_core' ),
 					'args'                => array(
 						'force_check' => array(
 							'required' => false,
@@ -69,7 +69,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_plugin_updates' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_plugins' ),
 					'args'                => array(
 						'force_check' => array(
 							'required' => false,
@@ -89,7 +89,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_theme_updates' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_themes' ),
 					'args'                => array(
 						'force_check' => array(
 							'required' => false,
@@ -109,7 +109,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_changelog' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_plugins' ),
 					'args'                => array(
 						'type' => array(
 							'required' => true,
@@ -134,7 +134,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'apply_update' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_core' ),
 					'args'                => array(
 						'type' => array(
 							'required'          => true,
@@ -160,7 +160,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'bulk_update' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'manage_options' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'update_core' ),
 				),
 			)
 		);
@@ -353,8 +353,9 @@ class WPAIB_Updates_Controller {
 			return $fs;
 		}
 
-		$results   = array();
-		$succeeded = 0;
+		$results    = array();
+		$succeeded  = 0;
+		$core_done  = false;
 
 		foreach ( $items as $item ) {
 			$type = isset( $item['type'] ) ? sanitize_text_field( $item['type'] ) : '';
@@ -370,6 +371,17 @@ class WPAIB_Updates_Controller {
 				continue;
 			}
 
+			// Il core va aggiornato una volta sola per request.
+			if ( 'core' === $type && $core_done ) {
+				$results[] = array(
+					'type'    => 'core',
+					'slug'    => 'wordpress',
+					'success' => false,
+					'message' => __( 'Aggiornamento core già eseguito in questa request.', 'wp-ai-bridge' ),
+				);
+				continue;
+			}
+
 			switch ( $type ) {
 				case 'plugin':
 					$res = $this->upgrade_plugin( $slug );
@@ -379,18 +391,26 @@ class WPAIB_Updates_Controller {
 					break;
 				default:
 					$res = $this->upgrade_core();
+					$core_done = true;
 					break;
 			}
 
 			if ( is_wp_error( $res ) ) {
 				$results[] = array(
 					'type'    => $type,
-					'slug'    => $slug,
+					'slug'    => $slug ?: 'wordpress',
 					'success' => false,
 					'message' => $res->get_error_message(),
 				);
 			} else {
 				$data = $res->get_data();
+				// Normalizza: assicura sempre le chiavi type e slug nel risultato.
+				if ( ! isset( $data['slug'] ) ) {
+					$data['slug'] = $slug ?: 'wordpress';
+				}
+				if ( ! isset( $data['type'] ) ) {
+					$data['type'] = $type;
+				}
 				if ( ! empty( $data['success'] ) ) {
 					++$succeeded;
 				}
