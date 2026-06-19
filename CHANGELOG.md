@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-06-19
+
+### Added
+- **Plugin management** REST endpoints (`/plugins`): list, activate, deactivate, and delete installed plugins. Gated by the matching WordPress capability (`activate_plugins`, `delete_plugins`); WP AI Bridge cannot deactivate or delete itself via its own API.
+- **Update management** REST endpoints (`/updates`): overview and per-type checks for core, plugins, and themes (`/updates/core`, `/updates/plugins`, `/updates/themes`), changelog retrieval (`/updates/changelog/{type}/{slug}`), single apply (`/updates/apply`), and bulk apply (`/updates/bulk`).
+- Corresponding MCP tools (`get_plugins`, `activate_plugin`, `deactivate_plugin`, `delete_plugin`) exposed only to users with the required capability.
+- OpenAPI 3.0.3 schema extended with the `/plugins` and `/updates` paths.
+
+### Security
+- Update endpoints use the specific WordPress capabilities (`update_core`, `update_plugins`, `update_themes`) instead of the broader `manage_options`, honoring `DISALLOW_FILE_MODS` and multisite super-admin restrictions.
+
+### Fixed
+- `bulk_update` deduplicates `type=core` items so the core upgrade runs at most once per request, and normalizes each result entry to always include `type` and `slug`.
+- `list_plugins` uses `is_plugin_active()` so network-activated plugins are reported correctly on multisite.
+
+---
+
+## [1.2.1] - 2026-06-18
+
+### Fixed
+- Security audit corrections for the OAuth2 server and authentication middleware.
+- General cleanup of internal authorization flows.
+
+---
+
 ## [1.2.0] - 2026-05-19
 
 ### Added
