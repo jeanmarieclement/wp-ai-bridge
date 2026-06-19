@@ -44,6 +44,7 @@ require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-taxonomy-control
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-pages-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-site-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-search-controller.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-plugins-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-updates-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-mcp-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-mcp-http-controller.php';

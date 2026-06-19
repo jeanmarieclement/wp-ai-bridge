@@ -56,6 +56,7 @@ class WPAIB_Plugin {
 		$pages_controller    = new WPAIB_Pages_Controller();
 		$site_controller     = new WPAIB_Site_Controller();
 		$search_controller   = new WPAIB_Search_Controller();
+		$plugins_controller  = new WPAIB_Plugins_Controller();
 		$updates_controller  = new WPAIB_Updates_Controller();
 		$mcp_controller      = new WPAIB_MCP_Controller();
 		$mcp_http_controller = new WPAIB_MCP_HTTP_Controller();
@@ -67,6 +68,7 @@ class WPAIB_Plugin {
 		$pages_controller->register_routes();
 		$site_controller->register_routes();
 		$search_controller->register_routes();
+		$plugins_controller->register_routes();
 		$updates_controller->register_routes();
 		$mcp_controller->register_routes();
 		$mcp_http_controller->register_routes();

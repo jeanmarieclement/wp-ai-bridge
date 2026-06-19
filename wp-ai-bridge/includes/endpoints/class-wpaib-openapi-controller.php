@@ -648,6 +648,125 @@ class WPAIB_OpenAPI_Controller {
 						),
 					),
 				),
+				'/plugins' => array(
+					'get'    => array(
+						'summary'     => 'Elenca i plugin installati',
+						'description' => 'Restituisce tutti i plugin WordPress installati con nome, versione, descrizione e stato. Richiede activate_plugins (amministratore).',
+						'operationId' => 'listPlugins',
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Lista plugin restituita.',
+								'content'     => array(
+									'application/json' => array(
+										'schema' => array(
+											'type'  => 'array',
+											'items' => array(
+												'type'       => 'object',
+												'properties' => array(
+													'plugin'      => array( 'type' => 'string' ),
+													'name'        => array( 'type' => 'string' ),
+													'version'     => array( 'type' => 'string' ),
+													'description' => array( 'type' => 'string' ),
+													'author'      => array( 'type' => 'string' ),
+													'status'      => array( 'type' => 'string', 'enum' => array( 'active', 'inactive' ) ),
+												),
+											),
+										),
+									),
+								),
+							),
+							'403' => array( 'description' => 'Permessi insufficienti.' ),
+						),
+					),
+					'delete' => array(
+						'summary'     => 'Elimina un plugin',
+						'description' => 'Elimina definitivamente un plugin dal filesystem dopo averlo disattivato. Non può eliminare WP AI Bridge. Richiede delete_plugins.',
+						'operationId' => 'deletePlugin',
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'required'   => array( 'plugin' ),
+										'properties' => array(
+											'plugin' => array(
+												'type'        => 'string',
+												'description' => 'Percorso del plugin (es. akismet/akismet.php)',
+											),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'200' => array( 'description' => 'Plugin eliminato.' ),
+							'400' => array( 'description' => 'Parametro non valido o tentativo di eliminare WP AI Bridge.' ),
+							'403' => array( 'description' => 'Permessi insufficienti.' ),
+							'404' => array( 'description' => 'Plugin non trovato.' ),
+						),
+					),
+				),
+				'/plugins/activate' => array(
+					'post' => array(
+						'summary'     => 'Attiva un plugin',
+						'description' => 'Attiva un plugin WordPress installato. Richiede activate_plugins.',
+						'operationId' => 'activatePlugin',
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'required'   => array( 'plugin' ),
+										'properties' => array(
+											'plugin' => array(
+												'type'        => 'string',
+												'description' => 'Percorso del plugin (es. akismet/akismet.php)',
+											),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'200' => array( 'description' => 'Plugin attivato (o già attivo).' ),
+							'400' => array( 'description' => 'Parametro non valido.' ),
+							'403' => array( 'description' => 'Permessi insufficienti.' ),
+							'404' => array( 'description' => 'Plugin non trovato.' ),
+						),
+					),
+				),
+				'/plugins/deactivate' => array(
+					'post' => array(
+						'summary'     => 'Disattiva un plugin',
+						'description' => 'Disattiva un plugin WordPress attivo. Non può disattivare WP AI Bridge. Richiede activate_plugins.',
+						'operationId' => 'deactivatePlugin',
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'required'   => array( 'plugin' ),
+										'properties' => array(
+											'plugin' => array(
+												'type'        => 'string',
+												'description' => 'Percorso del plugin (es. akismet/akismet.php)',
+											),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'200' => array( 'description' => 'Plugin disattivato (o già inattivo).' ),
+							'400' => array( 'description' => 'Parametro non valido o tentativo di disattivare WP AI Bridge.' ),
+							'403' => array( 'description' => 'Permessi insufficienti.' ),
+							'404' => array( 'description' => 'Plugin non trovato.' ),
+						),
+					),
+				),
 			),
 		);
 
