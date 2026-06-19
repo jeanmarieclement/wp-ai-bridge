@@ -600,6 +600,92 @@ class WPAIB_MCP_Controller {
 			}
 		}
 
+		// Update management — esposto agli amministratori con capability update_*.
+		if ( current_user_can( 'update_core' ) || current_user_can( 'update_plugins' ) || current_user_can( 'update_themes' ) ) {
+			$tools[] = array(
+				'name'        => 'get_updates',
+				'description' => 'Restituisce la panoramica di tutti gli aggiornamenti disponibili per core WordPress, plugin e temi, con conteggio totale.',
+				'inputSchema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'force_check' => array(
+							'type'        => 'boolean',
+							'description' => 'Se true forza un nuovo controllo presso i server di aggiornamento.',
+						),
+					),
+				),
+			);
+			$tools[] = array(
+				'name'        => 'get_changelog',
+				'description' => 'Recupera il changelog dell\'aggiornamento disponibile per un plugin, tema o il core WordPress da wordpress.org.',
+				'inputSchema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'type' => array(
+							'type'        => 'string',
+							'enum'        => array( 'plugin', 'theme', 'core' ),
+							'description' => 'Tipo di componente.',
+						),
+						'slug' => array(
+							'type'        => 'string',
+							'description' => 'Slug del plugin o tema (es. akismet). Per il core usa "wordpress".',
+						),
+					),
+					'required'   => array( 'type', 'slug' ),
+				),
+			);
+
+			if ( current_user_can( 'update_core' ) ) {
+				$tools[] = array(
+					'name'        => 'apply_update',
+					'description' => 'Aggiorna un singolo plugin, tema o il core WordPress alla versione più recente disponibile.',
+					'inputSchema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'type' => array(
+								'type'        => 'string',
+								'enum'        => array( 'plugin', 'theme', 'core' ),
+								'description' => 'Tipo di componente da aggiornare.',
+							),
+							'slug' => array(
+								'type'        => 'string',
+								'description' => 'Slug del plugin o tema. Non richiesto per type=core.',
+							),
+						),
+						'required'   => array( 'type' ),
+					),
+				);
+				$tools[] = array(
+					'name'        => 'bulk_update',
+					'description' => 'Aggiorna più plugin, temi e/o il core WordPress in un\'unica richiesta. Restituisce il risultato per ciascun elemento.',
+					'inputSchema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'items' => array(
+								'type'        => 'array',
+								'description' => 'Lista di aggiornamenti da applicare.',
+								'items'       => array(
+									'type'       => 'object',
+									'properties' => array(
+										'type' => array(
+											'type' => 'string',
+											'enum' => array( 'plugin', 'theme', 'core' ),
+										),
+										'slug' => array(
+											'type'        => 'string',
+											'description' => 'Slug del plugin o tema. Non richiesto per type=core.',
+										),
+									),
+									'required'   => array( 'type' ),
+								),
+							),
+						),
+						'required'   => array( 'items' ),
+					),
+				);
+			}
+		}
+
 		$disabled = get_option( 'wpaib_disabled_tools', array() );
 		if ( ! empty( $disabled ) ) {
 			$tools = array_values( array_filter( $tools, function ( $t ) use ( $disabled ) {
@@ -917,6 +1003,58 @@ class WPAIB_MCP_Controller {
 				$sub_req    = new WP_REST_Request( 'DELETE', '/wpaib/v1/plugins' );
 				$sub_req->set_param( 'plugin', $args['plugin'] );
 				return $controller->delete_plugin( $sub_req );
+
+			case 'get_updates':
+				if ( ! current_user_can( 'update_core' ) && ! current_user_can( 'update_plugins' ) && ! current_user_can( 'update_themes' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Updates_Controller();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/updates' );
+				if ( isset( $args['force_check'] ) ) {
+					$sub_req->set_param( 'force_check', (bool) $args['force_check'] );
+				}
+				return $controller->get_all_updates( $sub_req );
+
+			case 'get_changelog':
+				if ( empty( $args['type'] ) || empty( $args['slug'] ) ) {
+					return new WP_Error( 'wpaib_missing_params', __( 'Parameters "type" and "slug" are required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+				}
+				if ( ! current_user_can( 'update_core' ) && ! current_user_can( 'update_plugins' ) && ! current_user_can( 'update_themes' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Updates_Controller();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/updates/changelog' );
+				$sub_req->set_param( 'type', $args['type'] );
+				$sub_req->set_param( 'slug', $args['slug'] );
+				return $controller->get_changelog( $sub_req );
+
+			case 'apply_update':
+				if ( empty( $args['type'] ) ) {
+					return new WP_Error( 'wpaib_missing_params', __( 'Parameter "type" is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+				}
+				if ( ! current_user_can( 'update_core' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to apply updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Updates_Controller();
+				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/updates/apply' );
+				$sub_req->set_param( 'type', $args['type'] );
+				if ( isset( $args['slug'] ) ) {
+					$sub_req->set_param( 'slug', $args['slug'] );
+				}
+				return $controller->apply_update( $sub_req );
+
+			case 'bulk_update':
+				if ( empty( $args['items'] ) || ! is_array( $args['items'] ) ) {
+					return new WP_Error( 'wpaib_missing_params', __( 'Parameter "items" must be a non-empty array.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+				}
+				if ( ! current_user_can( 'update_core' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to apply updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
+				$controller = new WPAIB_Updates_Controller();
+				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/updates/bulk' );
+				$sub_req->set_header( 'Content-Type', 'application/json' );
+				$sub_req->set_body( wp_json_encode( array( 'items' => $args['items'] ) ) );
+				return $controller->bulk_update( $sub_req );
 
 			default:
 				return new WP_Error( 'wpaib_unknown_tool', sprintf( __( 'Tool "%s" is not supported.', 'wp-ai-bridge' ), esc_html( $tool ) ), array( 'status' => 404 ) );

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-06-19
+
+### Added
+- **MCP tools for update management**, so a WordPress site can be fully managed over MCP: `get_updates` (overview, optional `force_check`), `get_changelog` (plugin/theme/core), `apply_update` (single), and `bulk_update` (multiple). Each tool is exposed only to users holding the matching WordPress capability (`update_core`, `update_plugins`, `update_themes`), mirroring the `/updates` REST routes.
+
+---
+
 ## [1.3.0] - 2026-06-19
 
 ### Added
