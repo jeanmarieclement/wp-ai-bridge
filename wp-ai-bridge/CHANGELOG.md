@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-06-25
+
+### Added
+- **Custom Post Types (CPT) support**: new `/cpt` endpoint for discovery of all registered public CPTs, and `/cpt/{type}` + `/cpt/{type}/{id}` routes for full CRUD operations on any custom post type (e.g. WooCommerce products, portfolio items, events).
+  - Discovery endpoint returns CPT labels, supported features, associated taxonomies, and published item count.
+  - Create/update operations support taxonomy term assignment (by ID or name) and featured media.
+  - Proper capability mapping using each CPT's registered capabilities.
+- **Search integration**: the `/search` endpoint now dynamically includes registered CPTs as searchable types.
+- **OpenAPI spec**: added full documentation for all CPT endpoints in `/openapi.json`.
+
+---
+
 ## [1.2.1] - 2026-06-13
 
 ### Security

@@ -63,7 +63,13 @@ class WPAIB_Search_Controller {
 		}
 
 		$allowed_types = array( 'posts', 'pages', 'media', 'comments', 'terms' );
-		$types         = array_intersect( $types, $allowed_types );
+
+		// Aggiungi dinamicamente i CPT disponibili ai tipi consentiti.
+		$cpt_controller = new WPAIB_CPT_Controller();
+		$cpt_slugs      = $cpt_controller->get_available_cpt_slugs();
+		$allowed_types  = array_merge( $allowed_types, $cpt_slugs );
+
+		$types = array_intersect( $types, $allowed_types );
 		if ( empty( $types ) ) {
 			$types = array( 'posts', 'pages' );
 		}
@@ -84,6 +90,13 @@ class WPAIB_Search_Controller {
 		}
 		if ( in_array( 'terms', $types, true ) ) {
 			$results = array_merge( $results, $this->search_terms( $query, $per_page ) );
+		}
+
+		// Cerca nei Custom Post Types richiesti.
+		foreach ( $cpt_slugs as $cpt_slug ) {
+			if ( in_array( $cpt_slug, $types, true ) ) {
+				$results = array_merge( $results, $this->search_post_type( $query, $cpt_slug, $per_page ) );
+			}
 		}
 
 		return new WP_REST_Response(
@@ -120,11 +133,19 @@ class WPAIB_Search_Controller {
 
 		$results = array();
 		foreach ( $posts as $post ) {
-			$type = 'post';
-			if ( 'page' === $post->post_type ) {
-				$type = 'page';
-			} elseif ( 'attachment' === $post->post_type ) {
-				$type = 'media';
+			switch ( $post->post_type ) {
+				case 'page':
+					$type = 'page';
+					break;
+				case 'attachment':
+					$type = 'media';
+					break;
+				case 'post':
+					$type = 'post';
+					break;
+				default:
+					$type = $post->post_type; // CPT: usa lo slug come tipo.
+					break;
 			}
 
 			$results[] = array(

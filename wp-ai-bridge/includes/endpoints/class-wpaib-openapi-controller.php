@@ -767,6 +767,195 @@ class WPAIB_OpenAPI_Controller {
 						),
 					),
 				),
+				'/cpt' => array(
+					'get' => array(
+						'summary'     => 'Elenca i Custom Post Types disponibili',
+						'description' => 'Restituisce la lista di tutti i Custom Post Types pubblici registrati sul sito (es. product, portfolio, event), con le loro tassonomie associate, supporti e conteggio. Non include i tipi built-in (post, page, attachment).',
+						'operationId' => 'listCustomPostTypes',
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Lista CPT restituita con successo.',
+								'content'     => array(
+									'application/json' => array(
+										'schema' => array(
+											'type'       => 'object',
+											'properties' => array(
+												'items' => array(
+													'type'  => 'array',
+													'items' => array(
+														'type'       => 'object',
+														'properties' => array(
+															'slug'        => array( 'type' => 'string', 'description' => 'Slug identificativo del CPT' ),
+															'name'        => array( 'type' => 'string', 'description' => 'Nome plurale del CPT' ),
+															'singular'    => array( 'type' => 'string', 'description' => 'Nome singolare del CPT' ),
+															'description' => array( 'type' => 'string' ),
+															'hierarchical'=> array( 'type' => 'boolean' ),
+															'taxonomies'  => array(
+																'type'  => 'array',
+																'items' => array(
+																	'type'       => 'object',
+																	'properties' => array(
+																		'slug'         => array( 'type' => 'string' ),
+																		'name'         => array( 'type' => 'string' ),
+																		'hierarchical' => array( 'type' => 'boolean' ),
+																	),
+																),
+															),
+															'count' => array( 'type' => 'integer', 'description' => 'Numero di items pubblicati' ),
+														),
+													),
+												),
+												'total' => array( 'type' => 'integer' ),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+				'/cpt/{type}' => array(
+					'get' => array(
+						'summary'     => 'Elenca gli items di un Custom Post Type',
+						'description' => 'Recupera una lista paginata di items di un CPT specifico, filtrabili per stato. Usa il valore "slug" restituito da /cpt come parametro {type}.',
+						'operationId' => 'listCPTItems',
+						'parameters'  => array(
+							array(
+								'name'        => 'type',
+								'in'          => 'path',
+								'required'    => true,
+								'description' => 'Slug del Custom Post Type (restituito da GET /cpt)',
+								'schema'      => array( 'type' => 'string' ),
+							),
+							array(
+								'name'     => 'status',
+								'in'       => 'query',
+								'required' => false,
+								'schema'   => array( 'type' => 'string', 'enum' => array( 'any', 'publish', 'draft', 'pending', 'private' ), 'default' => 'any' ),
+							),
+							array(
+								'name'     => 'per_page',
+								'in'       => 'query',
+								'required' => false,
+								'schema'   => array( 'type' => 'integer', 'default' => 10 ),
+							),
+							array(
+								'name'     => 'page',
+								'in'       => 'query',
+								'required' => false,
+								'schema'   => array( 'type' => 'integer', 'default' => 1 ),
+							),
+						),
+						'responses'   => array(
+							'200' => array(
+								'description' => 'Lista items restituita.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+							'404' => array( 'description' => 'Custom Post Type non trovato o non accessibile.' ),
+						),
+					),
+					'post' => array(
+						'summary'     => 'Crea un nuovo item in un Custom Post Type',
+						'description' => 'Crea un nuovo item nel CPT specificato. Supporta titolo, contenuto, excerpt, stato, tassonomie e immagine in evidenza.',
+						'operationId' => 'createCPTItem',
+						'parameters'  => array(
+							array(
+								'name'     => 'type',
+								'in'       => 'path',
+								'required' => true,
+								'schema'   => array( 'type' => 'string' ),
+							),
+						),
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'required'   => array( 'title' ),
+										'properties' => array(
+											'title'          => array( 'type' => 'string', 'description' => 'Titolo dell\'item' ),
+											'content'        => array( 'type' => 'string', 'description' => 'Contenuto HTML' ),
+											'excerpt'        => array( 'type' => 'string', 'description' => 'Riassunto' ),
+											'slug'           => array( 'type' => 'string', 'description' => 'Slug URL personalizzato' ),
+											'status'         => array( 'type' => 'string', 'enum' => array( 'draft', 'publish', 'pending', 'private' ), 'default' => 'draft' ),
+											'featured_media' => array( 'type' => 'integer', 'description' => 'ID media in evidenza' ),
+											'taxonomies'     => array(
+												'type'        => 'object',
+												'description' => 'Oggetto con chiave = slug tassonomia, valore = array di ID o nomi dei termini. Es: {"product_cat": [5, 12], "product_tag": ["nuovo", "offerta"]}',
+											),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'201' => array(
+								'description' => 'Item creato con successo.',
+								'content'     => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ),
+							),
+							'400' => array( 'description' => 'Dati non validi.' ),
+							'404' => array( 'description' => 'Custom Post Type non trovato.' ),
+						),
+					),
+				),
+				'/cpt/{type}/{id}' => array(
+					'get' => array(
+						'summary'     => 'Recupera un singolo item di un CPT',
+						'operationId' => 'getCPTItem',
+						'parameters'  => array(
+							array( 'name' => 'type', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'string' ) ),
+							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),
+						),
+						'responses'   => array(
+							'200' => array( 'description' => 'Item recuperato.', 'content' => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ) ),
+							'404' => array( 'description' => 'Item o CPT non trovato.' ),
+						),
+					),
+					'post' => array(
+						'summary'     => 'Aggiorna un item di un CPT',
+						'operationId' => 'updateCPTItem',
+						'parameters'  => array(
+							array( 'name' => 'type', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'string' ) ),
+							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),
+						),
+						'requestBody' => array(
+							'required' => true,
+							'content'  => array(
+								'application/json' => array(
+									'schema' => array(
+										'type'       => 'object',
+										'properties' => array(
+											'title'      => array( 'type' => 'string' ),
+											'content'    => array( 'type' => 'string' ),
+											'excerpt'    => array( 'type' => 'string' ),
+											'slug'       => array( 'type' => 'string' ),
+											'status'     => array( 'type' => 'string', 'enum' => array( 'draft', 'publish', 'pending', 'private' ) ),
+											'taxonomies' => array( 'type' => 'object' ),
+										),
+									),
+								),
+							),
+						),
+						'responses'   => array(
+							'200' => array( 'description' => 'Item aggiornato.', 'content' => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ) ),
+							'404' => array( 'description' => 'Item o CPT non trovato.' ),
+						),
+					),
+					'delete' => array(
+						'summary'     => 'Elimina un item di un CPT',
+						'operationId' => 'deleteCPTItem',
+						'parameters'  => array(
+							array( 'name' => 'type', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'string' ) ),
+							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),
+							array( 'name' => 'force', 'in' => 'query', 'required' => false, 'schema' => array( 'type' => 'boolean' ), 'description' => 'Se true elimina definitivamente' ),
+						),
+						'responses'   => array(
+							'200' => array( 'description' => 'Item eliminato.', 'content' => array( 'application/json' => array( 'schema' => array( 'type' => 'object' ) ) ) ),
+							'404' => array( 'description' => 'Item o CPT non trovato.' ),
+						),
+					),
+				),
 			),
 		);
 

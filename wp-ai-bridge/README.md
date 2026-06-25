@@ -8,7 +8,7 @@
 
 A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys** or **OAuth2** (Authorization Code flow). Designed for integration with external AI services (Claude.ai, ChatGPT, custom automations).
 
-**Version:** 1.2.0  
+**Version:** 1.5.0  
 **Compatibility:** WordPress 6.0+, PHP 7.4+  
 **License:** MIT
 
@@ -19,9 +19,12 @@ A WordPress plugin that exposes secure REST endpoints for content management via
 Exposes a REST API under the `/wp-json/wpaib/v1/` namespace for:
 
 - Listing, creating, reading, updating, and deleting posts and pages
+- **Custom Post Types** — discover and CRUD any registered CPT (WooCommerce products, portfolios, events, reviews…) via `/cpt`
 - Uploading images (base64) to the media library
 - Listing and creating categories and tags
-- Reading site info and full-text search
+- Reading site info and full-text search (includes CPTs)
+- Managing plugins — list, activate, deactivate, delete (`/plugins`, admin-only)
+- Managing updates — check and apply core, plugin, and theme updates (`/updates`, admin-only)
 - MCP/function-calling tool execution (`/tools`, `/tools/execute`)
 - Dynamic OpenAPI 3.0.3 schema (`/openapi.json`) — import-ready for ChatGPT, Gemini, Claude.ai
 
@@ -150,7 +153,8 @@ Every REST request passes these cascading checks:
 **Audit log:** every access (success, auth failure, rate limit, forbidden) is logged to `wp_wpaib_audit_log` with timestamp, IP, user-agent, endpoint, and outcome.
 
 **What the plugin does NOT do (by design):**
-- Does not expose endpoints to manage users, roles, options, plugins, or themes
+- Does not expose endpoints to manage users, roles, or options
+- Plugin, theme, and update management require the matching WordPress capability (`activate_plugins`, `delete_plugins`, `update_plugins`, `update_themes`, `update_core`) on the credential's user — administrators only
 - Does not allow arbitrary code execution
 - Does not serve files from the server
 - Does not trust proxy headers unless explicitly configured
@@ -233,6 +237,42 @@ post = requests.post(f"{API_BASE}/posts", headers=HEADERS, json={
 
 print(f"Draft created: {post['link']}")
 ```
+
+### Custom Post Types
+
+```bash
+# 1. Discover available CPTs
+curl https://your-site.com/wp-json/wpaib/v1/cpt \
+  -H "X-API-Key: wpaib_xxxx..."
+# → { "items": [ {"slug": "review", "name": "Reviews", ...}, {"slug": "product", ...} ], "total": 2 }
+
+# 2. List items of a CPT
+curl https://your-site.com/wp-json/wpaib/v1/cpt/review?status=publish&per_page=5 \
+  -H "X-API-Key: wpaib_xxxx..."
+
+# 3. Create a new CPT item
+curl -X POST https://your-site.com/wp-json/wpaib/v1/cpt/review \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: wpaib_xxxx..." \
+  -d '{
+    "title": "Great product",
+    "content": "<p>Highly recommended!</p>",
+    "status": "publish",
+    "taxonomies": { "review_category": ["electronics"], "review_tag": [3, 7] }
+  }'
+
+# 4. Update a CPT item
+curl -X PUT https://your-site.com/wp-json/wpaib/v1/cpt/review/42 \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: wpaib_xxxx..." \
+  -d '{ "status": "draft" }'
+
+# 5. Delete a CPT item
+curl -X DELETE https://your-site.com/wp-json/wpaib/v1/cpt/review/42?force=true \
+  -H "X-API-Key: wpaib_xxxx..."
+```
+
+> **Note:** Only CPTs registered with `public = true` and `show_in_rest = true` are exposed. Built-in types (post, page, attachment) are excluded — use the dedicated `/posts` and `/pages` endpoints instead.
 
 ---
 

@@ -3,7 +3,7 @@
  * Plugin Name:       WP AI Bridge
  * Plugin URI:        https://jmclement.net
  * Description:       Espone endpoint REST sicuri per gestione contenuti tramite API key per utente. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni).
- * Version:           1.4.0
+ * Version:           1.5.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Jean-Marie Clément
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Costanti del plugin.
-define( 'WPAIB_VERSION', '1.4.0' );
+define( 'WPAIB_VERSION', '1.5.0' );
 define( 'WPAIB_PLUGIN_FILE', __FILE__ );
 define( 'WPAIB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPAIB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -49,6 +49,7 @@ require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-updates-controll
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-mcp-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-mcp-http-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-openapi-controller.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-cpt-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'admin/class-wpaib-admin.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-client-manager.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-oauth-server.php';

@@ -61,6 +61,7 @@ class WPAIB_Plugin {
 		$mcp_controller      = new WPAIB_MCP_Controller();
 		$mcp_http_controller = new WPAIB_MCP_HTTP_Controller();
 		$openapi_controller  = new WPAIB_OpenAPI_Controller();
+		$cpt_controller      = new WPAIB_CPT_Controller();
 
 		$posts_controller->register_routes();
 		$media_controller->register_routes();
@@ -73,6 +74,7 @@ class WPAIB_Plugin {
 		$mcp_controller->register_routes();
 		$mcp_http_controller->register_routes();
 		$openapi_controller->register_routes();
+		$cpt_controller->register_routes();
 
 		$oauth_controller = new WPAIB_OAuth_Controller();
 		$oauth_controller->register_routes();
