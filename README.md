@@ -84,7 +84,13 @@ WP AI Bridge acts as an **OAuth2 Authorization Server** (Authorization Code flow
 | Platform | Redirect URI |
 |----------|-------------|
 | ChatGPT Custom Actions | `https://chat.openai.com/aip/g-<id>/oauth/callback` |
-| Claude.ai tools | `https://claude.ai/api/oauth/callback` |
+| Claude.ai custom connector (MCP) | `https://claude.ai/api/mcp/auth_callback` |
+| Claude.ai tools (generic OAuth) | `https://claude.ai/api/oauth/callback` |
+
+The redirect URI is compared with a strict string match, so it must be registered
+exactly as the client sends it. Claude.ai custom connectors use the MCP callback
+above — registering only `oauth/callback` makes the authorize request fail with
+`OAuth2 Error: invalid client or redirect URI.`
 
 ### Flow summary
 

@@ -74,8 +74,9 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 		<div style="flex:1;min-width:280px;max-width:480px;border:1px solid #c3c4c7;border-radius:4px;padding:16px 20px;">
 			<h3 style="margin-top:0;">Claude.ai <span style="font-size:12px;font-weight:normal;color:#646970;">(connettore MCP)</span></h3>
 			<ol style="margin:0;padding-left:1.4em;line-height:1.8;">
-				<li><?php esc_html_e( 'Crea un client qui sotto con:', 'wp-ai-bridge' ); ?><br>
-					<?php esc_html_e( 'Redirect URI:', 'wp-ai-bridge' ); ?> <code>https://claude.ai/api/oauth/callback</code>
+				<li><?php esc_html_e( 'Crea un client qui sotto con questa Redirect URI:', 'wp-ai-bridge' ); ?><br>
+					<code>https://claude.ai/api/mcp/auth_callback</code><br>
+					<span style="color:#646970;font-size:12px;"><?php esc_html_e( 'Callback usata dai connettori MCP. Se colleghi Claude.ai come tool OAuth generico (non MCP), aggiungi su una seconda riga anche', 'wp-ai-bridge' ); ?> <code style="font-size:11px;">https://claude.ai/api/oauth/callback</code></span>
 				</li>
 				<li><?php esc_html_e( 'In Claude.ai → Impostazioni → Connettori → Aggiungi connettore personalizzato', 'wp-ai-bridge' ); ?></li>
 				<li><?php esc_html_e( 'Compila i campi:', 'wp-ai-bridge' ); ?>
@@ -201,8 +202,8 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 				<th><label for="client_redirect_uris"><?php esc_html_e( 'Redirect URI', 'wp-ai-bridge' ); ?></label></th>
 				<td>
 					<textarea id="client_redirect_uris" name="client_redirect_uris" rows="3" class="large-text" required
-					          placeholder="https://claude.ai/api/oauth/callback"></textarea>
-					<p class="description"><?php esc_html_e( 'Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali).', 'wp-ai-bridge' ); ?></p>
+					          placeholder="<?php echo esc_attr( "https://claude.ai/api/mcp/auth_callback\nhttps://claude.ai/api/oauth/callback" ); ?>"></textarea>
+					<p class="description"><?php esc_html_e( 'Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali). Il confronto è esatto: la URI registrata deve coincidere carattere per carattere con quella inviata dal client.', 'wp-ai-bridge' ); ?></p>
 				</td>
 			</tr>
 		</table>
