@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Documented redirect URI for Claude.ai custom connectors**. The admin guide, the redirect URI field placeholder, and the README all advertised `https://claude.ai/api/oauth/callback`, but Claude.ai custom connectors (MCP) send `https://claude.ai/api/mcp/auth_callback`. Since redirect URIs are matched as exact strings, a client registered from those instructions always failed the authorize step with `OAuth2 Error: invalid client or redirect URI.` Both callbacks are now documented, and the strict-match requirement is stated explicitly.
+
+---
+
 ## [1.4.0] - 2026-06-19
 
 ### Added
