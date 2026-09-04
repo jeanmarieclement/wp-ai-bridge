@@ -68,6 +68,10 @@ class WPAIB_Media_Controller {
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
+						'after_id'  => array(
+							'default'           => 0,
+							'sanitize_callback' => 'absint',
+						),
 						'mime_type' => array(
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_text_field',
@@ -97,8 +101,9 @@ class WPAIB_Media_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function list_media( WP_REST_Request $request ) {
-		$per_page  = min( 100, max( 1, (int) $request->get_param( 'per_page' ) ) );
+		$per_page  = WPAIB_Rest_Helper::per_page( $request->get_param( 'per_page' ) );
 		$page      = max( 1, (int) $request->get_param( 'page' ) );
+		$after_id  = WPAIB_Rest_Helper::after_id( $request->get_param( 'after_id' ) );
 		$mime_type = sanitize_text_field( $request->get_param( 'mime_type' ) );
 
 		$args = array(
@@ -116,29 +121,72 @@ class WPAIB_Media_Controller {
 			}
 		}
 
-		$query = new WP_Query( $args );
+		$query = WPAIB_Rest_Helper::query_posts( $args, $after_id );
 
 		$items = array();
 		foreach ( $query->posts as $attachment ) {
-			$items[] = array(
-				'id'        => (int) $attachment->ID,
-				'title'     => $attachment->post_title,
-				'url'       => wp_get_attachment_url( $attachment->ID ),
-				'mime_type' => $attachment->post_mime_type,
-				'date'      => $attachment->post_date_gmt,
-				'alt'       => get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true ),
-				'caption'   => $attachment->post_excerpt,
-			);
+			$items[] = $this->prepare_attachment( $attachment );
 		}
 
-		return new WP_REST_Response(
-			array(
-				'items'       => $items,
-				'total'       => (int) $query->found_posts,
-				'total_pages' => (int) $query->max_num_pages,
-				'page'        => $page,
-			),
-			200
+		$response = array(
+			'items'       => $items,
+			'total'       => (int) $query->found_posts,
+			'total_pages' => (int) $query->max_num_pages,
+			'page'        => $page,
+		);
+
+		if ( $after_id > 0 ) {
+			// Con il cursore la paginazione per pagina non ha significato: il
+			// client continua passando next_after_id finché has_more è false.
+			// Il conteggio è quello dei record che restano dal cursore in poi,
+			// non il totale della collezione, e viene nominato di conseguenza.
+			$response['total_remaining'] = $response['total'];
+			unset( $response['total'], $response['total_pages'], $response['page'] );
+			$response['after_id']      = $after_id;
+			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
+			$response['has_more']      = count( $items ) === $per_page;
+		}
+
+		return new WP_REST_Response( $response, 200 );
+	}
+
+	/**
+	 * Prepara la rappresentazione di un allegato per la risposta.
+	 *
+	 * @param WP_Post $attachment Allegato.
+	 * @return array
+	 */
+	private function prepare_attachment( $attachment ) {
+		$id       = (int) $attachment->ID;
+		$metadata = wp_get_attachment_metadata( $id );
+		$file     = get_attached_file( $id );
+
+		// filesize sta nei metadata dalla 6.0; per gli allegati più vecchi va letto
+		// dal disco, e su storage remoto (offload) può non essere disponibile.
+		$filesize = isset( $metadata['filesize'] ) ? (int) $metadata['filesize'] : null;
+		if ( null === $filesize && $file && file_exists( $file ) ) {
+			$filesize = (int) filesize( $file );
+		}
+
+		return array(
+			'id'                => $id,
+			'title'             => $attachment->post_title,
+			'slug'              => $attachment->post_name,
+			'url'               => wp_get_attachment_url( $id ),
+			'source_url'        => wp_get_attachment_url( $id ),
+			'mime_type'         => $attachment->post_mime_type,
+			'width'             => isset( $metadata['width'] ) ? (int) $metadata['width'] : null,
+			'height'            => isset( $metadata['height'] ) ? (int) $metadata['height'] : null,
+			'filesize'          => $filesize,
+			'date'              => $attachment->post_date_gmt,
+			'post_date_gmt'     => $attachment->post_date_gmt,
+			'post_modified_gmt' => $attachment->post_modified_gmt,
+			'alt'               => get_post_meta( $id, '_wp_attachment_image_alt', true ),
+			'alt_text'          => get_post_meta( $id, '_wp_attachment_image_alt', true ),
+			'caption'           => $attachment->post_excerpt,
+			'description'       => $attachment->post_content,
+			'post_parent'       => (int) $attachment->post_parent,
+			'author_id'         => (int) $attachment->post_author,
 		);
 	}
 

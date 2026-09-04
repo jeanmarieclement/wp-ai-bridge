@@ -123,6 +123,8 @@ class WPAIB_Auth {
 			return true;
 		}
 
+		$retry_after = WPAIB_Rate_Limiter::last_retry_after();
+
 		WPAIB_Logger::log(
 			array(
 				'endpoint'    => $endpoint,
@@ -131,10 +133,43 @@ class WPAIB_Auth {
 				'outcome'     => 'rate_limited',
 			)
 		);
+
+		self::send_retry_after( $retry_after );
+
 		return new WP_Error(
 			'wpaib_rate_limited',
 			__( 'Too many requests.', 'wp-ai-bridge' ),
-			array( 'status' => 429 )
+			array(
+				'status'      => 429,
+				'retry_after' => $retry_after,
+			)
+		);
+	}
+
+	/**
+	 * Aggiunge l'header Retry-After alla risposta 429.
+	 *
+	 * Un WP_Error restituito da permission_callback perde i propri header nella
+	 * conversione a risposta REST, quindi l'header va agganciato alla risposta
+	 * finale. Serve a un client che deve leggere migliaia di record in sequenza:
+	 * senza, può solo indovinare quanto aspettare.
+	 *
+	 * @param int $retry_after Secondi da attendere.
+	 * @return void
+	 */
+	private static function send_retry_after( $retry_after ) {
+		$retry_after = max( 1, (int) $retry_after );
+
+		add_filter(
+			'rest_post_dispatch',
+			function ( $response ) use ( $retry_after ) {
+				if ( $response instanceof WP_REST_Response && 429 === $response->get_status() ) {
+					$response->header( 'Retry-After', (string) $retry_after );
+				}
+				return $response;
+			},
+			10,
+			1
 		);
 	}
 

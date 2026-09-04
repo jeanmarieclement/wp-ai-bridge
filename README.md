@@ -23,6 +23,7 @@ Exposes a REST API under the `/wp-json/wpaib/v1/` namespace for:
 - Uploading images (base64) to the media library
 - Listing and creating categories and tags
 - Reading site info and full-text search (includes CPTs)
+- **Reading a whole site for export** — stable cursor pagination, rendered content, comments, users, menus, theme, and full site configuration (see [Full site export](#full-site-export))
 - Managing plugins — list, activate, deactivate, delete (`/plugins`, admin-only)
 - Managing updates — check and apply core, plugin, and theme updates (`/updates`, admin-only)
 - MCP/function-calling tool execution (`/tools`, `/tools/execute`)
@@ -161,7 +162,7 @@ Every REST request passes these cascading checks:
 **Audit log:** every access (success, auth failure, rate limit, forbidden) is logged to `wp_wpaib_audit_log` with timestamp, IP, user-agent, endpoint, and outcome.
 
 **What the plugin does NOT do (by design):**
-- Does not expose endpoints to manage users, roles, or options
+- Does not expose endpoints to **manage** users, roles, or options. `GET /users` is read-only and requires `list_users`; it never returns passwords or password hashes. `GET /site/full` is read-only and requires `manage_options`
 - Plugin, theme, and update management require the matching WordPress capability (`activate_plugins`, `delete_plugins`, `update_plugins`, `update_themes`, `update_core`) on the credential's user — administrators only
 - Does not allow arbitrary code execution
 - Does not serve files from the server
@@ -284,6 +285,55 @@ curl -X DELETE https://your-site.com/wp-json/wpaib/v1/cpt/review/42?force=true \
 
 ---
 
+## Full Site Export
+
+Every read endpoint is designed so a consumer can walk an entire site — content, media, users, comments, menus, settings — in a single resumable pass.
+
+### Stable pagination
+
+Page numbers shift when content is created or edited mid-run, so records get skipped or duplicated. Pass `after_id` instead: the endpoint returns only records with a greater ID, ordered by ID ascending.
+
+```bash
+# First batch
+curl "https://your-site.com/wp-json/wpaib/v1/posts?after_id=0&per_page=100&status=any" \
+  -H "X-API-Key: wpaib_..."
+
+# → { "items": [...], "next_after_id": 412, "has_more": true, "total_remaining": 830 }
+
+# Next batch: feed next_after_id back in, until has_more is false
+curl "https://your-site.com/wp-json/wpaib/v1/posts?after_id=412&per_page=100&status=any" \
+  -H "X-API-Key: wpaib_..."
+```
+
+Available on `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, `/users`. With a cursor, `total_remaining` counts the records left from the cursor onward and replaces `total`, `page` and `total_pages`.
+
+### Rendered content
+
+`post_content` alone is not enough: reusable blocks, query loops, dynamic galleries and shortcodes carry no inner HTML. `/posts` and `/pages` return `content_rendered` — the output of `apply_filters( 'the_content', … )` — alongside the raw content. Pass `content_rendered=false` to skip it when you only need the source.
+
+### Trashed content
+
+`status=any` means everything except the trash, as it always has. Ask for `status=trash` explicitly to carry the trash over.
+
+### Read-only endpoints for a full migration
+
+| Endpoint | Capability | Returns |
+|----------|-----------|---------|
+| `GET /users` | `list_users` | id, login, email, display name, roles, description, avatar URL. **No passwords, no hashes** |
+| `GET /users/{id}` | `list_users` | The same for a single user |
+| `GET /menus` | `edit_theme_options` | Registered menus, assigned location, items, hierarchy, item type and target object |
+| `GET /theme` | `edit_theme_options` | Active theme (slug, name, version), stylesheet and template URLs, sidebars, representative URLs to capture |
+| `GET /site/full` | `manage_options` | Title, description, language, timezone, front page and page-for-posts, logo, favicon, permalink structure, `site_uuid` |
+| `GET /comments` | `edit_posts` / `moderate_comments` | Comments with parent, author URL, user id, status, type and parent post type |
+
+`/comments` returns approved comments with `edit_posts`. Any other `status` (`hold`, `spam`, `trash`, `all`) requires `moderate_comments`, which also unlocks the author's email and IP address — personal data that stays out of reach of the lower capability.
+
+### Recognising the same source site
+
+WordPress has no native site identifier, so a consumer cannot tell whether it is looking at a site it has already imported. `/site/full` returns `site_uuid`: a UUIDv4 generated on first request, stored in `wp_options` as `wpaib_site_uuid`, opaque (nothing derived from host, path, or user data) and stable across a domain change.
+
+---
+
 ## Response Codes
 
 | Code | Meaning |
@@ -299,6 +349,8 @@ curl -X DELETE https://your-site.com/wp-json/wpaib/v1/cpt/review/42?force=true \
 | 500 | Server error |
 
 For security reasons, 401 errors do not distinguish between missing, invalid, expired, or revoked credentials (anti-enumeration).
+
+A 429 response carries a `Retry-After` header (and `retry_after` in the error data) with the number of seconds left in the current rate-limit window, so a client running a long export can back off for exactly as long as it needs to.
 
 ---
 

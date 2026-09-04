@@ -779,7 +779,11 @@ class WPAIB_MCP_Controller {
 
 			case 'get_categories':
 				$controller = new WPAIB_Taxonomy_Controller();
-				return $controller->list_categories();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/categories' );
+				foreach ( $args as $k => $v ) {
+					$sub_req->set_param( $k, $v );
+				}
+				return $controller->list_categories( $sub_req );
 
 			case 'create_category':
 				if ( ! current_user_can( 'manage_categories' ) ) {
@@ -793,7 +797,11 @@ class WPAIB_MCP_Controller {
 
 			case 'get_tags':
 				$controller = new WPAIB_Taxonomy_Controller();
-				return $controller->list_tags();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/tags' );
+				foreach ( $args as $k => $v ) {
+					$sub_req->set_param( $k, $v );
+				}
+				return $controller->list_tags( $sub_req );
 
 			case 'get_comments':
 				$controller = new WPAIB_Posts_Controller();

@@ -3,7 +3,7 @@
  * Plugin Name:       WP AI Bridge
  * Plugin URI:        https://jmclement.net
  * Description:       Espone endpoint REST sicuri per gestione contenuti tramite API key per utente. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni).
- * Version:           1.5.1
+ * Version:           1.6.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Jean-Marie Clément
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Costanti del plugin.
-define( 'WPAIB_VERSION', '1.5.1' );
+define( 'WPAIB_VERSION', '1.6.0' );
 define( 'WPAIB_PLUGIN_FILE', __FILE__ );
 define( 'WPAIB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPAIB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -38,11 +38,14 @@ require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-logger.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-rate-limiter.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-api-key-manager.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-auth.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/class-wpaib-rest-helper.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-posts-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-media-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-taxonomy-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-pages-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-site-controller.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-users-controller.php';
+require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-appearance-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-search-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-plugins-controller.php';
 require_once WPAIB_PLUGIN_DIR . 'includes/endpoints/class-wpaib-updates-controller.php';

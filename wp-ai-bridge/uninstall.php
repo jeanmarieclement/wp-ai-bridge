@@ -26,6 +26,7 @@ foreach ( $tables as $table ) {
 
 delete_option( 'wpaib_db_version' );
 delete_option( 'wpaib_disabled_tools' );
+delete_option( 'wpaib_site_uuid' );
 
 // Rimuove il cron di pulizia OAuth2 schedulato.
 wp_clear_scheduled_hook( 'wpaib_cleanup_expired' );

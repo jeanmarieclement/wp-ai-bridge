@@ -55,6 +55,8 @@ class WPAIB_Plugin {
 		$taxonomy_controller = new WPAIB_Taxonomy_Controller();
 		$pages_controller    = new WPAIB_Pages_Controller();
 		$site_controller     = new WPAIB_Site_Controller();
+		$users_controller    = new WPAIB_Users_Controller();
+		$appearance_ctrl     = new WPAIB_Appearance_Controller();
 		$search_controller   = new WPAIB_Search_Controller();
 		$plugins_controller  = new WPAIB_Plugins_Controller();
 		$updates_controller  = new WPAIB_Updates_Controller();
@@ -68,6 +70,8 @@ class WPAIB_Plugin {
 		$taxonomy_controller->register_routes();
 		$pages_controller->register_routes();
 		$site_controller->register_routes();
+		$users_controller->register_routes();
+		$appearance_ctrl->register_routes();
 		$search_controller->register_routes();
 		$plugins_controller->register_routes();
 		$updates_controller->register_routes();

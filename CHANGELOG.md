@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-09-04
+
+### Added
+- **Cursor pagination (`after_id`)** on `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags` and the new `/users`. Page-number pagination is unstable across a long-running export: content created or edited mid-run shifts the window, so records get skipped or duplicated. With `after_id` the query returns only records whose ID is greater than the cursor, ordered by ID ascending, and the response carries `next_after_id`, `has_more` and `total_remaining`. Implemented with a filter scoped to a custom query var (`posts_where`, `comments_clauses`, `pre_user_query`, `terms_clauses`), added immediately before the query and removed immediately after, so no other query on the request is affected.
+- **`content_rendered`** on `/posts` and `/pages` (single and list, on by default, `content_rendered=false` to skip it): `post_content` passed through `apply_filters( 'the_content', … )`. Reusable blocks, query loops, dynamic galleries and shortcodes carry no inner HTML, so a consumer reading only `post_content` gets empty holes. The raw `post_content` is still returned alongside it.
+- **Pagination on `/categories` and `/tags`**: `per_page`, `page` and `after_id` are now honoured, and the response carries `total` and `total_pages`. Without any of them the behaviour is unchanged — every term in one response.
+- **New fields in existing payloads.** Posts: `comment_status`, `category_ids`, `tag_ids` (term IDs, the only stable basis for a cross-site mapping — names can collide or change), `post_date_gmt`, `post_modified_gmt` and `menu_order`. Pages: the same, plus `template`. Media: `source_url`, `width`, `height`, `filesize`, `alt_text`, `description`, `post_parent`, `author_id`, `post_date_gmt`, `post_modified_gmt`.
+- **`status=trash`** on `/posts` and `/pages`. `any` keeps its historical meaning (everything except the trash), so a consumer that wants trashed content must ask for it explicitly.
+- **`/comments` is now export-capable**: `after_id`, `per_page`, fixed ordering by comment ID, `post_type` filter, `status` (`approve`, `hold`, `spam`, `trash`, `all`), and `parent`, `author_url`, `user_id`, `status`, `type`, `comment_post_type` in the payload. The existing route was extended rather than shadowed by a second registration on the same path, where behaviour would depend on registration order.
+- **`GET /users`** (`list_users`) and **`GET /users/{id}`**: id, login, email, display name, names, slug, url, description, roles, registration date, avatar URL, post count. No passwords and no hashes leave WordPress — a consumer creates local accounts with its own credentials.
+- **`GET /menus`** (`edit_theme_options`): registered menus with assigned location, items, hierarchy, and each item's type and target object.
+- **`GET /theme`** (`edit_theme_options`): active theme slug, name and version, stylesheet and template URLs, parent theme, block-theme flag, registered sidebars, and representative URLs to capture (home, latest post, a page, an archive).
+- **`GET /site/full`** (`manage_options`): title, description, language, timezone, date and time formats, front page and page-for-posts, permalink structure, logo, favicon, comment and registration defaults, content counts, and `site_uuid`.
+- **`site_uuid`**: WordPress has no native site identifier, so a consumer cannot recognise "the same source site" across runs and ends up duplicating instead of updating. A UUIDv4 is generated on first request, persisted in `wp_options` as `wpaib_site_uuid`, and exposed in `/site/full`. It is opaque — no host, no path, nothing derived from user data — and survives a domain change.
+- **`Retry-After` on 429 responses**, plus `retry_after` in the error payload. A full export is thousands of sequential requests; without the header a client can only guess how long to back off.
+- OpenAPI 3.0.3 schema extended with `/pages`, `/comments`, `/users`, `/users/{id}`, `/menus`, `/theme`, `/site`, `/site/full` and the `GET /media` operation, and with the `after_id`, `content_rendered` and `status=trash` parameters on the existing read paths.
+
+### Security
+- Comments with a status other than `approve` now require `moderate_comments`, and the author's email and IP address — personal data — are omitted from the payload unless the credential holds that capability. `edit_posts` alone reaches approved comments only.
+- `/users` exposes no password material of any kind. `/menus` and `/theme` require `edit_theme_options`, `/site/full` requires `manage_options`: the same capabilities WordPress uses to protect that data in the backend.
+
+### Changed
+- `GET /posts` and `GET /pages` without an explicit `per_page` now return 10 records instead of 1. The old value came from clamping an absent parameter to the minimum, not from a deliberate default.
+
+---
+
 ## [1.5.1] - 2026-08-22
 
 ### Fixed

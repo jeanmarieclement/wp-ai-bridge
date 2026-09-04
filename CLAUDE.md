@@ -26,8 +26,12 @@ Auth header: `X-API-Key: <chiave>` oppure `Authorization: Bearer wpaib_at_...`
 Endpoint disponibili:
 - `GET/POST /posts`, `GET/POST/DELETE /posts/{id}`
 - `GET/POST /pages`, `GET/POST/DELETE /pages/{id}`
-- `POST /media` (base64, max 5 MB, tipi: jpg/png/gif/webp)
+- `GET/POST /media` (upload base64, max 5 MB, tipi: jpg/png/gif/webp)
 - `GET/POST /categories`, `GET/POST /tags`
+- `GET /comments`, `GET/POST /posts/{id}/comments`, `POST /comments/{id}`, `POST /comments/bulk`
+- `GET /users`, `GET /users/{id}` (sola lettura, `list_users`)
+- `GET /menus`, `GET /theme` (sola lettura, `edit_theme_options`)
+- `GET /site`, `GET /site/full` (sola lettura, `manage_options` per `/site/full`)
 - `GET /tools`, `POST /tools/execute` (MCP / function calling)
 - `GET /openapi.json` (pubblico, no auth — per import in ChatGPT/Gemini/Claude)
 - `GET/POST /wpaib/oauth/authorize` (browser — pagina consenso OAuth2, rewrite rule WP)
@@ -56,7 +60,8 @@ Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `w
 |------|--------|----------------|
 | `includes/class-wpaib-auth.php` | `WPAIB_Auth` | Middleware auth: Bearer (OAuth2) poi API Key |
 | `includes/class-wpaib-api-key-manager.php` | `WPAIB_API_Key_Manager` | Generazione, validazione (hash), revoca chiavi |
-| `includes/class-wpaib-rate-limiter.php` | `WPAIB_Rate_Limiter` | 300 req/min via transient WP, keyed sull'hash |
+| `includes/class-wpaib-rate-limiter.php` | `WPAIB_Rate_Limiter` | 300 req/min via transient WP, keyed sull'hash; espone i secondi per `Retry-After` |
+| `includes/class-wpaib-rest-helper.php` | `WPAIB_Rest_Helper` | Paginazione a cursore `after_id` e rendering di `the_content` |
 | `includes/class-wpaib-logger.php` | `WPAIB_Logger` | Audit log su `wp_wpaib_audit_log` |
 | `includes/class-wpaib-installer.php` | `WPAIB_Installer` | `dbDelta()` per le 5 tabelle, rewrite rule OAuth2 |
 | `includes/class-wpaib-oauth-client-manager.php` | `WPAIB_OAuth_Client_Manager` | CRUD client OAuth2 (client_id, secret hash, redirect_uris) |
@@ -66,6 +71,9 @@ Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `w
 | `includes/endpoints/class-wpaib-posts-controller.php` | `WPAIB_Posts_Controller` | CRUD articoli |
 | `includes/endpoints/class-wpaib-media-controller.php` | `WPAIB_Media_Controller` | Upload immagini |
 | `includes/endpoints/class-wpaib-taxonomy-controller.php` | `WPAIB_Taxonomy_Controller` | Categorie e tag |
+| `includes/endpoints/class-wpaib-users-controller.php` | `WPAIB_Users_Controller` | `/users` in sola lettura (mai password né hash) |
+| `includes/endpoints/class-wpaib-appearance-controller.php` | `WPAIB_Appearance_Controller` | `/menus` e `/theme` in sola lettura |
+| `includes/endpoints/class-wpaib-site-controller.php` | `WPAIB_Site_Controller` | `/site`, `/site/full` e generazione di `site_uuid` |
 | `includes/endpoints/class-wpaib-mcp-controller.php` | `WPAIB_MCP_Controller` | Endpoint `/tools` e `/tools/execute` |
 | `includes/endpoints/class-wpaib-openapi-controller.php` | `WPAIB_OpenAPI_Controller` | Schema OpenAPI 3.0.3 dinamico (include OAuth2) |
 | `admin/class-wpaib-admin.php` | `WPAIB_Admin` | UI admin: API key profilo utente + gestione OAuth2 client |
@@ -89,3 +97,14 @@ Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `w
 - Segreti OAuth2 (client_secret, auth code, access/refresh token) mai in chiaro nel DB — solo SHA-256
 - `hash_equals()` per tutti i confronti di segreti (timing-safe)
 - Refresh token rotation ad ogni utilizzo: il vecchio viene revocato, nuovo pair emesso
+
+## Lettura per export completo (dalla 1.6.0)
+
+- Paginazione a cursore: `after_id` su `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, `/users`. La paginazione per numero di pagina non è stabile mentre il contenuto cambia
+- Ogni cursore è implementato con un filtro (`posts_where`, `comments_clauses`, `pre_user_query`, `terms_clauses`) agganciato a una query var custom `wpaib_after_id`, aggiunto subito prima della query e rimosso subito dopo: nessun'altra query della richiesta viene toccata
+- In modalità cursore la risposta porta `next_after_id`, `has_more` e `total_remaining` al posto di `total`/`page`/`total_pages`
+- `content_rendered` (attivo di default su `/posts` e `/pages`) è `apply_filters( 'the_content', ... )`: solo così blocchi riutilizzabili, query loop, gallerie dinamiche e shortcode hanno HTML
+- `status=any` resta "tutto tranne il cestino"; `trash` va chiesto esplicitamente
+- I commenti non approvati e i dati personali dell'autore (email, IP) richiedono `moderate_comments`, non basta `edit_posts`
+- `wpaib_site_uuid` in `wp_options`: UUIDv4 opaco generato alla prima richiesta di `/site/full`, sopravvive a un cambio di dominio
+- Il 429 porta l'header `Retry-After` con i secondi che restano nella finestra
