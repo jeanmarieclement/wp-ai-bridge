@@ -1015,32 +1015,31 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca gli items di un Custom Post Type',
 						'description' => 'Recupera una lista paginata di items di un CPT specifico, filtrabili per stato. Usa il valore "slug" restituito da /cpt come parametro {type}.',
 						'operationId' => 'listCPTItems',
-						'parameters'  => array(
+						// Stessi parametri di paginazione degli altri endpoint di
+						// lettura: il controller passa da WPAIB_Rest_Helper, quindi
+						// accetta il cursore after_id e gli stessi stati.
+						'parameters'  => array_merge(
 							array(
-								'name'        => 'type',
-								'in'          => 'path',
-								'required'    => true,
-								'description' => 'Slug del Custom Post Type (restituito da GET /cpt)',
-								'schema'      => array( 'type' => 'string' ),
+								array(
+									'name'        => 'type',
+									'in'          => 'path',
+									'required'    => true,
+									'description' => 'Slug del Custom Post Type (restituito da GET /cpt)',
+									'schema'      => array( 'type' => 'string' ),
+								),
+								array(
+									'name'        => 'status',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Stato di pubblicazione da filtrare. `any` copre tutto tranne il cestino; `trash` va richiesto esplicitamente.',
+									'schema'      => array(
+										'type'    => 'string',
+										'enum'    => array( 'any', 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
+										'default' => 'any',
+									),
+								),
 							),
-							array(
-								'name'     => 'status',
-								'in'       => 'query',
-								'required' => false,
-								'schema'   => array( 'type' => 'string', 'enum' => array( 'any', 'publish', 'draft', 'pending', 'private' ), 'default' => 'any' ),
-							),
-							array(
-								'name'     => 'per_page',
-								'in'       => 'query',
-								'required' => false,
-								'schema'   => array( 'type' => 'integer', 'default' => 10 ),
-							),
-							array(
-								'name'     => 'page',
-								'in'       => 'query',
-								'required' => false,
-								'schema'   => array( 'type' => 'integer', 'default' => 1 ),
-							),
+							$this->pagination_params( 10 )
 						),
 						'responses'   => array(
 							'200' => array(

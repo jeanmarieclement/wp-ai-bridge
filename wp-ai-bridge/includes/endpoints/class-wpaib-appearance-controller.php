@@ -108,7 +108,10 @@ class WPAIB_Appearance_Controller {
 				'location'        => $location,
 				'location_label'  => isset( $locations[ $location ] ) ? $locations[ $location ] : '',
 				'locations'       => $menu_locations,
-				'location_labels' => $location_labels,
+				// Cast a oggetto: una mappa vuota in PHP è un array, e in JSON
+				// diventerebbe [] invece di {} — un tipo diverso da quello che
+				// riceve chi ha almeno una location assegnata.
+				'location_labels' => (object) $location_labels,
 				'items'           => $prepared_menu,
 			);
 		}
@@ -142,7 +145,7 @@ class WPAIB_Appearance_Controller {
 				'location'        => '',
 				'location_label'  => '',
 				'locations'       => array(),
-				'location_labels' => array(),
+				'location_labels' => (object) array(),
 				'items'           => $nav_items,
 			);
 		}

@@ -309,13 +309,13 @@ class WPAIB_Rest_Helper {
 	}
 
 	/**
-	 * Espande lo stato richiesto in una lista di post_status per WP_Query.
+	 * Normalizza lo stato richiesto in un post_status accettato da WP_Query.
 	 *
 	 * `any` mantiene il significato storico (tutto tranne il cestino); `trash`
-	 * va richiesto esplicitamente.
+	 * va richiesto esplicitamente. Uno stato non riconosciuto ricade su `any`.
 	 *
 	 * @param string $status Stato richiesto.
-	 * @return string
+	 * @return string|array
 	 */
 	public static function post_status( $status ) {
 		$status = sanitize_key( $status );
@@ -325,11 +325,19 @@ class WPAIB_Rest_Helper {
 			$status = 'any';
 		}
 
-		// 'any' viene passato tale e quale a WP_Query, che lo espande in "tutti gli
-		// stati tranne quelli con exclude_from_search" — quindi niente cestino né
-		// auto-draft, ma inclusi gli stati registrati da altri plugin. Una lista
-		// fissa qui farebbe sparire da un export completo tutto ciò che sta in uno
-		// stato personalizzato.
+		if ( 'any' === $status ) {
+			// Il letterale 'any' di WP_Query non basta: esclude anche gli stati
+			// registrati con exclude_from_search, che è come vengono dichiarati
+			// gli stati di workflow riservati di parecchi plugin editoriali.
+			// Quei contenuti sparirebbero in silenzio da un export "completo".
+			// La lista esplicita parte invece dagli stati non interni — che già
+			// lasciano fuori trash, auto-draft e inherit — e li tiene tutti.
+			$stati = array_keys( get_post_stati( array( 'internal' => false ) ) );
+			$stati = array_diff( $stati, array( 'trash', 'auto-draft' ) );
+
+			return array_values( $stati );
+		}
+
 		return $status;
 	}
 }
