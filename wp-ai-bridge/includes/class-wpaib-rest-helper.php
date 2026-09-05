@@ -39,12 +39,20 @@ class WPAIB_Rest_Helper {
 	}
 
 	/**
-	 * Normalizza il parametro after_id (0 = paginazione classica per pagina).
+	 * Normalizza il parametro after_id.
 	 *
-	 * @param mixed $value Valore grezzo.
-	 * @return int
+	 * Null (parametro assente dalla richiesta) significa "nessun cursore":
+	 * paginazione classica per pagina. Un valore esplicito, incluso 0, attiva
+	 * la modalità cursore: 0 è il cursore iniziale legittimo di un export che
+	 * riparte da zero, e va distinto dall'assenza del parametro.
+	 *
+	 * @param mixed $value Valore grezzo, o null se il parametro non è stato inviato.
+	 * @return int|null
 	 */
 	public static function after_id( $value ) {
+		if ( null === $value ) {
+			return null;
+		}
 		return max( 0, (int) $value );
 	}
 
@@ -59,10 +67,10 @@ class WPAIB_Rest_Helper {
 	 * @param int   $after_id Restituisce solo i record con ID maggiore di questo.
 	 * @return WP_Query
 	 */
-	public static function query_posts( array $args, $after_id = 0 ) {
+	public static function query_posts( array $args, $after_id = null ) {
 		$after_id = self::after_id( $after_id );
 
-		if ( $after_id < 1 ) {
+		if ( null === $after_id ) {
 			return new WP_Query( $args );
 		}
 
@@ -103,10 +111,10 @@ class WPAIB_Rest_Helper {
 	 * @param int   $after_id Restituisce solo i commenti con ID maggiore di questo.
 	 * @return array Lista di WP_Comment.
 	 */
-	public static function query_comments( array $args, $after_id = 0 ) {
+	public static function query_comments( array $args, $after_id = null ) {
 		$after_id = self::after_id( $after_id );
 
-		if ( $after_id < 1 ) {
+		if ( null === $after_id ) {
 			$query = new WP_Comment_Query();
 			return $query->query( $args );
 		}
@@ -151,10 +159,10 @@ class WPAIB_Rest_Helper {
 	 * @param int   $after_id Restituisce solo gli utenti con ID maggiore di questo.
 	 * @return WP_User_Query
 	 */
-	public static function query_users( array $args, $after_id = 0 ) {
+	public static function query_users( array $args, $after_id = null ) {
 		$after_id = self::after_id( $after_id );
 
-		if ( $after_id < 1 ) {
+		if ( null === $after_id ) {
 			return new WP_User_Query( $args );
 		}
 
@@ -198,10 +206,10 @@ class WPAIB_Rest_Helper {
 	 * @param int   $after_id Restituisce solo i termini con ID maggiore di questo.
 	 * @return array|WP_Error
 	 */
-	public static function query_terms( array $args, $after_id = 0 ) {
+	public static function query_terms( array $args, $after_id = null ) {
 		$after_id = self::after_id( $after_id );
 
-		if ( $after_id < 1 ) {
+		if ( null === $after_id ) {
 			return get_terms( $args );
 		}
 
@@ -304,7 +312,14 @@ class WPAIB_Rest_Helper {
 		}
 
 		if ( 'any' === $status ) {
-			return array( 'publish', 'draft', 'pending', 'private', 'future' );
+			// get_post_stati() include anche gli stati custom registrati da CPT
+			// (es. plugin di e-commerce o workflow editoriali): un elenco fisso
+			// li escluderebbe in silenzio dall'export. `trash` e `auto-draft`
+			// restano fuori perché non fanno parte del significato storico di "any".
+			$stati = array_keys( get_post_stati( array( 'internal' => false ) ) );
+			$stati = array_diff( $stati, array( 'trash', 'auto-draft' ) );
+
+			return array_values( $stati );
 		}
 
 		return $status;

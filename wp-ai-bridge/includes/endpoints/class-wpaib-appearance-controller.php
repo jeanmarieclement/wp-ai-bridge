@@ -59,8 +59,13 @@ class WPAIB_Appearance_Controller {
 			$menus = array();
 		}
 
-		// Mappa term_id => location slug, per sapere dove ogni menu è assegnato.
-		$assigned  = array_flip( array_map( 'intval', (array) get_nav_menu_locations() ) );
+		// Mappa term_id => elenco di location slug: un menu classico può essere
+		// assegnato a più di una posizione insieme (es. primary e mobile), e
+		// array_flip() ne perderebbe tutte tranne l'ultima.
+		$assigned = array();
+		foreach ( (array) get_nav_menu_locations() as $location_slug => $term_id ) {
+			$assigned[ (int) $term_id ][] = $location_slug;
+		}
 		$locations = get_registered_nav_menus();
 
 		$items = array();
@@ -75,17 +80,52 @@ class WPAIB_Appearance_Controller {
 				}
 			}
 
-			$location = isset( $assigned[ $menu_id ] ) ? $assigned[ $menu_id ] : '';
+			$menu_locations   = isset( $assigned[ $menu_id ] ) ? $assigned[ $menu_id ] : array();
+			$location_labels  = array();
+			foreach ( $menu_locations as $location_slug ) {
+				$location_labels[] = isset( $locations[ $location_slug ] ) ? $locations[ $location_slug ] : '';
+			}
 
 			$items[] = array(
-				'id'             => $menu_id,
-				'name'           => $menu->name,
-				'slug'           => $menu->slug,
-				'description'    => $menu->description,
-				'count'          => (int) $menu->count,
-				'location'       => $location,
-				'location_label' => isset( $locations[ $location ] ) ? $locations[ $location ] : '',
-				'items'          => $prepared_menu,
+				'id'              => $menu_id,
+				'name'            => $menu->name,
+				'slug'            => $menu->slug,
+				'description'     => $menu->description,
+				'count'           => (int) $menu->count,
+				'type'            => 'nav_menu',
+				'locations'       => array_values( $menu_locations ),
+				'location_labels' => $location_labels,
+				'items'           => $prepared_menu,
+			);
+		}
+
+		// I temi a blocchi (FSE) non usano la tassonomia nav_menu classica: i
+		// menu vivono come post wp_navigation, con le voci serializzate in
+		// blocchi invece che in post nav_menu_item. Senza questa parte /menus
+		// torna vuoto su ogni tema a blocchi (i temi core dalla Twenty
+		// Twenty-Two in poi), perdendo la navigazione dall'export del sito.
+		$navigation_posts = get_posts(
+			array(
+				'post_type'        => 'wp_navigation',
+				'post_status'      => 'publish',
+				'numberposts'      => -1,
+				'suppress_filters' => false,
+			)
+		);
+
+		foreach ( $navigation_posts as $nav_post ) {
+			$nav_items = $this->flatten_navigation_blocks( parse_blocks( $nav_post->post_content ) );
+
+			$items[] = array(
+				'id'              => (int) $nav_post->ID,
+				'name'            => $nav_post->post_title,
+				'slug'            => $nav_post->post_name,
+				'description'     => '',
+				'count'           => count( $nav_items ),
+				'type'            => 'wp_navigation',
+				'locations'       => array(),
+				'location_labels' => array(),
+				'items'           => $nav_items,
 			);
 		}
 
@@ -97,6 +137,82 @@ class WPAIB_Appearance_Controller {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Appiattisce i blocchi di un post wp_navigation in voci di menu.
+	 *
+	 * I blocchi navigation-link/navigation-submenu non hanno un ID stabile
+	 * (sono attributi di blocco, non post): 'id' resta 0 per queste voci,
+	 * a differenza dei menu classici dove è l'ID del post nav_menu_item.
+	 *
+	 * @param array $blocks Blocchi, come restituiti da parse_blocks().
+	 * @param int   $parent ID logico del genitore (0 per le voci di primo livello).
+	 * @return array
+	 */
+	private function flatten_navigation_blocks( array $blocks, $parent = 0 ) {
+		$items = array();
+
+		foreach ( $blocks as $block ) {
+			if ( empty( $block['blockName'] ) ) {
+				continue;
+			}
+
+			// core/page-list non contiene voci statiche: WordPress lo espande a
+			// runtime nell'elenco delle pagine pubblicate. Senza questo caso, il
+			// menu di default dei temi a blocchi (Navigazione = Elenco pagine)
+			// risulterebbe vuoto anche dopo aver trovato il post wp_navigation.
+			if ( 'core/page-list' === $block['blockName'] ) {
+				foreach ( get_pages( array( 'sort_column' => 'menu_order, post_title' ) ) as $page ) {
+					$items[] = array(
+						'id'          => 0,
+						'title'       => $page->post_title,
+						'url'         => get_permalink( $page->ID ),
+						'parent'      => $parent,
+						'order'       => 0,
+						'type'        => 'post_type',
+						'type_label'  => '',
+						'object'      => 'page',
+						'object_id'   => (int) $page->ID,
+						'target'      => '',
+						'classes'     => array(),
+						'attr_title'  => '',
+						'description' => '',
+						'xfn'         => '',
+					);
+				}
+				continue;
+			}
+
+			$is_link = in_array( $block['blockName'], array( 'core/navigation-link', 'core/navigation-submenu' ), true );
+
+			if ( $is_link ) {
+				$attrs = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+
+				$items[] = array(
+					'id'          => 0,
+					'title'       => isset( $attrs['label'] ) ? $attrs['label'] : '',
+					'url'         => isset( $attrs['url'] ) ? $attrs['url'] : '',
+					'parent'      => $parent,
+					'order'       => 0,
+					'type'        => isset( $attrs['kind'] ) ? $attrs['kind'] : 'custom',
+					'type_label'  => '',
+					'object'      => isset( $attrs['type'] ) ? $attrs['type'] : '',
+					'object_id'   => isset( $attrs['id'] ) ? (int) $attrs['id'] : 0,
+					'target'      => ! empty( $attrs['opensInNewTab'] ) ? '_blank' : '',
+					'classes'     => array(),
+					'attr_title'  => '',
+					'description' => isset( $attrs['description'] ) ? $attrs['description'] : '',
+					'xfn'         => isset( $attrs['rel'] ) ? $attrs['rel'] : '',
+				);
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$items = array_merge( $items, $this->flatten_navigation_blocks( $block['innerBlocks'] ) );
+			}
+		}
+
+		return $items;
 	}
 
 	/**

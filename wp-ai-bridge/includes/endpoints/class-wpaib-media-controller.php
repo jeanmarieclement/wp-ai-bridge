@@ -69,7 +69,6 @@ class WPAIB_Media_Controller {
 							'sanitize_callback' => 'absint',
 						),
 						'after_id'  => array(
-							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
 						'mime_type' => array(
@@ -135,7 +134,7 @@ class WPAIB_Media_Controller {
 			'page'        => $page,
 		);
 
-		if ( $after_id > 0 ) {
+		if ( null !== $after_id ) {
 			// Con il cursore la paginazione per pagina non ha significato: il
 			// client continua passando next_after_id finché has_more è false.
 			// Il conteggio è quello dei record che restano dal cursore in poi,

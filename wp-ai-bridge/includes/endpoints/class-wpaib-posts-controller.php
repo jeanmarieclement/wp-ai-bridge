@@ -42,7 +42,6 @@ class WPAIB_Posts_Controller {
 							'sanitize_callback' => 'absint',
 						),
 						'after_id'         => array(
-							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
 						'content_rendered' => array(
@@ -149,8 +148,11 @@ class WPAIB_Posts_Controller {
 							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
+						'page'      => array(
+							'default'           => 1,
+							'sanitize_callback' => 'absint',
+						),
 						'after_id'  => array(
-							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
 						'post_type' => array(
@@ -209,7 +211,7 @@ class WPAIB_Posts_Controller {
 			'page'        => $page,
 		);
 
-		if ( $after_id > 0 ) {
+		if ( null !== $after_id ) {
 			// Con il cursore la paginazione per pagina non ha significato: il
 			// client continua passando next_after_id finché has_more è false.
 			// Il conteggio è quello dei record che restano dal cursore in poi,
@@ -535,6 +537,7 @@ class WPAIB_Posts_Controller {
 		$status    = ! empty( $request['status'] ) ? sanitize_key( $request['status'] ) : 'approve';
 		$after_id  = WPAIB_Rest_Helper::after_id( $request->get_param( 'after_id' ) );
 		$per_page  = absint( $request->get_param( 'per_page' ) );
+		$page      = max( 1, (int) $request->get_param( 'page' ) );
 		$post_type = sanitize_key( (string) $request->get_param( 'post_type' ) );
 
 		$allowed_statuses = array( 'approve', 'hold', 'spam', 'trash', 'all' );
@@ -573,12 +576,17 @@ class WPAIB_Posts_Controller {
 		}
 
 		// Con il cursore un limite serve sempre, altrimenti la prima pagina è già tutta.
-		if ( $per_page < 1 && $after_id > 0 ) {
+		if ( $per_page < 1 && null !== $after_id ) {
 			$per_page = WPAIB_Rest_Helper::MAX_PER_PAGE;
 		}
 		if ( $per_page > 0 ) {
 			$args['number'] = WPAIB_Rest_Helper::per_page( $per_page );
 			$per_page       = $args['number'];
+
+			// Senza cursore, la paginazione classica per pagina resta disponibile.
+			if ( null === $after_id ) {
+				$args['offset'] = ( $page - 1 ) * $per_page;
+			}
 		}
 
 		$comments = WPAIB_Rest_Helper::query_comments( $args, $after_id );
@@ -588,18 +596,36 @@ class WPAIB_Posts_Controller {
 			$items[] = $this->prepare_comment( $comment, $can_moderate );
 		}
 
-		$count_query = new WP_Comment_Query();
-		$total       = (int) $count_query->query( array_merge( $args, array( 'count' => true, 'number' => 0, 'offset' => 0 ) ) );
+		$count_args = array_merge( $args, array( 'count' => true, 'number' => 0, 'offset' => 0 ) );
+
+		if ( null !== $after_id ) {
+			// Il conteggio deve rispettare lo stesso cursore della query, altrimenti
+			// riporta l'intera collezione invece dei soli record rimasti da leggere.
+			$count_args['wpaib_after_id'] = $after_id;
+			add_filter( 'comments_clauses', array( 'WPAIB_Rest_Helper', 'filter_comments_clauses' ), 10, 2 );
+		}
+
+		$total = (int) ( new WP_Comment_Query() )->query( $count_args );
+
+		if ( null !== $after_id ) {
+			remove_filter( 'comments_clauses', array( 'WPAIB_Rest_Helper', 'filter_comments_clauses' ), 10 );
+		}
 
 		$response = array(
 			'items' => $items,
 			'total' => $total,
 		);
 
-		if ( $after_id > 0 ) {
+		if ( null !== $after_id ) {
+			// Con il cursore il conteggio è quello dei record rimasti dopo di
+			// esso, non il totale della collezione: nominato di conseguenza.
+			$response['total_remaining'] = $response['total'];
+			unset( $response['total'] );
 			$response['after_id']      = $after_id;
 			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
 			$response['has_more']      = count( $items ) === $per_page;
+		} elseif ( $per_page > 0 ) {
+			$response['page'] = $page;
 		}
 
 		return new WP_REST_Response( $response, 200 );

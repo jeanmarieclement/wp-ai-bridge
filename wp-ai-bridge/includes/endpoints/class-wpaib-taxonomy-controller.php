@@ -39,7 +39,6 @@ class WPAIB_Taxonomy_Controller {
 							'sanitize_callback' => 'absint',
 						),
 						'after_id' => array(
-							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
 					),
@@ -71,7 +70,6 @@ class WPAIB_Taxonomy_Controller {
 							'sanitize_callback' => 'absint',
 						),
 						'after_id' => array(
-							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
 					),
@@ -136,13 +134,13 @@ class WPAIB_Taxonomy_Controller {
 		);
 
 		// Con il cursore un limite serve sempre, altrimenti la prima pagina è già tutta.
-		if ( $per_page < 1 && $after_id > 0 ) {
+		if ( $per_page < 1 && null !== $after_id ) {
 			$per_page = WPAIB_Rest_Helper::MAX_PER_PAGE;
 		}
 		if ( $per_page > 0 ) {
 			$per_page       = WPAIB_Rest_Helper::per_page( $per_page );
 			$args['number'] = $per_page;
-			if ( $after_id < 1 ) {
+			if ( null === $after_id ) {
 				$args['offset'] = ( $page - 1 ) * $per_page;
 			}
 		}
@@ -158,12 +156,23 @@ class WPAIB_Taxonomy_Controller {
 			$items[] = $this->prepare_term( $t );
 		}
 
-		$total = (int) wp_count_terms(
-			array(
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => false,
-			)
+		$count_args = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
 		);
+
+		if ( null !== $after_id ) {
+			// Il conteggio deve rispettare lo stesso cursore della query, altrimenti
+			// riporta l'intera collezione invece dei soli termini rimasti da leggere.
+			$count_args['wpaib_after_id'] = $after_id;
+			add_filter( 'terms_clauses', array( 'WPAIB_Rest_Helper', 'filter_terms_clauses' ), 10, 3 );
+		}
+
+		$total = (int) wp_count_terms( $count_args );
+
+		if ( null !== $after_id ) {
+			remove_filter( 'terms_clauses', array( 'WPAIB_Rest_Helper', 'filter_terms_clauses' ), 10 );
+		}
 
 		$response = array(
 			'items' => $items,
@@ -174,8 +183,12 @@ class WPAIB_Taxonomy_Controller {
 			$response['total_pages'] = (int) ceil( $total / $per_page );
 		}
 
-		if ( $after_id > 0 ) {
+		if ( null !== $after_id ) {
+			// Con il cursore il conteggio è quello dei termini rimasti dopo di
+			// esso, non il totale della collezione: nominato di conseguenza.
 			unset( $response['total_pages'] );
+			$response['total_remaining'] = $response['total'];
+			unset( $response['total'] );
 			$response['after_id']      = $after_id;
 			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
 			$response['has_more']      = count( $items ) === $per_page;

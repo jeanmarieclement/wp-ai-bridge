@@ -42,7 +42,6 @@ class WPAIB_Users_Controller {
 							'sanitize_callback' => 'absint',
 						),
 						'after_id' => array(
-							'default'           => 0,
 							'sanitize_callback' => 'absint',
 						),
 						'role'     => array(
@@ -85,7 +84,7 @@ class WPAIB_Users_Controller {
 			'fields'      => 'all',
 		);
 
-		if ( $after_id < 1 ) {
+		if ( null === $after_id ) {
 			$args['offset']  = ( $page - 1 ) * $per_page;
 			$args['orderby'] = 'ID';
 			$args['order']   = 'ASC';
@@ -111,7 +110,7 @@ class WPAIB_Users_Controller {
 			'page'        => $page,
 		);
 
-		if ( $after_id > 0 ) {
+		if ( null !== $after_id ) {
 			// Con il cursore la paginazione per pagina non ha significato: il
 			// client continua passando next_after_id finché has_more è false.
 			// Il conteggio è quello dei record che restano dal cursore in poi,
