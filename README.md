@@ -326,7 +326,7 @@ Available on `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, 
 | `GET /site/full` | `manage_options` | Title, description, language, timezone, front page and page-for-posts, logo, favicon, permalink structure, `site_uuid` |
 | `GET /comments` | `edit_posts` / `moderate_comments` | Comments with parent, author URL, user id, status, type and parent post type |
 
-`/comments` returns approved comments with `edit_posts`. Any other `status` (`hold`, `spam`, `trash`, `all`) requires `moderate_comments`, which also unlocks the author's email and IP address — personal data that stays out of reach of the lower capability.
+`/comments` accepts `after_id` for an export, or `per_page` + `page` for simple paging. It returns approved comments with `edit_posts`. Any other `status` (`hold`, `spam`, `trash`, `all`) requires `moderate_comments`, which also unlocks the author's email and IP address — personal data that stays out of reach of the lower capability.
 
 ### Recognising the same source site
 

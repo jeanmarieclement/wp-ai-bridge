@@ -59,8 +59,14 @@ class WPAIB_Appearance_Controller {
 			$menus = array();
 		}
 
-		// Mappa term_id => location slug, per sapere dove ogni menu è assegnato.
-		$assigned  = array_flip( array_map( 'intval', (array) get_nav_menu_locations() ) );
+		// Mappa term_id => elenco di location. Un array_flip perderebbe le
+		// assegnazioni multiple: lo stesso menu può stare in più location
+		// contemporaneamente, e l'export deve poterle riprodurre tutte.
+		$assigned = array();
+		foreach ( (array) get_nav_menu_locations() as $location_slug => $menu_id ) {
+			$assigned[ (int) $menu_id ][] = $location_slug;
+		}
+
 		$locations = get_registered_nav_menus();
 
 		$items = array();
@@ -75,17 +81,26 @@ class WPAIB_Appearance_Controller {
 				}
 			}
 
-			$location = isset( $assigned[ $menu_id ] ) ? $assigned[ $menu_id ] : '';
+			$menu_locations = isset( $assigned[ $menu_id ] ) ? $assigned[ $menu_id ] : array();
+			$location       = ! empty( $menu_locations ) ? $menu_locations[0] : '';
+
+			$location_labels = array();
+			foreach ( $menu_locations as $slug ) {
+				$location_labels[ $slug ] = isset( $locations[ $slug ] ) ? $locations[ $slug ] : '';
+			}
 
 			$items[] = array(
-				'id'             => $menu_id,
-				'name'           => $menu->name,
-				'slug'           => $menu->slug,
-				'description'    => $menu->description,
-				'count'          => (int) $menu->count,
-				'location'       => $location,
-				'location_label' => isset( $locations[ $location ] ) ? $locations[ $location ] : '',
-				'items'          => $prepared_menu,
+				'id'              => $menu_id,
+				'name'            => $menu->name,
+				'slug'            => $menu->slug,
+				'description'     => $menu->description,
+				'count'           => (int) $menu->count,
+				// 'location' resta la prima per comodità; 'locations' è la lista completa.
+				'location'        => $location,
+				'location_label'  => isset( $locations[ $location ] ) ? $locations[ $location ] : '',
+				'locations'       => $menu_locations,
+				'location_labels' => $location_labels,
+				'items'           => $prepared_menu,
 			);
 		}
 

@@ -535,6 +535,7 @@ class WPAIB_Posts_Controller {
 		$status    = ! empty( $request['status'] ) ? sanitize_key( $request['status'] ) : 'approve';
 		$after_id  = WPAIB_Rest_Helper::after_id( $request->get_param( 'after_id' ) );
 		$per_page  = absint( $request->get_param( 'per_page' ) );
+		$page      = max( 1, (int) $request->get_param( 'page' ) );
 		$post_type = sanitize_key( (string) $request->get_param( 'post_type' ) );
 
 		$allowed_statuses = array( 'approve', 'hold', 'spam', 'trash', 'all' );
@@ -579,6 +580,12 @@ class WPAIB_Posts_Controller {
 		if ( $per_page > 0 ) {
 			$args['number'] = WPAIB_Rest_Helper::per_page( $per_page );
 			$per_page       = $args['number'];
+
+			// Fuori dalla modalità cursore, per_page senza offset lascerebbe il
+			// client fermo sulla prima pagina per sempre.
+			if ( $after_id < 1 && $page > 1 ) {
+				$args['offset'] = ( $page - 1 ) * $per_page;
+			}
 		}
 
 		$comments = WPAIB_Rest_Helper::query_comments( $args, $after_id );
@@ -589,12 +596,19 @@ class WPAIB_Posts_Controller {
 		}
 
 		$count_query = new WP_Comment_Query();
-		$total       = (int) $count_query->query( array_merge( $args, array( 'count' => true, 'number' => 0, 'offset' => 0 ) ) );
+		$total       = (int) $count_query->query(
+			array_merge( $args, array( 'count' => true, 'number' => 0, 'offset' => 0, 'cache_domain' => 'core' ) )
+		);
 
 		$response = array(
 			'items' => $items,
 			'total' => $total,
 		);
+
+		if ( $per_page > 0 && $after_id < 1 ) {
+			$response['page']        = $page;
+			$response['total_pages'] = (int) ceil( $total / $per_page );
+		}
 
 		if ( $after_id > 0 ) {
 			$response['after_id']      = $after_id;

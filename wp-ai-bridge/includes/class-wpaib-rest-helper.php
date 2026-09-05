@@ -71,6 +71,13 @@ class WPAIB_Rest_Helper {
 		$args['order']          = 'ASC';
 		unset( $args['paged'] );
 
+		// Senza paged ogni pagina del cursore è "pagina 1" e WP_Query, che per una
+		// query su 'post' si considera is_home, ripescherebbe gli articoli in
+		// evidenza mettendoli in testa a ogni pagina — duplicati, ordine per ID
+		// rotto, e per giunta forzati a post_status 'publish' anche quando si
+		// stanno chiedendo le bozze.
+		$args['ignore_sticky_posts'] = true;
+
 		add_filter( 'posts_where', array( __CLASS__, 'filter_posts_where' ), 10, 2 );
 		$query = new WP_Query( $args );
 		remove_filter( 'posts_where', array( __CLASS__, 'filter_posts_where' ), 10 );
@@ -115,6 +122,13 @@ class WPAIB_Rest_Helper {
 		$args['orderby']        = 'comment_ID';
 		$args['order']          = 'ASC';
 		unset( $args['offset'], $args['paged'] );
+
+		// WP_Comment_Query costruisce la chiave di cache solo dalle proprie query
+		// var note, e senza includere l'SQL: 'wpaib_after_id' verrebbe scartato e
+		// con un object cache persistente ogni pagina del cursore restituirebbe di
+		// nuovo la prima. 'cache_domain' è una query var supportata che invece
+		// entra nella chiave, quindi ci si aggancia il cursore.
+		$args['cache_domain'] = 'wpaib_after_' . $after_id;
 
 		add_filter( 'comments_clauses', array( __CLASS__, 'filter_comments_clauses' ), 10, 2 );
 		$query    = new WP_Comment_Query();
@@ -293,7 +307,7 @@ class WPAIB_Rest_Helper {
 	 * va richiesto esplicitamente.
 	 *
 	 * @param string $status Stato richiesto.
-	 * @return string|array
+	 * @return string
 	 */
 	public static function post_status( $status ) {
 		$status = sanitize_key( $status );
@@ -303,10 +317,11 @@ class WPAIB_Rest_Helper {
 			$status = 'any';
 		}
 
-		if ( 'any' === $status ) {
-			return array( 'publish', 'draft', 'pending', 'private', 'future' );
-		}
-
+		// 'any' viene passato tale e quale a WP_Query, che lo espande in "tutti gli
+		// stati tranne quelli con exclude_from_search" — quindi niente cestino né
+		// auto-draft, ma inclusi gli stati registrati da altri plugin. Una lista
+		// fissa qui farebbe sparire da un export completo tutto ciò che sta in uno
+		// stato personalizzato.
 		return $status;
 	}
 }

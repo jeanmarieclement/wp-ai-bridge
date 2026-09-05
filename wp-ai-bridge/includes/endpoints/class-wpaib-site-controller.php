@@ -48,6 +48,26 @@ class WPAIB_Site_Controller {
 	}
 
 	/**
+	 * Fuso orario del sito in forma utilizzabile da un consumatore.
+	 *
+	 * Con un offset numerico e mezz'ora di scarto (India, Terranova) la vecchia
+	 * concatenazione produceva "UTC+5.5", che nessun parser accetta.
+	 * wp_timezone_string() restituisce l'identificativo IANA quando c'è, e
+	 * altrimenti un offset ISO 8601 valido tipo "+05:30".
+	 *
+	 * @return string
+	 */
+	private static function timezone_string() {
+		$tz_string = get_option( 'timezone_string' );
+
+		if ( ! empty( $tz_string ) ) {
+			return $tz_string;
+		}
+
+		return wp_timezone_string();
+	}
+
+	/**
 	 * Identificativo opaco e stabile del sito.
 	 *
 	 * WordPress non ne ha uno nativo: senza, un consumatore non può riconoscere
@@ -70,6 +90,22 @@ class WPAIB_Site_Controller {
 	}
 
 	/**
+	 * Numero di allegati non cestinati.
+	 *
+	 * wp_count_attachments() restituisce i conteggi per tipo MIME più una chiave
+	 * 'trash': sommare tutto gonfierebbe il totale con il cestino, mentre i
+	 * conteggi di post e pagine qui accanto sono di soli contenuti pubblicati.
+	 *
+	 * @return int
+	 */
+	private static function count_attachments() {
+		$counts = (array) wp_count_attachments();
+		unset( $counts['trash'] );
+
+		return (int) array_sum( $counts );
+	}
+
+	/**
 	 * Restituisce la configurazione completa del sito.
 	 *
 	 * @param WP_REST_Request $request Richiesta.
@@ -80,13 +116,8 @@ class WPAIB_Site_Controller {
 		$icon_id    = (int) get_option( 'site_icon' );
 		$front_id   = (int) get_option( 'page_on_front' );
 		$posts_id   = (int) get_option( 'page_for_posts' );
-		$tz_string  = get_option( 'timezone_string' );
+		$tz_string  = self::timezone_string();
 		$gmt_offset = get_option( 'gmt_offset' );
-
-		if ( empty( $tz_string ) ) {
-			$sign      = $gmt_offset >= 0 ? '+' : '-';
-			$tz_string = 'UTC' . $sign . abs( $gmt_offset );
-		}
 
 		$data = array(
 			'site_uuid'              => self::get_site_uuid(),
@@ -126,7 +157,7 @@ class WPAIB_Site_Controller {
 			'counts'                 => array(
 				'posts'       => (int) wp_count_posts( 'post' )->publish,
 				'pages'       => (int) wp_count_posts( 'page' )->publish,
-				'attachments' => (int) array_sum( (array) wp_count_attachments() ),
+				'attachments' => self::count_attachments(),
 				'users'       => (int) count_users()['total_users'],
 				'comments'    => (int) wp_count_comments()->total_comments,
 			),
@@ -142,14 +173,8 @@ class WPAIB_Site_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_site_info( WP_REST_Request $request ) {
-		$theme      = wp_get_theme();
-		$tz_string  = get_option( 'timezone_string' );
-		$gmt_offset = get_option( 'gmt_offset' );
-
-		if ( empty( $tz_string ) ) {
-			$sign       = $gmt_offset >= 0 ? '+' : '-';
-			$tz_string  = 'UTC' . $sign . abs( $gmt_offset );
-		}
+		$theme     = wp_get_theme();
+		$tz_string = self::timezone_string();
 
 		$data = array(
 			'name'         => get_bloginfo( 'name' ),
