@@ -583,8 +583,9 @@ class WPAIB_Posts_Controller {
 			$args['number'] = WPAIB_Rest_Helper::per_page( $per_page );
 			$per_page       = $args['number'];
 
-			// Senza cursore, la paginazione classica per pagina resta disponibile.
-			if ( null === $after_id ) {
+			// Fuori dalla modalità cursore, per_page senza offset lascerebbe il
+			// client fermo sulla prima pagina per sempre.
+			if ( null === $after_id && $page > 1 ) {
 				$args['offset'] = ( $page - 1 ) * $per_page;
 			}
 		}
@@ -596,12 +597,24 @@ class WPAIB_Posts_Controller {
 			$items[] = $this->prepare_comment( $comment, $can_moderate );
 		}
 
-		$count_args = array_merge( $args, array( 'count' => true, 'number' => 0, 'offset' => 0 ) );
+		$count_args = array_merge(
+			$args,
+			array(
+				'count'        => true,
+				'number'       => 0,
+				'offset'       => 0,
+				'cache_domain' => 'core',
+			)
+		);
 
 		if ( null !== $after_id ) {
 			// Il conteggio deve rispettare lo stesso cursore della query, altrimenti
 			// riporta l'intera collezione invece dei soli record rimasti da leggere.
+			// La clausola arriva da un filtro, che non entra nella chiave di cache
+			// di WP_Comment_Query: senza un cache_domain distinto, con un object
+			// cache persistente questo conteggio tornerebbe quello di un'altra pagina.
 			$count_args['wpaib_after_id'] = $after_id;
+			$count_args['cache_domain']   = 'wpaib_count_after_' . $after_id;
 			add_filter( 'comments_clauses', array( 'WPAIB_Rest_Helper', 'filter_comments_clauses' ), 10, 2 );
 		}
 
@@ -625,7 +638,8 @@ class WPAIB_Posts_Controller {
 			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
 			$response['has_more']      = $response['total_remaining'] > count( $items );
 		} elseif ( $per_page > 0 ) {
-			$response['page'] = $page;
+			$response['page']        = $page;
+			$response['total_pages'] = (int) ceil( $total / $per_page );
 		}
 
 		return new WP_REST_Response( $response, 200 );

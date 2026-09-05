@@ -67,13 +67,14 @@ class WPAIB_Appearance_Controller {
 			$menus = array();
 		}
 
-		// Mappa term_id => elenco di location slug: un menu classico può essere
-		// assegnato a più di una posizione insieme (es. primary e mobile), e
-		// array_flip() ne perderebbe tutte tranne l'ultima.
+		// Mappa term_id => elenco di location. Un array_flip perderebbe le
+		// assegnazioni multiple: lo stesso menu può stare in più location
+		// contemporaneamente, e l'export deve poterle riprodurre tutte.
 		$assigned = array();
 		foreach ( (array) get_nav_menu_locations() as $location_slug => $term_id ) {
 			$assigned[ (int) $term_id ][] = $location_slug;
 		}
+
 		$locations = get_registered_nav_menus();
 
 		$items = array();
@@ -88,10 +89,12 @@ class WPAIB_Appearance_Controller {
 				}
 			}
 
-			$menu_locations   = isset( $assigned[ $menu_id ] ) ? $assigned[ $menu_id ] : array();
-			$location_labels  = array();
+			$menu_locations = isset( $assigned[ $menu_id ] ) ? array_values( $assigned[ $menu_id ] ) : array();
+			$location       = ! empty( $menu_locations ) ? $menu_locations[0] : '';
+
+			$location_labels = array();
 			foreach ( $menu_locations as $location_slug ) {
-				$location_labels[] = isset( $locations[ $location_slug ] ) ? $locations[ $location_slug ] : '';
+				$location_labels[ $location_slug ] = isset( $locations[ $location_slug ] ) ? $locations[ $location_slug ] : '';
 			}
 
 			$items[] = array(
@@ -101,7 +104,10 @@ class WPAIB_Appearance_Controller {
 				'description'     => $menu->description,
 				'count'           => (int) $menu->count,
 				'type'            => 'nav_menu',
-				'locations'       => array_values( $menu_locations ),
+				// 'location' resta la prima per comodità; 'locations' è la lista completa.
+				'location'        => $location,
+				'location_label'  => isset( $locations[ $location ] ) ? $locations[ $location ] : '',
+				'locations'       => $menu_locations,
 				'location_labels' => $location_labels,
 				'items'           => $prepared_menu,
 			);
@@ -131,6 +137,10 @@ class WPAIB_Appearance_Controller {
 				'description'     => '',
 				'count'           => count( $nav_items ),
 				'type'            => 'wp_navigation',
+				// Un menu a blocchi non è assegnato a una location del tema: la
+				// posizione è decisa dal template che incorpora il blocco.
+				'location'        => '',
+				'location_label'  => '',
 				'locations'       => array(),
 				'location_labels' => array(),
 				'items'           => $nav_items,
