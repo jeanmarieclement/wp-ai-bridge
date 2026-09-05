@@ -65,6 +65,9 @@ class WPAIB_CPT_Controller {
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
+						'after_id' => array(
+							'sanitize_callback' => 'absint',
+						),
 					),
 				),
 				array(
@@ -148,26 +151,21 @@ class WPAIB_CPT_Controller {
 			return $validation;
 		}
 
-		$status   = sanitize_key( $request->get_param( 'status' ) );
-		$per_page = min( 100, max( 1, (int) $request->get_param( 'per_page' ) ) );
+		$per_page = WPAIB_Rest_Helper::per_page( $request->get_param( 'per_page' ) );
 		$page     = max( 1, (int) $request->get_param( 'page' ) );
+		$after_id = WPAIB_Rest_Helper::after_id( $request->get_param( 'after_id' ) );
 
-		$allowed_statuses = array( 'any', 'publish', 'draft', 'pending', 'private', 'future' );
-		if ( ! in_array( $status, $allowed_statuses, true ) ) {
-			$status = 'any';
-		}
-
-		if ( 'any' === $status ) {
-			$status = array( 'publish', 'draft', 'pending', 'private', 'future' );
-		}
-
-		$query = new WP_Query(
+		// Stessa espansione degli stati e stesso cursore degli altri endpoint di
+		// lettura: un CPT fa parte del sito quanto un post, e lo schema OpenAPI
+		// dichiara after_id anche qui.
+		$query = WPAIB_Rest_Helper::query_posts(
 			array(
 				'post_type'      => $type,
-				'post_status'    => $status,
+				'post_status'    => WPAIB_Rest_Helper::post_status( $request->get_param( 'status' ) ),
 				'posts_per_page' => $per_page,
 				'paged'          => $page,
-			)
+			),
+			$after_id
 		);
 
 		$items = array();
@@ -175,16 +173,23 @@ class WPAIB_CPT_Controller {
 			$items[] = $this->prepare_item( $p );
 		}
 
-		return new WP_REST_Response(
-			array(
-				'post_type'   => $type,
-				'items'       => $items,
-				'total'       => (int) $query->found_posts,
-				'total_pages' => (int) $query->max_num_pages,
-				'page'        => $page,
-			),
-			200
+		$response = array(
+			'post_type'   => $type,
+			'items'       => $items,
+			'total'       => (int) $query->found_posts,
+			'total_pages' => (int) $query->max_num_pages,
+			'page'        => $page,
 		);
+
+		if ( null !== $after_id ) {
+			$response['total_remaining'] = $response['total'];
+			unset( $response['total'], $response['total_pages'], $response['page'] );
+			$response['after_id']      = $after_id;
+			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
+			$response['has_more']      = $response['total_remaining'] > count( $items );
+		}
+
+		return new WP_REST_Response( $response, 200 );
 	}
 
 	/**

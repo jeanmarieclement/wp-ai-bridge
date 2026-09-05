@@ -18,6 +18,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPAIB_Appearance_Controller {
 
 	/**
+	 * Tetto alle pagine espanse da un blocco core/page-list.
+	 *
+	 * /menus non ha paginazione: senza un limite, un sito con molte pagine
+	 * caricherebbe l'intero albero in memoria a ogni richiesta.
+	 */
+	const MAX_PAGE_LIST_ITEMS = 500;
+
+	/**
 	 * Registra le route REST.
 	 *
 	 * @return void
@@ -142,15 +150,20 @@ class WPAIB_Appearance_Controller {
 	/**
 	 * Appiattisce i blocchi di un post wp_navigation in voci di menu.
 	 *
-	 * I blocchi navigation-link/navigation-submenu non hanno un ID stabile
-	 * (sono attributi di blocco, non post): 'id' resta 0 per queste voci,
-	 * a differenza dei menu classici dove è l'ID del post nav_menu_item.
+	 * I blocchi navigation-link/navigation-submenu non hanno un ID proprio (sono
+	 * attributi di blocco, non post), quindi 'id' è un progressivo sintetico
+	 * assegnato qui: non è l'ID di nulla nel database — a differenza dei menu
+	 * classici, dove è l'ID del post nav_menu_item — ed è valido solo dentro
+	 * questo menu, nella stessa risposta. Serve a 'parent', altrimenti la
+	 * gerarchia dei sottomenu andrebbe persa nell'appiattimento.
 	 *
-	 * @param array $blocks Blocchi, come restituiti da parse_blocks().
-	 * @param int   $parent ID logico del genitore (0 per le voci di primo livello).
+	 * @param array $blocks   Blocchi, come restituiti da parse_blocks().
+	 * @param int   $parent   ID sintetico del genitore (0 per il primo livello).
+	 * @param int   $sequence Contatore degli ID sintetici, condiviso per riferimento.
+	 * @param int   $order    Contatore dell'ordine di lettura, condiviso per riferimento.
 	 * @return array
 	 */
-	private function flatten_navigation_blocks( array $blocks, $parent = 0 ) {
+	private function flatten_navigation_blocks( array $blocks, $parent = 0, &$sequence = 0, &$order = 0 ) {
 		$items = array();
 
 		foreach ( $blocks as $block ) {
@@ -163,13 +176,32 @@ class WPAIB_Appearance_Controller {
 			// menu di default dei temi a blocchi (Navigazione = Elenco pagine)
 			// risulterebbe vuoto anche dopo aver trovato il post wp_navigation.
 			if ( 'core/page-list' === $block['blockName'] ) {
-				foreach ( get_pages( array( 'sort_column' => 'menu_order, post_title' ) ) as $page ) {
+				// Il numero di pagine va limitato: senza `number`, un sito con
+				// decine di migliaia di pagine caricherebbe l'intero albero in
+				// memoria a ogni chiamata di /menus, che non ha paginazione.
+				$pages = get_pages(
+					array(
+						'sort_column' => 'menu_order, post_title',
+						'number'      => self::MAX_PAGE_LIST_ITEMS,
+					)
+				);
+
+				// Le pagine sono gerarchiche: la mappa post_parent => id sintetico
+				// serve a non appiattire l'albero che il blocco rende annidato.
+				$synthetic = array();
+				foreach ( $pages as $page ) {
+					$synthetic[ (int) $page->ID ] = ++$sequence;
+				}
+
+				foreach ( $pages as $page ) {
+					$page_parent = (int) $page->post_parent;
+
 					$items[] = array(
-						'id'          => 0,
+						'id'          => $synthetic[ (int) $page->ID ],
 						'title'       => $page->post_title,
 						'url'         => get_permalink( $page->ID ),
-						'parent'      => $parent,
-						'order'       => 0,
+						'parent'      => isset( $synthetic[ $page_parent ] ) ? $synthetic[ $page_parent ] : $parent,
+						'order'       => ++$order,
 						'type'        => 'post_type',
 						'type_label'  => '',
 						'object'      => 'page',
@@ -184,17 +216,41 @@ class WPAIB_Appearance_Controller {
 				continue;
 			}
 
-			$is_link = in_array( $block['blockName'], array( 'core/navigation-link', 'core/navigation-submenu' ), true );
+			// home-link e loginout sono voci di navigazione a tutti gli effetti nei
+			// temi a blocchi, ma non portano label/url negli attributi: vanno
+			// risolti qui, altrimenti sparirebbero dall'export in silenzio.
+			$is_link = in_array(
+				$block['blockName'],
+				array( 'core/navigation-link', 'core/navigation-submenu', 'core/home-link', 'core/loginout' ),
+				true
+			);
+
+			// Le voci annidate dentro un submenu ne diventano figlie; i blocchi
+			// contenitore che non sono voci (group, spacer…) lasciano invariato
+			// il genitore corrente invece di reimpostarlo alla radice.
+			$item_parent = $parent;
 
 			if ( $is_link ) {
-				$attrs = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+				$attrs       = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+				$item_parent = ++$sequence;
+
+				$label = isset( $attrs['label'] ) ? $attrs['label'] : '';
+				$url   = isset( $attrs['url'] ) ? $attrs['url'] : '';
+
+				if ( 'core/home-link' === $block['blockName'] ) {
+					$label = '' !== $label ? $label : __( 'Home', 'wp-ai-bridge' );
+					$url   = home_url( '/' );
+				} elseif ( 'core/loginout' === $block['blockName'] ) {
+					$label = '' !== $label ? $label : __( 'Log in', 'wp-ai-bridge' );
+					$url   = wp_login_url();
+				}
 
 				$items[] = array(
-					'id'          => 0,
-					'title'       => isset( $attrs['label'] ) ? $attrs['label'] : '',
-					'url'         => isset( $attrs['url'] ) ? $attrs['url'] : '',
+					'id'          => $item_parent,
+					'title'       => $label,
+					'url'         => $url,
 					'parent'      => $parent,
-					'order'       => 0,
+					'order'       => ++$order,
 					'type'        => isset( $attrs['kind'] ) ? $attrs['kind'] : 'custom',
 					'type_label'  => '',
 					'object'      => isset( $attrs['type'] ) ? $attrs['type'] : '',
@@ -208,7 +264,7 @@ class WPAIB_Appearance_Controller {
 			}
 
 			if ( ! empty( $block['innerBlocks'] ) ) {
-				$items = array_merge( $items, $this->flatten_navigation_blocks( $block['innerBlocks'] ) );
+				$items = array_merge( $items, $this->flatten_navigation_blocks( $block['innerBlocks'], $item_parent, $sequence, $order ) );
 			}
 		}
 

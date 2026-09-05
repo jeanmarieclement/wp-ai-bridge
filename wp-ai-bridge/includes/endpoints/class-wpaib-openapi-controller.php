@@ -66,10 +66,14 @@ class WPAIB_OpenAPI_Controller {
 				'name'        => 'after_id',
 				'in'          => 'query',
 				'required'    => false,
-				'description' => 'Paginazione a cursore: restituisce solo i record con ID maggiore di questo, ordinati per ID crescente. Stabile durante un export lungo, a differenza della paginazione per numero di pagina. La risposta contiene next_after_id e has_more.',
+				// Nessun default nello schema: è la presenza stessa del parametro
+				// a scegliere la modalità. Un default lo farebbe materializzare ai
+				// client generati da questo schema, che passerebbero senza volerlo
+				// alla paginazione a cursore.
+				'description' => 'Paginazione a cursore: restituisce solo i record con ID maggiore di questo, ordinati per ID crescente. Stabile durante un export lungo, a differenza della paginazione per numero di pagina. Omesso: paginazione classica per pagina, con total/page/total_pages. Presente (anche a 0, cursore iniziale di un export che parte da capo): la risposta contiene after_id, next_after_id, has_more e total_remaining.',
 				'schema'      => array(
 					'type'    => 'integer',
-					'default' => 0,
+					'minimum' => 0,
 				),
 			),
 		);
