@@ -220,7 +220,7 @@ class WPAIB_Posts_Controller {
 			unset( $response['total'], $response['total_pages'], $response['page'] );
 			$response['after_id']      = $after_id;
 			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
-			$response['has_more']      = count( $items ) === $per_page;
+			$response['has_more']      = $response['total_remaining'] > count( $items );
 		}
 
 		return new WP_REST_Response( $response, 200 );
@@ -623,7 +623,7 @@ class WPAIB_Posts_Controller {
 			unset( $response['total'] );
 			$response['after_id']      = $after_id;
 			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
-			$response['has_more']      = count( $items ) === $per_page;
+			$response['has_more']      = $response['total_remaining'] > count( $items );
 		} elseif ( $per_page > 0 ) {
 			$response['page'] = $page;
 		}

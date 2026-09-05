@@ -160,17 +160,18 @@ class WPAIB_Auth {
 	private static function send_retry_after( $retry_after ) {
 		$retry_after = max( 1, (int) $retry_after );
 
-		add_filter(
-			'rest_post_dispatch',
-			function ( $response ) use ( $retry_after ) {
-				if ( $response instanceof WP_REST_Response && 429 === $response->get_status() ) {
-					$response->header( 'Retry-After', (string) $retry_after );
-				}
-				return $response;
-			},
-			10,
-			1
-		);
+		// La callback si rimuove da sola al primo dispatch: senza, resterebbe
+		// agganciata per il resto del processo PHP, toccando anche le risposte
+		// di eventuali sotto-richieste interne (es. un futuro endpoint /batch).
+		$callback = function ( $response ) use ( $retry_after, &$callback ) {
+			if ( $response instanceof WP_REST_Response && 429 === $response->get_status() ) {
+				$response->header( 'Retry-After', (string) $retry_after );
+			}
+			remove_filter( 'rest_post_dispatch', $callback, 10 );
+			return $response;
+		};
+
+		add_filter( 'rest_post_dispatch', $callback, 10, 1 );
 	}
 
 	/**
