@@ -15,6 +15,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPAIB_Rate_Limiter {
 
 	/**
+	 * Secondi mancanti alla fine della finestra dell'ultimo blocco.
+	 *
+	 * @var int
+	 */
+	private static $last_retry_after = 0;
+
+	/**
+	 * Restituisce i secondi da attendere dopo l'ultimo check() negativo.
+	 *
+	 * @return int Secondi, o 0 se l'ultima verifica non ha bloccato.
+	 */
+	public static function last_retry_after() {
+		return self::$last_retry_after;
+	}
+
+	/**
 	 * Verifica se l'identificatore ha superato il limite.
 	 * Se non l'ha superato, incrementa il contatore.
 	 *
@@ -44,10 +60,14 @@ class WPAIB_Rate_Limiter {
 				'expires' => $now + WPAIB_RATE_LIMIT_WINDOW,
 			);
 			set_transient( $key, $data, WPAIB_RATE_LIMIT_WINDOW );
+			self::$last_retry_after = 0;
 			return true;
 		}
 
 		if ( $data['count'] >= WPAIB_RATE_LIMIT_REQUESTS ) {
+			// Secondi che mancano alla riapertura della finestra: un export lungo
+			// deve poter aspettare il tempo giusto invece di tirare a indovinare.
+			self::$last_retry_after = max( 1, (int) $data['expires'] - $now );
 			return false;
 		}
 
@@ -58,6 +78,7 @@ class WPAIB_Rate_Limiter {
 		}
 
 		set_transient( $key, $data, $ttl );
+		self::$last_retry_after = 0;
 		return true;
 	}
 }

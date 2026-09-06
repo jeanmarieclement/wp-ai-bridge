@@ -20,6 +20,75 @@ class WPAIB_OAuth_Server {
      * @param string $scope        Scope richiesto.
      * @return string|WP_Error Plain code da passare al client.
      */
+    /**
+     * Capability che l'API espone come scope OAuth2.
+     *
+     * Uno scope che non è in questo elenco non concede nulla: il client non può
+     * inventarsi permessi, e uno scope vuoto ricade sul default documentato.
+     *
+     * @var array
+     */
+    const SCOPES = array(
+        'edit_posts',
+        'edit_pages',
+        'upload_files',
+        'delete_posts',
+        'delete_pages',
+        'manage_categories',
+        'moderate_comments',
+        'list_users',
+        'edit_theme_options',
+        'manage_options',
+        'activate_plugins',
+        'delete_plugins',
+        'update_core',
+        'update_plugins',
+        'update_themes',
+    );
+
+    /**
+     * Scope concesso quando il client non ne chiede uno.
+     */
+    const DEFAULT_SCOPE = 'edit_posts';
+
+    /**
+     * Normalizza uno scope in un elenco di capability note.
+     *
+     * Lo scope arriva dal client come stringa libera e finora non veniva mai
+     * confrontato con nulla: un token emesso per `edit_posts` apriva comunque
+     * /users o /site/full se l'utente che aveva autorizzato era amministratore.
+     * Qui diventa un elenco chiuso, ed è quello che l'autorizzazione applica.
+     *
+     * @param string $scope Scope grezzo, separato da spazi.
+     * @return array Capability riconosciute.
+     */
+    public static function normalize_scope( $scope ) {
+        $requested = preg_split( '/[\s,]+/', (string) $scope, -1, PREG_SPLIT_NO_EMPTY );
+        $granted   = array_values( array_intersect( (array) $requested, self::SCOPES ) );
+
+        // The default applies only when the client asked for nothing at all — a
+        // client that named scopes, none of which this API recognizes, gets none
+        // of them: silently upgrading a typo'd or garbage scope to edit_posts
+        // would grant more than the authorizing user (or a misconfigured client)
+        // actually asked for.
+        if ( empty( $granted ) && empty( $requested ) ) {
+            $granted = array( self::DEFAULT_SCOPE );
+        }
+
+        return $granted;
+    }
+
+    /**
+     * Verifica che uno scope copra la capability richiesta dall'endpoint.
+     *
+     * @param string $scope      Scope memorizzato sul token.
+     * @param string $capability Capability richiesta dalla rotta.
+     * @return bool
+     */
+    public static function scope_allows( $scope, $capability ) {
+        return in_array( $capability, self::normalize_scope( $scope ), true );
+    }
+
     public static function create_auth_code( $client_id, $user_id, $redirect_uri, $scope = '', $code_challenge = '', $code_challenge_method = '' ) {
         global $wpdb;
 
@@ -37,7 +106,9 @@ class WPAIB_OAuth_Server {
             'client_id'    => $client_id,
             'user_id'      => (int) $user_id,
             'redirect_uri' => $redirect_uri,
-            'scope'        => substr( sanitize_text_field( $scope ), 0, 255 ),
+            // Lo scope viene normalizzato qui: quello che finisce sul token è
+            // solo ciò che l'API riconosce, non la stringa grezza del client.
+            'scope'        => substr( implode( ' ', self::normalize_scope( $scope ) ), 0, 255 ),
             'expires_at'   => $expires_at,
         );
         $formats = array( '%s', '%s', '%d', '%s', '%s', '%s' );
@@ -135,6 +206,12 @@ class WPAIB_OAuth_Server {
         $expires_at = gmdate( 'Y-m-d H:i:s', time() + WPAIB_OAUTH_TOKEN_TTL );
         $now        = current_time( 'mysql', true );
 
+        // Every caller today already passes a normalised scope (the auth code's
+        // own stored scope, or a prior token's during refresh), but this is the
+        // gate that decides what a token is stamped with: it should never trust
+        // a caller to have done that, only enforce it.
+        $normalized = implode( ' ', self::normalize_scope( $scope ) );
+
         $result = $wpdb->insert(
             $wpdb->prefix . 'wpaib_oauth_tokens',
             array(
@@ -142,7 +219,7 @@ class WPAIB_OAuth_Server {
                 'refresh_token_hash' => $rt_hash,
                 'client_id'          => $client_id,
                 'user_id'            => (int) $user_id,
-                'scope'              => substr( sanitize_text_field( $scope ), 0, 255 ),
+                'scope'              => substr( $normalized, 0, 255 ),
                 'expires_at'         => $expires_at,
                 'created_at'         => $now,
             ),
@@ -158,7 +235,7 @@ class WPAIB_OAuth_Server {
             'refresh_token' => $plain_rt,
             'token_type'    => 'Bearer',
             'expires_in'    => WPAIB_OAUTH_TOKEN_TTL,
-            'scope'         => $scope,
+            'scope'         => $normalized,
         );
     }
 

@@ -34,6 +34,71 @@ class WPAIB_OpenAPI_Controller {
 	}
 
 	/**
+	 * Parametri di paginazione condivisi dagli endpoint di lettura.
+	 *
+	 * @param int $per_page_default Default di per_page per l'endpoint.
+	 * @return array
+	 */
+	private function pagination_params( $per_page_default = 10 ) {
+		return array(
+			array(
+				'name'        => 'per_page',
+				'in'          => 'query',
+				'required'    => false,
+				'description' => 'Numero di record per pagina (max 100)',
+				'schema'      => array(
+					'type'    => 'integer',
+					'default' => $per_page_default,
+					'maximum' => 100,
+				),
+			),
+			array(
+				'name'        => 'page',
+				'in'          => 'query',
+				'required'    => false,
+				'description' => 'Numero di pagina per l\'impaginazione classica',
+				'schema'      => array(
+					'type'    => 'integer',
+					'default' => 1,
+				),
+			),
+			array(
+				'name'        => 'after_id',
+				'in'          => 'query',
+				'required'    => false,
+				// Nessun default nello schema: è la presenza stessa del parametro
+				// a scegliere la modalità. Un default lo farebbe materializzare ai
+				// client generati da questo schema, che passerebbero senza volerlo
+				// alla paginazione a cursore.
+				'description' => 'Paginazione a cursore: restituisce solo i record con ID maggiore di questo, ordinati per ID crescente. Stabile durante un export lungo, a differenza della paginazione per numero di pagina. Omesso: paginazione classica per pagina, con total/page/total_pages. Presente (anche a 0, cursore iniziale di un export che parte da capo): la risposta contiene after_id, next_after_id, has_more e total_remaining.',
+				'schema'      => array(
+					'type'    => 'integer',
+					'minimum' => 0,
+				),
+			),
+		);
+	}
+
+	/**
+	 * Risposta 200 generica con corpo JSON.
+	 *
+	 * @param string $description Descrizione della risposta.
+	 * @return array
+	 */
+	private function ok_response( $description ) {
+		return array(
+			'200' => array(
+				'description' => $description,
+				'content'     => array(
+					'application/json' => array(
+						'schema' => array( 'type' => 'object' ),
+					),
+				),
+			),
+		);
+	}
+
+	/**
 	 * Genera lo schema OpenAPI 3.0.3 per tutti i tool disponibili nel bridge.
 	 *
 	 * @return WP_REST_Response
@@ -67,8 +132,25 @@ class WPAIB_OpenAPI_Controller {
 							'authorizationCode' => array(
 								'authorizationUrl' => home_url( '/wpaib/oauth/authorize' ),
 								'tokenUrl'         => rest_url( WPAIB_API_NAMESPACE . '/oauth/token' ),
+								// Uno scope per capability: il token concede solo ciò che
+								// elenca, quindi un client che deve leggere utenti, menu o
+								// configurazione del sito deve chiederli esplicitamente.
 								'scopes'           => array(
-									'edit_posts' => 'Crea e modifica post, pagine, media, categorie e tag',
+									'edit_posts'         => 'Legge e scrive gli articoli, e legge categorie, tag e CPT',
+									'edit_pages'         => 'Legge e scrive le pagine',
+									'upload_files'       => 'Legge la libreria media e carica file',
+									'delete_posts'       => 'Cestina o elimina articoli e media',
+									'delete_pages'       => 'Cestina o elimina pagine',
+									'manage_categories'  => 'Crea categorie e tag',
+									'moderate_comments'  => 'Legge i commenti non approvati, con email e IP, e li modera',
+									'list_users'         => 'Legge l\'elenco degli utenti (mai password né hash)',
+									'edit_theme_options' => 'Legge menu di navigazione e tema attivo',
+									'manage_options'     => 'Legge la configurazione completa del sito',
+									'activate_plugins'   => 'Elenca, attiva e disattiva i plugin',
+									'delete_plugins'     => 'Elimina plugin',
+									'update_core'        => 'Aggiorna il core di WordPress',
+									'update_plugins'     => 'Aggiorna i plugin',
+									'update_themes'      => 'Aggiorna i temi',
 								),
 							),
 						),
@@ -85,38 +167,33 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca gli articoli del blog',
 						'description' => 'Recupera una lista paginata di articoli filtrabili per stato di pubblicazione.',
 						'operationId' => 'listPosts',
-						'parameters'  => array(
+						'parameters'  => array_merge(
 							array(
-								'name'        => 'status',
-								'in'          => 'query',
-								'required'    => false,
-								'description' => 'Stato di pubblicazione da filtrare',
-								'schema'      => array(
-									'type'    => 'string',
-									'enum'    => array( 'any', 'publish', 'draft', 'pending', 'private' ),
-									'default' => 'any',
+								array(
+									'name'        => 'status',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Stato di pubblicazione da filtrare. `any` copre tutto tranne il cestino; `trash` va richiesto esplicitamente.',
+									'schema'      => array(
+										'type'    => 'string',
+										'enum'    => array( 'any', 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
+										'default' => 'any',
+									),
 								),
 							),
+							$this->pagination_params( 10 ),
 							array(
-								'name'        => 'per_page',
-								'in'          => 'query',
-								'required'    => false,
-								'description' => 'Numero di articoli per pagina',
-								'schema'      => array(
-									'type'    => 'integer',
-									'default' => 10,
+								array(
+									'name'        => 'content_rendered',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Include content_rendered, cioè post_content passato attraverso the_content: risolve blocchi riutilizzabili, query loop, gallerie dinamiche e shortcode, che in post_content non hanno HTML interno.',
+									'schema'      => array(
+										'type'    => 'boolean',
+										'default' => true,
+									),
 								),
-							),
-							array(
-								'name'        => 'page',
-								'in'          => 'query',
-								'required'    => false,
-								'description' => 'Numero di pagina per l\'impaginazione',
-								'schema'      => array(
-									'type'    => 'integer',
-									'default' => 1,
-								),
-							),
+							)
 						),
 						'responses'   => array(
 							'200' => array(
@@ -271,6 +348,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elimina un articolo',
 						'description' => 'Sposta nel cestino o elimina definitivamente l\'articolo.',
 						'operationId' => 'deletePost',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_posts' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'        => 'id',
@@ -300,10 +378,30 @@ class WPAIB_OpenAPI_Controller {
 					),
 				),
 				'/media' => array(
+					'get' => array(
+						'summary'     => 'Elenca i file della Media Library',
+						'description' => 'Lista paginata degli allegati, con URL sorgente, dimensioni, peso in byte, testo alternativo, descrizione, post di appartenenza e autore.',
+						'operationId' => 'listMedia',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'upload_files' ) ) ),
+						'parameters'  => array_merge(
+							$this->pagination_params( 10 ),
+							array(
+								array(
+									'name'        => 'mime_type',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Filtra per tipo MIME (es. image/jpeg)',
+									'schema'      => array( 'type' => 'string' ),
+								),
+							)
+						),
+						'responses'   => $this->ok_response( 'Media recuperati.' ),
+					),
 					'post' => array(
 						'summary'     => 'Carica un file multimediale',
 						'description' => 'Carica un\'immagine base64 nella Media Library di WordPress per l\'inclusione o per essere usata come immagine in evidenza.',
 						'operationId' => 'uploadMedia',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'upload_files' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -342,21 +440,14 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca le categorie',
 						'description' => 'Restituisce la lista di tutte le categorie articoli configurate sul sito.',
 						'operationId' => 'listCategories',
-						'responses'   => array(
-							'200' => array(
-								'description' => 'Categorie recuperate.',
-								'content'     => array(
-									'application/json' => array(
-										'schema' => array( 'type' => 'object' ),
-									),
-								),
-							),
-						),
+						'parameters'  => $this->pagination_params( 0 ),
+						'responses'   => $this->ok_response( 'Categorie recuperate. Senza per_page né after_id restituisce tutti i termini.' ),
 					),
 					'post' => array(
 						'summary'     => 'Crea una categoria',
 						'description' => 'Aggiunge una nuova categoria per la classificazione dei post.',
 						'operationId' => 'createCategory',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'manage_categories' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -399,6 +490,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Panoramica aggiornamenti disponibili',
 						'description' => 'Restituisce tutti gli aggiornamenti disponibili per core WordPress, plugin e temi installati.',
 						'operationId' => 'getAllUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'        => 'force_check',
@@ -433,6 +525,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Stato aggiornamento WordPress core',
 						'description' => 'Verifica se è disponibile un aggiornamento del core WordPress.',
 						'operationId' => 'getCoreUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'force_check',
@@ -454,6 +547,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Lista aggiornamenti plugin',
 						'description' => 'Elenca tutti i plugin installati per cui è disponibile un aggiornamento, con versione corrente, nuova versione e changelog URL.',
 						'operationId' => 'getPluginUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_plugins' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'force_check',
@@ -475,6 +569,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Lista aggiornamenti temi',
 						'description' => 'Elenca tutti i temi installati per cui è disponibile un aggiornamento.',
 						'operationId' => 'getThemeUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_themes' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'force_check',
@@ -496,6 +591,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Changelog di plugin, tema o core',
 						'description' => 'Recupera il changelog dell\'aggiornamento disponibile per un plugin, tema o il core WordPress da wordpress.org.',
 						'operationId' => 'getChangelog',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_plugins' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'type',
@@ -525,6 +621,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Applica un singolo aggiornamento',
 						'description' => 'Aggiorna un plugin, tema o il core WordPress alla versione più recente disponibile.',
 						'operationId' => 'applyUpdate',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -560,6 +657,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Aggiornamento multiplo in un\'unica chiamata',
 						'description' => 'Aggiorna più plugin, temi e/o il core WordPress in un\'unica richiesta. Restituisce il risultato per ciascun elemento.',
 						'operationId' => 'bulkUpdate',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -604,21 +702,14 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca i tag',
 						'description' => 'Restituisce l\'elenco di tutti i tag presenti.',
 						'operationId' => 'listTags',
-						'responses'   => array(
-							'200' => array(
-								'description' => 'Tag recuperati.',
-								'content'     => array(
-									'application/json' => array(
-										'schema' => array( 'type' => 'object' ),
-									),
-								),
-							),
-						),
+						'parameters'  => $this->pagination_params( 0 ),
+						'responses'   => $this->ok_response( 'Tag recuperati. Senza per_page né after_id restituisce tutti i termini.' ),
 					),
 					'post' => array(
 						'summary'     => 'Crea un tag',
 						'description' => 'Aggiunge un nuovo tag descrittivo per gli articoli.',
 						'operationId' => 'createTag',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'manage_categories' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -653,6 +744,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca i plugin installati',
 						'description' => 'Restituisce tutti i plugin WordPress installati con nome, versione, descrizione e stato. Richiede activate_plugins (amministratore).',
 						'operationId' => 'listPlugins',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'responses'   => array(
 							'200' => array(
 								'description' => 'Lista plugin restituita.',
@@ -682,6 +774,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elimina un plugin',
 						'description' => 'Elimina definitivamente un plugin dal filesystem dopo averlo disattivato. Non può eliminare WP AI Bridge. Richiede delete_plugins.',
 						'operationId' => 'deletePlugin',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_plugins' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -712,6 +805,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Attiva un plugin',
 						'description' => 'Attiva un plugin WordPress installato. Richiede activate_plugins.',
 						'operationId' => 'activatePlugin',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -742,6 +836,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Disattiva un plugin',
 						'description' => 'Disattiva un plugin WordPress attivo. Non può disattivare WP AI Bridge. Richiede activate_plugins.',
 						'operationId' => 'deactivatePlugin',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -765,6 +860,146 @@ class WPAIB_OpenAPI_Controller {
 							'403' => array( 'description' => 'Permessi insufficienti.' ),
 							'404' => array( 'description' => 'Plugin non trovato.' ),
 						),
+					),
+				),
+				'/pages' => array(
+					'get' => array(
+						'summary'     => 'Elenca le pagine',
+						'description' => 'Lista paginata delle pagine, con gerarchia, menu_order, template e contenuto renderizzato.',
+						'operationId' => 'listPages',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'edit_pages' ) ) ),
+						'parameters'  => array_merge(
+							array(
+								array(
+									'name'        => 'status',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Stato di pubblicazione da filtrare. `any` copre tutto tranne il cestino; `trash` va richiesto esplicitamente.',
+									'schema'      => array(
+										'type'    => 'string',
+										'enum'    => array( 'any', 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
+										'default' => 'any',
+									),
+								),
+							),
+							$this->pagination_params( 10 ),
+							array(
+								array(
+									'name'        => 'content_rendered',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Include content_rendered, cioè post_content passato attraverso the_content.',
+									'schema'      => array(
+										'type'    => 'boolean',
+										'default' => true,
+									),
+								),
+							)
+						),
+						'responses'   => $this->ok_response( 'Pagine recuperate.' ),
+					),
+				),
+				'/comments' => array(
+					'get' => array(
+						'summary'     => 'Elenca i commenti del sito',
+						'operationId' => 'listComments',
+						'description' => 'Richiede edit_posts. Per status diverso da approve, e per includere email e IP, richiede anche lo scope OAuth2 e la capability moderate_comments. Sono visibili solo i commenti di contenuti accessibili all’utente.',
+						'parameters'  => array_merge(
+							array(
+								array(
+									'name'        => 'status',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Stato dei commenti da restituire',
+									'schema'      => array(
+										'type'    => 'string',
+										'enum'    => array( 'approve', 'hold', 'spam', 'trash', 'all' ),
+										'default' => 'approve',
+									),
+								),
+								array(
+									'name'        => 'post_type',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Restituisce solo i commenti sui contenuti di questo tipo',
+									'schema'      => array( 'type' => 'string' ),
+								),
+							),
+							$this->pagination_params( 0 )
+						),
+						'responses'   => array_merge(
+							$this->ok_response( 'Commenti recuperati.' ),
+							array( '403' => array( 'description' => 'Stato diverso da approve senza la capability moderate_comments.' ) )
+						),
+					),
+				),
+				'/users' => array(
+					'get' => array(
+						'summary'     => 'Elenca gli utenti registrati',
+						'description' => 'Sola lettura, richiede la capability list_users. Nessuna password e nessun hash lasciano WordPress: gli account di destinazione vanno creati con credenziali proprie.',
+						'operationId' => 'listUsers',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'list_users' ) ) ),
+						'parameters'  => array_merge(
+							$this->pagination_params( 20 ),
+							array(
+								array(
+									'name'        => 'role',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Filtra per ruolo WordPress (es. author)',
+									'schema'      => array( 'type' => 'string' ),
+								),
+							)
+						),
+						'responses'   => $this->ok_response( 'Utenti recuperati.' ),
+					),
+				),
+				'/users/{id}' => array(
+					'get' => array(
+						'summary'     => 'Recupera un singolo utente',
+						'operationId' => 'getUser',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'list_users' ) ) ),
+						'parameters'  => array(
+							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),
+						),
+						'responses'   => array_merge(
+							$this->ok_response( 'Utente recuperato.' ),
+							array( '404' => array( 'description' => 'Utente non trovato.' ) )
+						),
+					),
+				),
+				'/menus' => array(
+					'get' => array(
+						'summary'     => 'Elenca i menu di navigazione',
+						'description' => 'Menu registrati con voci, gerarchia, tipo e oggetto di destinazione. Richiede edit_theme_options.',
+						'operationId' => 'listMenus',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'edit_theme_options' ) ) ),
+						'responses'   => $this->ok_response( 'Menu recuperati.' ),
+					),
+				),
+				'/theme' => array(
+					'get' => array(
+						'summary'     => 'Tema attivo e URL rappresentativi',
+						'description' => 'Slug, nome e versione del tema attivo, URL di stylesheet e template, sidebar registrate e URL rappresentativi da catturare (home, ultimo articolo, una pagina, un archivio). Richiede edit_theme_options.',
+						'operationId' => 'getTheme',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'edit_theme_options' ) ) ),
+						'responses'   => $this->ok_response( 'Tema recuperato.' ),
+					),
+				),
+				'/site' => array(
+					'get' => array(
+						'summary'     => 'Informazioni generali sul sito',
+						'operationId' => 'getSiteInfo',
+						'responses'   => $this->ok_response( 'Informazioni recuperate.' ),
+					),
+				),
+				'/site/full' => array(
+					'get' => array(
+						'summary'     => 'Configurazione completa del sito',
+						'description' => 'Titolo, descrizione, lingua, fuso orario, front page e pagina degli articoli, logo, favicon, struttura dei permalink e site_uuid. Richiede manage_options.',
+						'operationId' => 'getFullSiteInfo',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'manage_options' ) ) ),
+						'responses'   => $this->ok_response( 'Configurazione recuperata.' ),
 					),
 				),
 				'/cpt' => array(
@@ -819,32 +1054,31 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca gli items di un Custom Post Type',
 						'description' => 'Recupera una lista paginata di items di un CPT specifico, filtrabili per stato. Usa il valore "slug" restituito da /cpt come parametro {type}.',
 						'operationId' => 'listCPTItems',
-						'parameters'  => array(
+						// Stessi parametri di paginazione degli altri endpoint di
+						// lettura: il controller passa da WPAIB_Rest_Helper, quindi
+						// accetta il cursore after_id e gli stessi stati.
+						'parameters'  => array_merge(
 							array(
-								'name'        => 'type',
-								'in'          => 'path',
-								'required'    => true,
-								'description' => 'Slug del Custom Post Type (restituito da GET /cpt)',
-								'schema'      => array( 'type' => 'string' ),
+								array(
+									'name'        => 'type',
+									'in'          => 'path',
+									'required'    => true,
+									'description' => 'Slug del Custom Post Type (restituito da GET /cpt)',
+									'schema'      => array( 'type' => 'string' ),
+								),
+								array(
+									'name'        => 'status',
+									'in'          => 'query',
+									'required'    => false,
+									'description' => 'Stato di pubblicazione da filtrare. `any` copre tutto tranne il cestino; `trash` va richiesto esplicitamente.',
+									'schema'      => array(
+										'type'    => 'string',
+										'enum'    => array( 'any', 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
+										'default' => 'any',
+									),
+								),
 							),
-							array(
-								'name'     => 'status',
-								'in'       => 'query',
-								'required' => false,
-								'schema'   => array( 'type' => 'string', 'enum' => array( 'any', 'publish', 'draft', 'pending', 'private' ), 'default' => 'any' ),
-							),
-							array(
-								'name'     => 'per_page',
-								'in'       => 'query',
-								'required' => false,
-								'schema'   => array( 'type' => 'integer', 'default' => 10 ),
-							),
-							array(
-								'name'     => 'page',
-								'in'       => 'query',
-								'required' => false,
-								'schema'   => array( 'type' => 'integer', 'default' => 1 ),
-							),
+							$this->pagination_params( 10 )
 						),
 						'responses'   => array(
 							'200' => array(
@@ -945,6 +1179,7 @@ class WPAIB_OpenAPI_Controller {
 					'delete' => array(
 						'summary'     => 'Elimina un item di un CPT',
 						'operationId' => 'deleteCPTItem',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_posts' ) ) ),
 						'parameters'  => array(
 							array( 'name' => 'type', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'string' ) ),
 							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),

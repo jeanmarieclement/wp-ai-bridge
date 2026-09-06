@@ -27,19 +27,26 @@ class WPAIB_Pages_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'list_pages' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'edit_pages' ),
 					'args'                => array(
-						'status'   => array(
+						'status'           => array(
 							'default'           => 'any',
 							'sanitize_callback' => 'sanitize_key',
 						),
-						'per_page' => array(
+						'per_page'         => array(
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
 						),
-						'page'     => array(
+						'page'             => array(
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
+						),
+						'after_id'         => array(
+							'sanitize_callback' => 'absint',
+						),
+						'content_rendered' => array(
+							'default'           => true,
+							'sanitize_callback' => 'rest_sanitize_boolean',
 						),
 					),
 				),
@@ -58,7 +65,13 @@ class WPAIB_Pages_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_page' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'edit_pages' ),
+					'args'                => array(
+						'content_rendered' => array(
+							'default'           => true,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+					),
 				),
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
@@ -81,42 +94,46 @@ class WPAIB_Pages_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function list_pages( WP_REST_Request $request ) {
-		$status   = sanitize_key( $request->get_param( 'status' ) );
-		$per_page = min( 100, max( 1, (int) $request->get_param( 'per_page' ) ) );
+		$per_page = WPAIB_Rest_Helper::per_page( $request->get_param( 'per_page' ) );
 		$page     = max( 1, (int) $request->get_param( 'page' ) );
+		$after_id = WPAIB_Rest_Helper::after_id( $request->get_param( 'after_id' ) );
+		$rendered = (bool) $request->get_param( 'content_rendered' );
 
-		$allowed_statuses = array( 'any', 'publish', 'draft', 'pending', 'private', 'future' );
-		if ( ! in_array( $status, $allowed_statuses, true ) ) {
-			$status = 'any';
-		}
-
-		if ( 'any' === $status ) {
-			$status = array( 'publish', 'draft', 'pending', 'private', 'future' );
-		}
-
-		$query = new WP_Query(
+		$query = WPAIB_Rest_Helper::query_posts(
 			array(
 				'post_type'      => 'page',
-				'post_status'    => $status,
+				'post_status'    => WPAIB_Rest_Helper::post_status( $request->get_param( 'status' ) ),
 				'posts_per_page' => $per_page,
 				'paged'          => $page,
-			)
+			),
+			$after_id
 		);
 
 		$items = array();
 		foreach ( $query->posts as $p ) {
-			$items[] = $this->prepare_page( $p );
+			$items[] = $this->prepare_page( $p, $rendered );
 		}
 
-		return new WP_REST_Response(
-			array(
-				'items'       => $items,
-				'total'       => (int) $query->found_posts,
-				'total_pages' => (int) $query->max_num_pages,
-				'page'        => $page,
-			),
-			200
+		$response = array(
+			'items'       => $items,
+			'total'       => (int) $query->found_posts,
+			'total_pages' => (int) $query->max_num_pages,
+			'page'        => $page,
 		);
+
+		if ( null !== $after_id ) {
+			// Con il cursore la paginazione per pagina non ha significato: il
+			// client continua passando next_after_id finché has_more è false.
+			// Il conteggio è quello dei record che restano dal cursore in poi,
+			// non il totale della collezione, e viene nominato di conseguenza.
+			$response['total_remaining'] = $response['total'];
+			unset( $response['total'], $response['total_pages'], $response['page'] );
+			$response['after_id']      = $after_id;
+			$response['next_after_id'] = WPAIB_Rest_Helper::next_cursor( $items );
+			$response['has_more']      = $response['total_remaining'] > count( $items );
+		}
+
+		return new WP_REST_Response( $response, 200 );
 	}
 
 	/**
@@ -136,7 +153,7 @@ class WPAIB_Pages_Controller {
 			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this page.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
-		return new WP_REST_Response( $this->prepare_page( $page ), 200 );
+		return new WP_REST_Response( $this->prepare_page( $page, (bool) $request->get_param( 'content_rendered' ) ), 200 );
 	}
 
 	/**
@@ -273,23 +290,37 @@ class WPAIB_Pages_Controller {
 	/**
 	 * Prepara la rappresentazione di una pagina per la risposta.
 	 *
-	 * @param WP_Post $page Pagina.
+	 * @param WP_Post $page     Pagina.
+	 * @param bool    $rendered Se includere anche il contenuto renderizzato.
 	 * @return array
 	 */
-	private function prepare_page( $page ) {
-		return array(
-			'id'             => (int) $page->ID,
-			'title'          => $page->post_title,
-			'slug'           => $page->post_name,
-			'status'         => $page->post_status,
-			'content'        => $page->post_content,
-			'excerpt'        => $page->post_excerpt,
-			'author'         => (int) $page->post_author,
-			'date'           => $page->post_date_gmt,
-			'modified'       => $page->post_modified_gmt,
-			'parent'         => (int) $page->post_parent,
-			'featured_media' => (int) get_post_thumbnail_id( $page->ID ),
-			'link'           => get_permalink( $page->ID ),
+	private function prepare_page( $page, $rendered = true ) {
+		$data = array(
+			'id'                => (int) $page->ID,
+			'title'             => $page->post_title,
+			'slug'              => $page->post_name,
+			'status'            => $page->post_status,
+			'content'           => $page->post_content,
+			'excerpt'           => $page->post_excerpt,
+			'author'            => (int) $page->post_author,
+			'date'              => $page->post_date_gmt,
+			'modified'          => $page->post_modified_gmt,
+			// Date esplicite in UTC, per un consumatore che deve ricostruirle altrove.
+			'post_date_gmt'     => $page->post_date_gmt,
+			'post_modified_gmt' => $page->post_modified_gmt,
+			'comment_status'    => $page->comment_status,
+			// Senza menu_order l'ordinamento delle pagine si perde in migrazione.
+			'menu_order'        => (int) $page->menu_order,
+			'template'          => get_page_template_slug( $page->ID ),
+			'parent'            => (int) $page->post_parent,
+			'featured_media'    => (int) get_post_thumbnail_id( $page->ID ),
+			'link'              => get_permalink( $page->ID ),
 		);
+
+		if ( $rendered ) {
+			$data['content_rendered'] = WPAIB_Rest_Helper::render_content( $page );
+		}
+
+		return $data;
 	}
 }

@@ -16,6 +16,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPAIB_Auth {
 
 	/**
+	 * Additional capability check inside an already authenticated request.
+	 * Keep the scope request-bound: MCP forwards Authorization through each hop.
+	 * API keys retain the user's capabilities. This does not charge rate limits
+	 * again or replace the route's authentication callback.
+	 *
+	 * @param WP_REST_Request $request Authenticated request.
+	 * @param string          $capability Required capability and OAuth scope.
+	 * @return bool
+	 */
+	public static function request_can( WP_REST_Request $request, $capability ) {
+		if ( ! current_user_can( $capability ) ) {
+			return false;
+		}
+		$bearer = self::extract_bearer( $request );
+		if ( null === $bearer ) {
+			return true;
+		}
+		$data = WPAIB_OAuth_Server::validate_access_token( $bearer );
+		return $data
+			&& (int) $data['user_id'] === get_current_user_id()
+			&& WPAIB_OAuth_Server::scope_allows( $data['scope'], $capability );
+	}
+
+	/**
 	 * Controlla rate limit, valida API key, verifica capability.
 	 *
 	 * @param WP_REST_Request $request   Richiesta REST.
@@ -123,6 +147,8 @@ class WPAIB_Auth {
 			return true;
 		}
 
+		$retry_after = WPAIB_Rate_Limiter::last_retry_after();
+
 		WPAIB_Logger::log(
 			array(
 				'endpoint'    => $endpoint,
@@ -131,11 +157,45 @@ class WPAIB_Auth {
 				'outcome'     => 'rate_limited',
 			)
 		);
+
+		self::send_retry_after( $retry_after );
+
 		return new WP_Error(
 			'wpaib_rate_limited',
 			__( 'Too many requests.', 'wp-ai-bridge' ),
-			array( 'status' => 429 )
+			array(
+				'status'      => 429,
+				'retry_after' => $retry_after,
+			)
 		);
+	}
+
+	/**
+	 * Aggiunge l'header Retry-After alla risposta 429.
+	 *
+	 * Un WP_Error restituito da permission_callback perde i propri header nella
+	 * conversione a risposta REST, quindi l'header va agganciato alla risposta
+	 * finale. Serve a un client che deve leggere migliaia di record in sequenza:
+	 * senza, può solo indovinare quanto aspettare.
+	 *
+	 * @param int $retry_after Secondi da attendere.
+	 * @return void
+	 */
+	private static function send_retry_after( $retry_after ) {
+		$retry_after = max( 1, (int) $retry_after );
+
+		// La callback si rimuove da sola al primo dispatch: senza, resterebbe
+		// agganciata per il resto del processo PHP, toccando anche le risposte
+		// di eventuali sotto-richieste interne (es. un futuro endpoint /batch).
+		$callback = function ( $response ) use ( $retry_after, &$callback ) {
+			if ( $response instanceof WP_REST_Response && 429 === $response->get_status() ) {
+				$response->header( 'Retry-After', (string) $retry_after );
+			}
+			remove_filter( 'rest_post_dispatch', $callback, 10 );
+			return $response;
+		};
+
+		add_filter( 'rest_post_dispatch', $callback, 10, 1 );
 	}
 
 	/**
@@ -179,6 +239,27 @@ class WPAIB_Auth {
 		}
 
 		wp_set_current_user( $data['user_id'] );
+
+		// Lo scope del token va verificato oltre alla capability dell'utente:
+		// senza, un token emesso per `edit_posts` da un amministratore apriva
+		// anche /users, /site/full e le rotte di plugin e aggiornamenti, perché
+		// l'unico controllo era su cosa può fare l'utente, mai su cosa il client
+		// è stato autorizzato a chiedere.
+		$scope = isset( $data['scope'] ) ? $data['scope'] : '';
+
+		if ( ! WPAIB_OAuth_Server::scope_allows( $scope, $capability ) ) {
+			WPAIB_Logger::log( array(
+				'endpoint'    => $endpoint,
+				'method'      => $method,
+				'status_code' => 403,
+				'outcome'     => 'bearer_out_of_scope',
+			) );
+			return new WP_Error(
+				'wpaib_insufficient_scope',
+				__( 'The access token does not grant this scope.', 'wp-ai-bridge' ),
+				array( 'status' => 403 )
+			);
+		}
 
 		if ( ! current_user_can( $capability ) ) {
 			WPAIB_Logger::log( array(

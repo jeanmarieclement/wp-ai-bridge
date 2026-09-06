@@ -723,6 +723,7 @@ class WPAIB_MCP_Controller {
 				foreach ( $args as $k => $v ) {
 					$sub_req->set_param( $k, $v );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->list_posts( $sub_req );
 
 			case 'get_post':
@@ -732,6 +733,7 @@ class WPAIB_MCP_Controller {
 				$controller = new WPAIB_Posts_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/posts/' . (int) $args['id'] );
 				$sub_req->set_param( 'id', (int) $args['id'] );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->get_post( $sub_req );
 
 			case 'create_post':
@@ -739,6 +741,7 @@ class WPAIB_MCP_Controller {
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/posts' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->create_post( $sub_req );
 
 			case 'update_post':
@@ -750,13 +753,14 @@ class WPAIB_MCP_Controller {
 				$sub_req->set_param( 'id', (int) $args['id'] );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->update_post( $sub_req );
 
 			case 'delete_post':
 				if ( empty( $args['id'] ) ) {
 					return new WP_Error( 'wpaib_missing_id', __( 'Missing post ID.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'delete_posts' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'delete_posts' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to delete posts.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Posts_Controller();
@@ -765,35 +769,48 @@ class WPAIB_MCP_Controller {
 				if ( isset( $args['force'] ) ) {
 					$sub_req->set_param( 'force', $args['force'] );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->delete_post( $sub_req );
 
 			case 'upload_media':
-				if ( ! current_user_can( 'upload_files' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'upload_files' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to upload files.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Media_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/media' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->upload( $sub_req );
 
 			case 'get_categories':
 				$controller = new WPAIB_Taxonomy_Controller();
-				return $controller->list_categories();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/categories' );
+				foreach ( $args as $k => $v ) {
+					$sub_req->set_param( $k, $v );
+				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
+				return $controller->list_categories( $sub_req );
 
 			case 'create_category':
-				if ( ! current_user_can( 'manage_categories' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'manage_categories' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage categories.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Taxonomy_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/categories' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->create_category( $sub_req );
 
 			case 'get_tags':
 				$controller = new WPAIB_Taxonomy_Controller();
-				return $controller->list_tags();
+				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/tags' );
+				foreach ( $args as $k => $v ) {
+					$sub_req->set_param( $k, $v );
+				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
+				return $controller->list_tags( $sub_req );
 
 			case 'get_comments':
 				$controller = new WPAIB_Posts_Controller();
@@ -808,6 +825,7 @@ class WPAIB_MCP_Controller {
 				}
 				$sub_req->set_param( 'status', $status );
 
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->list_comments( $sub_req );
 
 			case 'add_comment':
@@ -819,13 +837,14 @@ class WPAIB_MCP_Controller {
 				$sub_req->set_param( 'id', (int) $args['id'] );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( array( 'content' => $args['content'] ) ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->create_comment( $sub_req );
 
 			case 'moderate_comment':
 				if ( empty( $args['id'] ) || empty( $args['status'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Comment ID and status are required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'moderate_comments' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'moderate_comments' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Posts_Controller();
@@ -833,53 +852,64 @@ class WPAIB_MCP_Controller {
 				$sub_req->set_param( 'id', (int) $args['id'] );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( array( 'status' => $args['status'] ) ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->moderate_comment( $sub_req );
 
 			case 'bulk_moderate_comments':
 				if ( empty( $args['ids'] ) || ! is_array( $args['ids'] ) || empty( $args['status'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Comment IDs and status are required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'moderate_comments' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'moderate_comments' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Posts_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/comments/bulk' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( array( 'ids' => $args['ids'], 'status' => $args['status'] ) ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->bulk_moderate_comments( $sub_req );
 
 			case 'get_pages':
+				if ( ! WPAIB_Auth::request_can( $request, 'edit_pages' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
 				$controller = new WPAIB_Pages_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/pages' );
 				foreach ( $args as $k => $v ) {
 					$sub_req->set_param( $k, $v );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->list_pages( $sub_req );
 
 			case 'get_page':
+				if ( ! WPAIB_Auth::request_can( $request, 'edit_pages' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
 				if ( empty( $args['id'] ) ) {
 					return new WP_Error( 'wpaib_missing_id', __( 'Missing page ID.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
 				$controller = new WPAIB_Pages_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/pages/' . (int) $args['id'] );
 				$sub_req->set_param( 'id', (int) $args['id'] );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->get_page( $sub_req );
 
 			case 'create_page':
-				if ( ! current_user_can( 'edit_pages' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'edit_pages' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Pages_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/pages' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->create_page( $sub_req );
 
 			case 'update_page':
 				if ( empty( $args['id'] ) ) {
 					return new WP_Error( 'wpaib_missing_id', __( 'Missing page ID.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'edit_pages' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'edit_pages' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Pages_Controller();
@@ -887,13 +917,14 @@ class WPAIB_MCP_Controller {
 				$sub_req->set_param( 'id', (int) $args['id'] );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->update_page( $sub_req );
 
 			case 'delete_page':
 				if ( empty( $args['id'] ) ) {
 					return new WP_Error( 'wpaib_missing_id', __( 'Missing page ID.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'delete_pages' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'delete_pages' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Pages_Controller();
@@ -902,31 +933,37 @@ class WPAIB_MCP_Controller {
 				if ( isset( $args['force'] ) ) {
 					$sub_req->set_param( 'force', $args['force'] );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->delete_page( $sub_req );
 
 			case 'create_tag':
-				if ( ! current_user_can( 'manage_categories' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'manage_categories' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Taxonomy_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/tags' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->create_tag( $sub_req );
 
 			case 'get_media':
+				if ( ! WPAIB_Auth::request_can( $request, 'upload_files' ) ) {
+					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+				}
 				$controller = new WPAIB_Media_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/media' );
 				foreach ( $args as $k => $v ) {
 					$sub_req->set_param( $k, $v );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->list_media( $sub_req );
 
 			case 'delete_media':
 				if ( empty( $args['id'] ) ) {
 					return new WP_Error( 'wpaib_missing_id', __( 'Missing media ID.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'delete_posts' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'delete_posts' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Media_Controller();
@@ -935,21 +972,24 @@ class WPAIB_MCP_Controller {
 				if ( isset( $args['force'] ) ) {
 					$sub_req->set_param( 'force', $args['force'] );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->delete_media( $sub_req );
 
 			case 'bulk_update_posts':
-				if ( ! current_user_can( 'edit_posts' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'edit_posts' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Posts_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/posts/bulk' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( $args ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->bulk_update_posts( $sub_req );
 
 			case 'get_site_info':
 				$controller = new WPAIB_Site_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/site' );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->get_site_info( $sub_req );
 
 			case 'search':
@@ -958,54 +998,59 @@ class WPAIB_MCP_Controller {
 				foreach ( $args as $k => $v ) {
 					$sub_req->set_param( $k, $v );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->search( $sub_req );
 
 			case 'get_plugins':
-				if ( ! current_user_can( 'activate_plugins' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'activate_plugins' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Plugins_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/plugins' );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->list_plugins( $sub_req );
 
 			case 'activate_plugin':
 				if ( empty( $args['plugin'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Plugin path is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'activate_plugins' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'activate_plugins' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to activate plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Plugins_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/plugins/activate' );
 				$sub_req->set_param( 'plugin', $args['plugin'] );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->activate_plugin_handler( $sub_req );
 
 			case 'deactivate_plugin':
 				if ( empty( $args['plugin'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Plugin path is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'activate_plugins' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'activate_plugins' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to deactivate plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Plugins_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/plugins/deactivate' );
 				$sub_req->set_param( 'plugin', $args['plugin'] );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->deactivate_plugin_handler( $sub_req );
 
 			case 'delete_plugin':
 				if ( empty( $args['plugin'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Plugin path is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'delete_plugins' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'delete_plugins' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to delete plugins.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Plugins_Controller();
 				$sub_req    = new WP_REST_Request( 'DELETE', '/wpaib/v1/plugins' );
 				$sub_req->set_param( 'plugin', $args['plugin'] );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->delete_plugin( $sub_req );
 
 			case 'get_updates':
-				if ( ! current_user_can( 'update_core' ) && ! current_user_can( 'update_plugins' ) && ! current_user_can( 'update_themes' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'update_core' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Updates_Controller();
@@ -1013,26 +1058,28 @@ class WPAIB_MCP_Controller {
 				if ( isset( $args['force_check'] ) ) {
 					$sub_req->set_param( 'force_check', (bool) $args['force_check'] );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->get_all_updates( $sub_req );
 
 			case 'get_changelog':
 				if ( empty( $args['type'] ) || empty( $args['slug'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Parameters "type" and "slug" are required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'update_core' ) && ! current_user_can( 'update_plugins' ) && ! current_user_can( 'update_themes' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'update_plugins' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to manage updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Updates_Controller();
 				$sub_req    = new WP_REST_Request( 'GET', '/wpaib/v1/updates/changelog' );
 				$sub_req->set_param( 'type', $args['type'] );
 				$sub_req->set_param( 'slug', $args['slug'] );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->get_changelog( $sub_req );
 
 			case 'apply_update':
 				if ( empty( $args['type'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Parameter "type" is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'update_core' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'update_core' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to apply updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Updates_Controller();
@@ -1041,19 +1088,21 @@ class WPAIB_MCP_Controller {
 				if ( isset( $args['slug'] ) ) {
 					$sub_req->set_param( 'slug', $args['slug'] );
 				}
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->apply_update( $sub_req );
 
 			case 'bulk_update':
 				if ( empty( $args['items'] ) || ! is_array( $args['items'] ) ) {
 					return new WP_Error( 'wpaib_missing_params', __( 'Parameter "items" must be a non-empty array.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 				}
-				if ( ! current_user_can( 'update_core' ) ) {
+				if ( ! WPAIB_Auth::request_can( $request, 'update_core' ) ) {
 					return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions to apply updates.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 				}
 				$controller = new WPAIB_Updates_Controller();
 				$sub_req    = new WP_REST_Request( 'POST', '/wpaib/v1/updates/bulk' );
 				$sub_req->set_header( 'Content-Type', 'application/json' );
 				$sub_req->set_body( wp_json_encode( array( 'items' => $args['items'] ) ) );
+				$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 				return $controller->bulk_update( $sub_req );
 
 			default:

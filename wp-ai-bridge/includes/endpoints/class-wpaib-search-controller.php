@@ -79,10 +79,10 @@ class WPAIB_Search_Controller {
 		if ( in_array( 'posts', $types, true ) ) {
 			$results = array_merge( $results, $this->search_post_type( $query, 'post', $per_page ) );
 		}
-		if ( in_array( 'pages', $types, true ) ) {
+		if ( in_array( 'pages', $types, true ) && WPAIB_Auth::request_can( $request, 'edit_pages' ) ) {
 			$results = array_merge( $results, $this->search_post_type( $query, 'page', $per_page ) );
 		}
-		if ( in_array( 'media', $types, true ) ) {
+		if ( in_array( 'media', $types, true ) && WPAIB_Auth::request_can( $request, 'upload_files' ) ) {
 			$results = array_merge( $results, $this->search_post_type( $query, 'attachment', $per_page ) );
 		}
 		if ( in_array( 'comments', $types, true ) ) {
@@ -168,7 +168,7 @@ class WPAIB_Search_Controller {
 	 * @return array
 	 */
 	private function search_comments( $query, $per_page ) {
-		$comments = get_comments(
+		$comments = WPAIB_Rest_Helper::query_comments(
 			array(
 				'search'  => $query,
 				'number'  => $per_page,
