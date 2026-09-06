@@ -88,12 +88,40 @@ try {
 	list( $draft_post, $draft_comment ) = review_fixture( 'draft', 0 );
 	register_post_type( 'review_private', array( 'public' => true, 'capability_type' => array( 'review_item', 'review_items' ), 'map_meta_cap' => true ) );
 	list( $cpt_post, $cpt_comment ) = review_fixture( 'private', 0, '', 'review_private' );
+
+	// An attachment's own post_password is always empty in WordPress: the
+	// password lives on the container post. A comment on a file attached to a
+	// password-protected post must inherit that protection, not read as public.
+	global $wpdb;
+	review_check( false !== $wpdb->insert( $wpdb->posts, array(
+		'post_type' => 'attachment', 'post_status' => 'inherit', 'post_parent' => $protected_post,
+		'post_mime_type' => 'image/jpeg', 'post_title' => 'WPAIB review fixture attachment',
+		'post_date' => '2026-09-01 12:00:00', 'post_date_gmt' => '2026-09-01 12:00:00',
+	) ), 'insert fixture attachment' );
+	$protected_attachment = (int) $wpdb->insert_id;
+	$review_posts[] = $protected_attachment;
+	review_check( false !== $wpdb->insert( $wpdb->comments, array(
+		'comment_post_ID' => $protected_attachment, 'comment_content' => 'WPAIB confidential fixture',
+		'comment_approved' => '1', 'comment_author' => 'Fixture',
+		'comment_author_email' => 'fixture@example.invalid', 'comment_author_IP' => '192.0.2.1',
+		'comment_date' => '2026-09-01 12:00:00', 'comment_date_gmt' => '2026-09-01 12:00:00',
+	) ), 'insert fixture attachment comment' );
+	$protected_attachment_comment = (int) $wpdb->insert_id;
+	$review_comments[] = $protected_attachment_comment;
 	$params = array( 'after_id' => $private_comment - 1, 'per_page' => 100 );
 	$approved = review_request( 'GET', '/posts/' . $public_post . '/comments', array(), $limited )->get_data();
 	review_check( ! isset( $approved['items'][0]['author_email'] ) && ! isset( $approved['items'][0]['author_ip'] ), 'limited OAuth redacts comment PII' );
 	review_check( 403 === review_request( 'GET', '/comments', array( 'status' => 'all' ), $limited )->get_status(), 'non-approved comments require OAuth scope' );
 	$approved = review_request( 'GET', '/posts/' . $public_post . '/comments', array(), $full )->get_data();
 	review_check( isset( $approved['items'][0]['author_email'], $approved['items'][0]['author_ip'] ), 'granted moderation scope includes PII' );
+	// Before the capability downgrade below: the admin's edit_others_posts must
+	// still reach a comment on an attachment whose password lives on the
+	// container post, not on the attachment row itself.
+	$full_data = review_request( 'GET', '/comments', array( 'after_id' => 0, 'per_page' => 100 ), $full )->get_data();
+	review_check(
+		in_array( $protected_attachment_comment, array_column( $full_data['items'], 'id' ), true ),
+		'edit_others_posts still reaches the protected attachment comment'
+	);
 	$rpc['params'] = array( 'name' => 'get_comments', 'arguments' => array( 'status' => 'all' ) );
 	review_check( true === review_request( 'POST', '/mcp', $rpc, $limited )->get_data()['result']['isError'], 'MCP propagates comment scope' );
 	review_check( false === review_request( 'POST', '/mcp', $rpc, $full )->get_data()['result']['isError'], 'MCP moderation control' );
@@ -109,6 +137,10 @@ try {
 	$data = review_request( 'GET', '/comments', $params, $limited )->get_data();
 	review_check( array( $public_comment, $own_comment ) === array_column( $data['items'], 'id' ), 'cursor only includes public and owned comments' );
 	review_check( 2 === $data['total_remaining'] && false === $data['has_more'], 'filtered count matches filtered data' );
+	review_check(
+		! in_array( $protected_attachment_comment, array_column( $data['items'], 'id' ), true ),
+		'comment on an attachment of a password-protected post is not public'
+	);
 	$params['per_page'] = 1;
 	$data = review_request( 'GET', '/comments', $params, $limited )->get_data();
 	review_check( $public_comment === $data['next_after_id'] && true === $data['has_more'], 'first visible cursor page' );

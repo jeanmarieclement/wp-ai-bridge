@@ -247,7 +247,8 @@ class WPAIB_Rest_Helper {
 		}
 		$types = array();
 		foreach ( get_post_types( array(), 'objects' ) as $type => $object ) {
-			$status = 'wpaib_parent.post_status';
+			$status   = 'wpaib_parent.post_status';
+			$password = "wpaib_parent.post_password";
 			if ( 'attachment' === $type ) {
 				// Core resolves inherit against the containing post, treating an
 				// unattached file as published and using the pre-trash status.
@@ -260,12 +261,20 @@ class WPAIB_Rest_Helper {
 					 ELSE container.post_status END FROM {$wpdb->posts} AS container
 					 WHERE container.ID = wpaib_parent.post_parent AND container.ID != wpaib_parent.ID), 'publish')
 					 ELSE wpaib_parent.post_status END";
+
+				// An attachment row never carries its own password: WordPress sets
+				// post_password only on the container post. Reading the attachment's
+				// own (always-empty) column would treat every comment on a file
+				// attached to a password-protected post as public.
+				$password = "COALESCE(
+					(SELECT container.post_password FROM {$wpdb->posts} AS container
+					 WHERE container.ID = wpaib_parent.post_parent AND container.ID != wpaib_parent.ID), '')";
 			}
 			$public_sql  = $public ? $wpdb->prepare( "$status IN (" . implode( ',', array_fill( 0, count( $public ), '%s' ) ) . ')', $public ) : '1=0';
 			$private_sql = $private ? $wpdb->prepare( "$status IN (" . implode( ',', array_fill( 0, count( $private ), '%s' ) ) . ')', $private ) : '1=0';
 			$rules = array();
 			if ( $object->publicly_queryable || $object->public ) {
-				$rules[] = "( $public_sql AND wpaib_parent.post_password = '' )";
+				$rules[] = "( $public_sql AND $password = '' )";
 			}
 			if ( get_current_user_id() && current_user_can( $object->cap->edit_posts ) ) {
 				$rules[] = $wpdb->prepare( 'wpaib_parent.post_author = %d', get_current_user_id() );
