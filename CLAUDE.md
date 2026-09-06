@@ -115,3 +115,9 @@ Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `w
 - I commenti non approvati e i dati personali dell'autore (email, IP) richiedono `moderate_comments`, non basta `edit_posts`
 - `wpaib_site_uuid` in `wp_options`: UUIDv4 opaco generato alla prima richiesta di `/site/full`, sopravvive a un cambio di dominio
 - Il 429 porta l'header `Retry-After` con i secondi che restano nella finestra
+
+## Regressioni autorizzazione PR #7
+
+- `WPAIB_Auth::request_can($request, $capability)` controlla capability e scope OAuth dentro una richiesta già autenticata, senza consumare di nuovo il rate limit. Il Bearer deve appartenere all'utente corrente. Non usare scope statici globali: inoltrare l'header Authorization a ogni sotto-richiesta MCP.
+- Le query dei commenti passano da `WPAIB_Rest_Helper::query_comments()` anche per conteggi e ricerca. Visibilità del post padre e cursore partecipano alla cache key; non filtrare i risultati dopo il LIMIT.
+- La suite locale `docker exec -i wpaib-wordpress php < tests/review-regressions.php` verifica dinieghi e accessi legittimi, con fixture DB annullate tramite rollback.

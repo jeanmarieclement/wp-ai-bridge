@@ -328,7 +328,7 @@ A read endpoint returns what the same user would see in wp-admin, never more. Pu
 
 Each endpoint asks for the capability WordPress itself asks for: `/posts` and `/cpt/{type}` want `edit_posts`, `/pages` wants `edit_pages`, `/media` wants `upload_files`, `/users` wants `list_users`, `/menus` and `/theme` want `edit_theme_options`, `/site/full` wants `manage_options`.
 
-With OAuth2 the token's scope is a second gate, applied before the capability: a token names the capabilities it was granted and reaches nothing else, even when the person who authorised it is an administrator. Scopes are listed in `/openapi.json`; a client that needs the full export surface must request them explicitly (for example `edit_posts edit_pages upload_files list_users edit_theme_options manage_options`). A token issued without a scope gets `edit_posts`.
+With OAuth2 the token's scope is a second gate, applied before the capability: a token names the capabilities it was granted and reaches nothing else, even when the person who authorised it is an administrator. Scopes are listed in `/openapi.json`; a client that needs the full export surface must request them explicitly (for example `edit_posts edit_pages upload_files list_users edit_theme_options manage_options`). A token issued without a scope gets `edit_posts`. MCP requires `edit_posts` to access the tool interface, plus the scope of the operation being executed (for example `activate_plugins` for `get_plugins`). The same scope checks apply to MCP HTTP and the `/tools/execute` and `/mcp/execute` aliases.
 
 ### Read-only endpoints for a full migration
 
@@ -342,7 +342,7 @@ With OAuth2 the token's scope is a second gate, applied before the capability: a
 | `GET /site/full` | `manage_options` | Title, description, language, timezone, front page and page-for-posts, logo, favicon, permalink structure, `site_uuid` |
 | `GET /comments` | `edit_posts` / `moderate_comments` | Comments with parent, author URL, user id, status, type and parent post type |
 
-`/comments` accepts `after_id` for an export, or `per_page` + `page` for simple paging. It returns approved comments with `edit_posts`. Any other `status` (`hold`, `spam`, `trash`, `all`) requires `moderate_comments`, which also unlocks the author's email and IP address — personal data that stays out of reach of the lower capability.
+`/comments` accepts `after_id` for an export, or `per_page` + `page` for simple paging. It returns approved comments with `edit_posts`. Any other `status` (`hold`, `spam`, `trash`, `all`) requires `moderate_comments`, which also unlocks the author's email and IP address — personal data that stays out of reach of the lower capability. With OAuth2, both the user capability and the `moderate_comments` token scope are required. Comments on inaccessible private, draft or password-protected content are omitted from lists and counts; requesting their parent explicitly returns 403. Comment search uses the same visibility policy.
 
 `/menus` covers both menu systems. Classic themes keep their menus in the `nav_menu` taxonomy; block themes (every core theme since Twenty Twenty-Two) keep them in `wp_navigation` posts with the entries serialised as blocks. Both are returned, with `type` saying which is which, so an FSE site does not export an empty navigation. A `core/page-list` block is expanded into the pages it resolves to at render time, and `core/home-link` and `core/loginout` are resolved to their real label and URL. Block entries carry a synthetic `id` — they have no post of their own — used to express `parent`, so submenu nesting survives; classic entries keep their real `nav_menu_item` ID. A menu assigned to several theme locations reports all of them in `locations`, with `location` kept as the first for convenience.
 
@@ -436,3 +436,13 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Regression checks
+
+On a disposable development WordPress stack with this plugin active and an administrator account:
+
+```bash
+docker exec -i wpaib-wordpress php < tests/review-regressions.php
+```
+
+The suite exercises REST and MCP scope enforcement, API-key compatibility, comment visibility and cursor counts, cache separation, OpenAPI scopes and multipart MIME validation. It creates temporary database fixtures and credentials inside a transaction and rolls them back; it does not execute plugin or content write tools. For a different development installation, set `WPAIB_TEST_WP_ROOT` inside the PHP process environment. Syntax checks use `find wp-ai-bridge tests -name '*.php' -print0 | xargs -0 -n 1 php -l`.

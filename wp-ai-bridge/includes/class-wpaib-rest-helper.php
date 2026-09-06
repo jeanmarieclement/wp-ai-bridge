@@ -181,30 +181,121 @@ class WPAIB_Rest_Helper {
 	 */
 	public static function query_comments( array $args, $after_id = null ) {
 		$after_id = self::after_id( $after_id );
+		$args['wpaib_post_visibility'] = self::comment_post_visibility_sql();
 
-		if ( null === $after_id ) {
-			$query = new WP_Comment_Query();
-			return $query->query( $args );
+		if ( null !== $after_id ) {
+			$args['wpaib_after_id'] = $after_id;
+			$args['orderby']       = 'comment_ID';
+			$args['order']         = 'ASC';
+			unset( $args['offset'], $args['paged'] );
 		}
 
-		$args['wpaib_after_id'] = $after_id;
-		$args['orderby']        = 'comment_ID';
-		$args['order']          = 'ASC';
-		unset( $args['offset'], $args['paged'] );
-
-		// WP_Comment_Query costruisce la chiave di cache solo dalle proprie query
-		// var note, e senza includere l'SQL: 'wpaib_after_id' verrebbe scartato e
-		// con un object cache persistente ogni pagina del cursore restituirebbe di
-		// nuovo la prima. 'cache_domain' è una query var supportata che invece
-		// entra nella chiave, quindi ci si aggancia il cursore.
-		$args['cache_domain'] = 'wpaib_after_' . $after_id;
-
+		// WP_Comment_Query does not include custom query vars or SQL in its
+		// cache key. Partition lists/counts by visibility, cursor and post changes:
+		// publishing or making a parent private must invalidate cached comments.
+		$args['cache_domain'] = 'wpaib_comments_' . md5( $args['wpaib_post_visibility'] . ':' . (string) $after_id . ':' . wp_cache_get_last_changed( 'posts' ) );
 		add_filter( 'comments_clauses', array( __CLASS__, 'filter_comments_clauses' ), 10, 2 );
-		$query    = new WP_Comment_Query();
-		$comments = $query->query( $args );
-		remove_filter( 'comments_clauses', array( __CLASS__, 'filter_comments_clauses' ), 10 );
+		try {
+			return ( new WP_Comment_Query() )->query( $args );
+		} finally {
+			remove_filter( 'comments_clauses', array( __CLASS__, 'filter_comments_clauses' ), 10 );
+		}
+	}
 
-		return $comments;
+	/**
+	 * Shared parent visibility for explicit requests, lists and counts.
+	 * Public, unprotected content is readable; non-public content requires
+	 * ownership/editing capabilities, or the type's read_private_posts cap.
+	 * Unknown post types and orphan comments are excluded.
+	 *
+	 * @return string Prepared SQL using the wpaib_parent alias.
+	 */
+	private static function comment_post_visibility_sql() {
+		global $wpdb;
+		$public  = array_keys( get_post_stati( array( 'public' => true ) ) );
+		$private = array_keys( get_post_stati( array( 'private' => true ) ) );
+
+		// Resolve the uncommon attachment-to-attachment chains through core.
+		// Only parents of actual comments need this fallback; ordinary content
+		// stays in the indexed SQL predicate below. Detect corrupt cycles before
+		// calling get_post_status(), which recursively follows attachment parents.
+		$nested_cases = '';
+		$nested_ids = $wpdb->get_col(
+			"SELECT attachment.ID FROM {$wpdb->posts} AS attachment
+			 INNER JOIN {$wpdb->posts} AS container ON container.ID = attachment.post_parent
+			 WHERE attachment.post_type = 'attachment' AND attachment.post_status = 'inherit'
+			 AND container.post_type = 'attachment' AND container.post_status = 'inherit'
+			 AND EXISTS (SELECT 1 FROM {$wpdb->comments} WHERE comment_post_ID = attachment.ID)"
+		);
+		foreach ( $nested_ids as $id ) {
+			$seen = array();
+			$node = get_post( $id );
+			while ( $node && 'attachment' === $node->post_type && 'inherit' === $node->post_status ) {
+				if ( isset( $seen[ $node->ID ] ) ) {
+					continue 2;
+				}
+				$seen[ $node->ID ] = true;
+				if ( ! $node->post_parent || (int) $node->post_parent === (int) $node->ID ) {
+					break;
+				}
+				$node = get_post( $node->post_parent );
+			}
+			$effective = get_post_status( $id );
+			if ( $effective ) {
+				$nested_cases .= $wpdb->prepare( ' WHEN wpaib_parent.ID = %d THEN %s', $id, $effective );
+			}
+		}
+		$types = array();
+		foreach ( get_post_types( array(), 'objects' ) as $type => $object ) {
+			$status = 'wpaib_parent.post_status';
+			if ( 'attachment' === $type ) {
+				// Core resolves inherit against the containing post, treating an
+				// unattached file as published and using the pre-trash status.
+				// The exceptional chains use the core-resolved cases above;
+				// unresolved cycles are excluded rather than exposing comments.
+				$status = "CASE $nested_cases WHEN wpaib_parent.post_status = 'inherit' THEN COALESCE(
+					(SELECT CASE WHEN container.post_type = 'attachment' AND container.post_status = 'inherit' THEN 'wpaib_unresolved'
+					 WHEN container.post_status = 'trash' THEN COALESCE(NULLIF(
+					  (SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = container.ID AND meta_key = '_wp_trash_meta_status' ORDER BY meta_id LIMIT 1), ''), 'publish')
+					 ELSE container.post_status END FROM {$wpdb->posts} AS container
+					 WHERE container.ID = wpaib_parent.post_parent AND container.ID != wpaib_parent.ID), 'publish')
+					 ELSE wpaib_parent.post_status END";
+			}
+			$public_sql  = $public ? $wpdb->prepare( "$status IN (" . implode( ',', array_fill( 0, count( $public ), '%s' ) ) . ')', $public ) : '1=0';
+			$private_sql = $private ? $wpdb->prepare( "$status IN (" . implode( ',', array_fill( 0, count( $private ), '%s' ) ) . ')', $private ) : '1=0';
+			$rules = array();
+			if ( $object->publicly_queryable || $object->public ) {
+				$rules[] = "( $public_sql AND wpaib_parent.post_password = '' )";
+			}
+			if ( get_current_user_id() && current_user_can( $object->cap->edit_posts ) ) {
+				$rules[] = $wpdb->prepare( 'wpaib_parent.post_author = %d', get_current_user_id() );
+			}
+			if ( current_user_can( $object->cap->edit_others_posts ) ) {
+				// Editing others' drafts does not by itself grant private content.
+				$rules[] = "NOT ( $private_sql )";
+			}
+			if ( current_user_can( $object->cap->read_private_posts ) ) {
+				$rules[] = $private_sql;
+			}
+			if ( $rules ) {
+				$resolved = 'attachment' === $type ? " AND ( $status ) != 'wpaib_unresolved'" : '';
+				$types[] = '(' . $wpdb->prepare( 'wpaib_parent.post_type = %s', $type ) . $resolved . ' AND (' . implode( ' OR ', $rules ) . '))';
+			}
+		}
+		return $types ? '(' . implode( ' OR ', $types ) . ')' : '1=0';
+	}
+
+	/**
+	 * Use exactly the collection policy when a parent ID is explicitly given.
+	 *
+	 * @param WP_Post $post Parent post.
+	 * @return bool
+	 */
+	public static function can_read_comment_post( $post ) {
+		global $wpdb;
+		return $post instanceof WP_Post && (bool) $wpdb->get_var(
+			$wpdb->prepare( "SELECT ID FROM {$wpdb->posts} AS wpaib_parent WHERE ID = %d AND ", $post->ID ) . self::comment_post_visibility_sql()
+		);
 	}
 
 	/**
@@ -218,12 +309,12 @@ class WPAIB_Rest_Helper {
 		global $wpdb;
 
 		$after_id = isset( $query->query_vars['wpaib_after_id'] ) ? (int) $query->query_vars['wpaib_after_id'] : 0;
-		if ( $after_id < 1 ) {
-			return $clauses;
+		if ( $after_id > 0 ) {
+			$clauses['where'] .= $wpdb->prepare( " AND {$wpdb->comments}.comment_ID > %d", $after_id );
 		}
-
-		$clauses['where'] .= $wpdb->prepare( " AND {$wpdb->comments}.comment_ID > %d", $after_id );
-
+		if ( isset( $query->query_vars['wpaib_post_visibility'] ) ) {
+			$clauses['where'] .= " AND EXISTS (SELECT 1 FROM {$wpdb->posts} AS wpaib_parent WHERE wpaib_parent.ID = {$wpdb->comments}.comment_post_ID AND " . $query->query_vars['wpaib_post_visibility'] . ')';
+		}
 		return $clauses;
 	}
 

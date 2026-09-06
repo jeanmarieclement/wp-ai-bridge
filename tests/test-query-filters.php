@@ -79,9 +79,9 @@ function get_current_user_id() {
 
 function get_post_stati( $args = array() ) {
 	$all = array(
-		'publish' => array( 'public' => true ),
-		'private' => array( 'public' => false ),
-		'draft'   => array( 'public' => false ),
+		'publish' => array( 'public' => true, 'private' => false ),
+		'private' => array( 'public' => false, 'private' => true ),
+		'draft'   => array( 'public' => false, 'private' => false ),
 	);
 
 	$out = array();
@@ -99,8 +99,23 @@ function get_post_stati( $args = array() ) {
 
 function get_post_type_object( $type ) {
 	return (object) array(
-		'cap' => (object) array( 'edit_others_posts' => 'edit_others_' . $type . 's' ),
+		'public' => true,
+		'publicly_queryable' => true,
+		'cap' => (object) array(
+			'edit_posts' => 'edit_' . $type . 's',
+			'edit_others_posts' => 'edit_others_' . $type . 's',
+			'read_private_posts' => 'read_private_' . $type . 's',
+		),
 	);
+}
+
+function get_post_types( $args = array(), $output = 'names' ) {
+	return array( 'post' => get_post_type_object( 'post' ), 'page' => get_post_type_object( 'page' ) );
+}
+
+$GLOBALS['posts_last_changed'] = 'initial';
+function wp_cache_get_last_changed( $group ) {
+	return $GLOBALS['posts_last_changed'];
 }
 
 // --- wpdb minimale -----------------------------------------------------------
@@ -108,6 +123,12 @@ class WPAIB_Fake_WPDB {
 	public $posts    = 'wp_posts';
 	public $comments = 'wp_comments';
 	public $users    = 'wp_users';
+	public $postmeta = 'wp_postmeta';
+
+	public function get_col( $sql ) {
+		// This isolated fixture has no attachment inheritance chains.
+		return array();
+	}
 
 	public function prepare( $sql, ...$args ) {
 		if ( 1 === count( $args ) && is_array( $args[0] ) ) {
@@ -222,10 +243,22 @@ wpaib_check( 'comments: the filter is removed after the query', wpaib_hook_count
 // WP_Comment_Query costruisce la chiave di cache dalle sole query var note e
 // senza l'SQL, quindi il cursore deve entrarci via cache_domain: altrimenti,
 // con un object cache persistente, ogni pagina restituisce di nuovo la prima.
-wpaib_check( 'comments: the cursor reaches the cache key', $GLOBALS['last_comment_args']['cache_domain'] ?? null, 'wpaib_after_99' );
+$cursor_cache = $GLOBALS['last_comment_args']['cache_domain'];
+WPAIB_Rest_Helper::query_comments( array( 'status' => 'all', 'number' => 50 ), 100 );
+wpaib_check( 'comments: different cursors have different cache keys', $GLOBALS['last_comment_args']['cache_domain'] !== $cursor_cache, true );
+WPAIB_Rest_Helper::query_comments( array( 'status' => 'all', 'number' => 50 ), 99 );
+wpaib_check( 'comments: identical visibility and cursor reuse the cache key', $GLOBALS['last_comment_args']['cache_domain'], $cursor_cache );
 
 WPAIB_Rest_Helper::query_comments( array( 'status' => 'all' ), null );
-wpaib_check( 'comments: no cursor leaves cache_domain alone', isset( $GLOBALS['last_comment_args']['cache_domain'] ), false );
+$classic_cache = $GLOBALS['last_comment_args']['cache_domain'];
+wpaib_check( 'comments: classic pagination also partitions the cache', $classic_cache !== $cursor_cache, true );
+$GLOBALS['caps'] = array();
+WPAIB_Rest_Helper::query_comments( array( 'status' => 'all' ), null );
+wpaib_check( 'comments: reduced permissions invalidate classic cache', $GLOBALS['last_comment_args']['cache_domain'] !== $classic_cache, true );
+$GLOBALS['caps'] = array( 'edit_others_posts' => true );
+$GLOBALS['posts_last_changed'] = 'parent-made-private';
+WPAIB_Rest_Helper::query_comments( array( 'status' => 'all' ), null );
+wpaib_check( 'comments: parent status changes invalidate classic cache', $GLOBALS['last_comment_args']['cache_domain'] !== $classic_cache, true );
 
 $comment_query = new WP_Comment_Query();
 add_filter( 'comments_clauses', array( 'WPAIB_Rest_Helper', 'filter_comments_clauses' ), 10, 2 );

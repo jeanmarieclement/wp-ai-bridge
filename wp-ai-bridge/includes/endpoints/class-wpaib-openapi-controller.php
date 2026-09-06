@@ -348,6 +348,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elimina un articolo',
 						'description' => 'Sposta nel cestino o elimina definitivamente l\'articolo.',
 						'operationId' => 'deletePost',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_posts' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'        => 'id',
@@ -381,6 +382,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca i file della Media Library',
 						'description' => 'Lista paginata degli allegati, con URL sorgente, dimensioni, peso in byte, testo alternativo, descrizione, post di appartenenza e autore.',
 						'operationId' => 'listMedia',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'upload_files' ) ) ),
 						'parameters'  => array_merge(
 							$this->pagination_params( 10 ),
 							array(
@@ -399,6 +401,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Carica un file multimediale',
 						'description' => 'Carica un\'immagine base64 nella Media Library di WordPress per l\'inclusione o per essere usata come immagine in evidenza.',
 						'operationId' => 'uploadMedia',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'upload_files' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -444,6 +447,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Crea una categoria',
 						'description' => 'Aggiunge una nuova categoria per la classificazione dei post.',
 						'operationId' => 'createCategory',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'manage_categories' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -486,6 +490,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Panoramica aggiornamenti disponibili',
 						'description' => 'Restituisce tutti gli aggiornamenti disponibili per core WordPress, plugin e temi installati.',
 						'operationId' => 'getAllUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'        => 'force_check',
@@ -520,6 +525,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Stato aggiornamento WordPress core',
 						'description' => 'Verifica se è disponibile un aggiornamento del core WordPress.',
 						'operationId' => 'getCoreUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'force_check',
@@ -541,6 +547,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Lista aggiornamenti plugin',
 						'description' => 'Elenca tutti i plugin installati per cui è disponibile un aggiornamento, con versione corrente, nuova versione e changelog URL.',
 						'operationId' => 'getPluginUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_plugins' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'force_check',
@@ -562,6 +569,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Lista aggiornamenti temi',
 						'description' => 'Elenca tutti i temi installati per cui è disponibile un aggiornamento.',
 						'operationId' => 'getThemeUpdates',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_themes' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'force_check',
@@ -583,6 +591,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Changelog di plugin, tema o core',
 						'description' => 'Recupera il changelog dell\'aggiornamento disponibile per un plugin, tema o il core WordPress da wordpress.org.',
 						'operationId' => 'getChangelog',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_plugins' ) ) ),
 						'parameters'  => array(
 							array(
 								'name'     => 'type',
@@ -612,6 +621,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Applica un singolo aggiornamento',
 						'description' => 'Aggiorna un plugin, tema o il core WordPress alla versione più recente disponibile.',
 						'operationId' => 'applyUpdate',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -647,6 +657,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Aggiornamento multiplo in un\'unica chiamata',
 						'description' => 'Aggiorna più plugin, temi e/o il core WordPress in un\'unica richiesta. Restituisce il risultato per ciascun elemento.',
 						'operationId' => 'bulkUpdate',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'update_core' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -698,6 +709,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Crea un tag',
 						'description' => 'Aggiunge un nuovo tag descrittivo per gli articoli.',
 						'operationId' => 'createTag',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'manage_categories' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -732,6 +744,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca i plugin installati',
 						'description' => 'Restituisce tutti i plugin WordPress installati con nome, versione, descrizione e stato. Richiede activate_plugins (amministratore).',
 						'operationId' => 'listPlugins',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'responses'   => array(
 							'200' => array(
 								'description' => 'Lista plugin restituita.',
@@ -761,6 +774,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elimina un plugin',
 						'description' => 'Elimina definitivamente un plugin dal filesystem dopo averlo disattivato. Non può eliminare WP AI Bridge. Richiede delete_plugins.',
 						'operationId' => 'deletePlugin',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_plugins' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -791,6 +805,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Attiva un plugin',
 						'description' => 'Attiva un plugin WordPress installato. Richiede activate_plugins.',
 						'operationId' => 'activatePlugin',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -821,6 +836,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Disattiva un plugin',
 						'description' => 'Disattiva un plugin WordPress attivo. Non può disattivare WP AI Bridge. Richiede activate_plugins.',
 						'operationId' => 'deactivatePlugin',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'requestBody' => array(
 							'required' => true,
 							'content'  => array(
@@ -851,6 +867,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca le pagine',
 						'description' => 'Lista paginata delle pagine, con gerarchia, menu_order, template e contenuto renderizzato.',
 						'operationId' => 'listPages',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'edit_pages' ) ) ),
 						'parameters'  => array_merge(
 							array(
 								array(
@@ -885,8 +902,8 @@ class WPAIB_OpenAPI_Controller {
 				'/comments' => array(
 					'get' => array(
 						'summary'     => 'Elenca i commenti del sito',
-						'description' => 'Lista dei commenti, filtrabile per stato e tipo di contenuto. Gli stati diversi da `approve` richiedono la capability moderate_comments, che sblocca anche email e IP dell\'autore (dati personali).',
 						'operationId' => 'listComments',
+						'description' => 'Richiede edit_posts. Per status diverso da approve, e per includere email e IP, richiede anche lo scope OAuth2 e la capability moderate_comments. Sono visibili solo i commenti di contenuti accessibili all’utente.',
 						'parameters'  => array_merge(
 							array(
 								array(
@@ -921,6 +938,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca gli utenti registrati',
 						'description' => 'Sola lettura, richiede la capability list_users. Nessuna password e nessun hash lasciano WordPress: gli account di destinazione vanno creati con credenziali proprie.',
 						'operationId' => 'listUsers',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'list_users' ) ) ),
 						'parameters'  => array_merge(
 							$this->pagination_params( 20 ),
 							array(
@@ -940,6 +958,7 @@ class WPAIB_OpenAPI_Controller {
 					'get' => array(
 						'summary'     => 'Recupera un singolo utente',
 						'operationId' => 'getUser',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'list_users' ) ) ),
 						'parameters'  => array(
 							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),
 						),
@@ -954,6 +973,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Elenca i menu di navigazione',
 						'description' => 'Menu registrati con voci, gerarchia, tipo e oggetto di destinazione. Richiede edit_theme_options.',
 						'operationId' => 'listMenus',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'edit_theme_options' ) ) ),
 						'responses'   => $this->ok_response( 'Menu recuperati.' ),
 					),
 				),
@@ -962,6 +982,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Tema attivo e URL rappresentativi',
 						'description' => 'Slug, nome e versione del tema attivo, URL di stylesheet e template, sidebar registrate e URL rappresentativi da catturare (home, ultimo articolo, una pagina, un archivio). Richiede edit_theme_options.',
 						'operationId' => 'getTheme',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'edit_theme_options' ) ) ),
 						'responses'   => $this->ok_response( 'Tema recuperato.' ),
 					),
 				),
@@ -977,6 +998,7 @@ class WPAIB_OpenAPI_Controller {
 						'summary'     => 'Configurazione completa del sito',
 						'description' => 'Titolo, descrizione, lingua, fuso orario, front page e pagina degli articoli, logo, favicon, struttura dei permalink e site_uuid. Richiede manage_options.',
 						'operationId' => 'getFullSiteInfo',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'manage_options' ) ) ),
 						'responses'   => $this->ok_response( 'Configurazione recuperata.' ),
 					),
 				),
@@ -1157,6 +1179,7 @@ class WPAIB_OpenAPI_Controller {
 					'delete' => array(
 						'summary'     => 'Elimina un item di un CPT',
 						'operationId' => 'deleteCPTItem',
+						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_posts' ) ) ),
 						'parameters'  => array(
 							array( 'name' => 'type', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'string' ) ),
 							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),

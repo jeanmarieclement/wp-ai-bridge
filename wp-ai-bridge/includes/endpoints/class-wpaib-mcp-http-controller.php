@@ -153,7 +153,7 @@ class WPAIB_MCP_HTTP_Controller {
 				if ( is_wp_error( $auth ) ) {
 					return $this->wp_error_to_rpc( $id, $auth );
 				}
-				return $this->build_response( $id, $this->call_tool( $params ) );
+				return $this->build_response( $id, $this->call_tool( $params, $request ) );
 
 			default:
 				if ( $is_notification ) {
@@ -166,15 +166,17 @@ class WPAIB_MCP_HTTP_Controller {
 	/**
 	 * Esegue un tool delegando a WPAIB_MCP_Controller::execute_tool().
 	 *
-	 * @param array $params Parametri MCP (name, arguments).
+	 * @param array           $params  Parametri MCP (name, arguments).
+	 * @param WP_REST_Request $request Richiesta autenticata originale.
 	 * @return array Risultato MCP content block.
 	 */
-	private function call_tool( array $params ) {
+	private function call_tool( array $params, WP_REST_Request $request ) {
 		$name = isset( $params['name'] ) ? (string) $params['name'] : '';
 		$args = isset( $params['arguments'] ) && is_array( $params['arguments'] ) ? $params['arguments'] : array();
 
 		$sub_req = new WP_REST_Request( 'POST', '/wpaib/v1/tools/execute' );
 		$sub_req->set_header( 'Content-Type', 'application/json' );
+		$sub_req->set_header( 'Authorization', $request->get_header( 'authorization' ) );
 		$sub_req->set_body( wp_json_encode( array( 'tool' => $name, 'arguments' => $args ) ) );
 
 		$mcp    = new WPAIB_MCP_Controller();

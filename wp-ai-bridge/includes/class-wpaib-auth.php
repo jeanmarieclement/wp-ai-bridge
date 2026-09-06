@@ -16,6 +16,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WPAIB_Auth {
 
 	/**
+	 * Additional capability check inside an already authenticated request.
+	 * Keep the scope request-bound: MCP forwards Authorization through each hop.
+	 * API keys retain the user's capabilities. This does not charge rate limits
+	 * again or replace the route's authentication callback.
+	 *
+	 * @param WP_REST_Request $request Authenticated request.
+	 * @param string          $capability Required capability and OAuth scope.
+	 * @return bool
+	 */
+	public static function request_can( WP_REST_Request $request, $capability ) {
+		if ( ! current_user_can( $capability ) ) {
+			return false;
+		}
+		$bearer = self::extract_bearer( $request );
+		if ( null === $bearer ) {
+			return true;
+		}
+		$data = WPAIB_OAuth_Server::validate_access_token( $bearer );
+		return $data
+			&& (int) $data['user_id'] === get_current_user_id()
+			&& WPAIB_OAuth_Server::scope_allows( $data['scope'], $capability );
+	}
+
+	/**
 	 * Controlla rate limit, valida API key, verifica capability.
 	 *
 	 * @param WP_REST_Request $request   Richiesta REST.

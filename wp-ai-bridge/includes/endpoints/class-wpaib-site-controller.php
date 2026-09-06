@@ -202,7 +202,7 @@ class WPAIB_Site_Controller {
 		);
 
 		// L'email dell'admin è un dato sensibile: esposta solo agli amministratori.
-		if ( current_user_can( 'manage_options' ) ) {
+		if ( WPAIB_Auth::request_can( $request, 'manage_options' ) ) {
 			$data['admin_email'] = get_bloginfo( 'admin_email' );
 		}
 

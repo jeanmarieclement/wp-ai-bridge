@@ -275,7 +275,7 @@ class WPAIB_Media_Controller {
 
 		$overrides = array(
 			'test_form' => false,
-			'mimes'     => $this->allowed_mimes,
+			'mimes'     => array_merge( array_flip( $this->allowed_mimes ), array( 'jpeg' => 'image/jpeg' ) ),
 		);
 
 		$uploaded = wp_handle_upload( $file, $overrides );

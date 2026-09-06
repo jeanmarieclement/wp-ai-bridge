@@ -56,3 +56,16 @@ Non è una svista: `get_post_stati()` serve con i flag `internal` /
 una sola versione farebbe passare un test mentre in realtà ne verifica un'altra
 cosa. Ogni suite gira nel proprio processo, quindi la duplicazione non costa
 nulla e ciascun file si legge da solo.
+
+## Regressioni su WordPress reale
+
+`review-regressions.php` verifica autenticazione REST/MCP, scope OAuth, API key,
+visibilità dei commenti e degli allegati, paginazione, cache e validazione MIME
+sullo stack di sviluppo. Eseguirlo separatamente dalle suite con stub:
+
+```bash
+docker exec -i wpaib-wordpress php < tests/review-regressions.php
+```
+
+Le fixture e le credenziali temporanee sono annullate con rollback. Usare
+un'installazione di sviluppo con il plugin attivo e un amministratore.

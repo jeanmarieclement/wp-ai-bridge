@@ -528,8 +528,8 @@ class WPAIB_Posts_Controller {
 	/**
 	 * Lista i commenti, di un singolo post o dell'intero sito.
 	 *
-	 * Serve sia /posts/{id}/comments sia /comments. Senza per_page restituisce
-	 * tutti i commenti, come faceva prima; con after_id passa alla paginazione
+	 * Serve sia /posts/{id}/comments sia /comments. Restituisce al massimo
+	 * 100 commenti per pagina; con after_id passa alla paginazione
 	 * a cursore, ordinata per comment_ID crescente.
 	 *
 	 * @param WP_REST_Request $request Richiesta.
@@ -550,7 +550,7 @@ class WPAIB_Posts_Controller {
 
 		// I commenti non approvati — e i dati personali di chi li ha scritti —
 		// restano fuori dalla portata della sola capability edit_posts.
-		$can_moderate = current_user_can( 'moderate_comments' );
+		$can_moderate = WPAIB_Auth::request_can( $request, 'moderate_comments' );
 		if ( 'approve' !== $status && ! $can_moderate ) {
 			return new WP_Error(
 				'wpaib_forbidden',
@@ -570,6 +570,9 @@ class WPAIB_Posts_Controller {
 			$post = get_post( $post_id );
 			if ( ! $post ) {
 				return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
+			}
+			if ( ! WPAIB_Rest_Helper::can_read_comment_post( $post ) ) {
+				return new WP_Error( 'wpaib_forbidden', __( 'Cannot read comments on this post.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 			}
 			$args['post_id'] = $post_id;
 		}
@@ -608,26 +611,10 @@ class WPAIB_Posts_Controller {
 				'count'        => true,
 				'number'       => 0,
 				'offset'       => 0,
-				'cache_domain' => 'core',
 			)
 		);
 
-		if ( null !== $after_id ) {
-			// Il conteggio deve rispettare lo stesso cursore della query, altrimenti
-			// riporta l'intera collezione invece dei soli record rimasti da leggere.
-			// La clausola arriva da un filtro, che non entra nella chiave di cache
-			// di WP_Comment_Query: senza un cache_domain distinto, con un object
-			// cache persistente questo conteggio tornerebbe quello di un'altra pagina.
-			$count_args['wpaib_after_id'] = $after_id;
-			$count_args['cache_domain']   = 'wpaib_count_after_' . $after_id;
-			add_filter( 'comments_clauses', array( 'WPAIB_Rest_Helper', 'filter_comments_clauses' ), 10, 2 );
-		}
-
-		$total = (int) ( new WP_Comment_Query() )->query( $count_args );
-
-		if ( null !== $after_id ) {
-			remove_filter( 'comments_clauses', array( 'WPAIB_Rest_Helper', 'filter_comments_clauses' ), 10 );
-		}
+		$total = (int) WPAIB_Rest_Helper::query_comments( $count_args, $after_id );
 
 		$response = array(
 			'items' => $items,
