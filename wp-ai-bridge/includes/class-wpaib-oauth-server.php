@@ -66,7 +66,12 @@ class WPAIB_OAuth_Server {
         $requested = preg_split( '/[\s,]+/', (string) $scope, -1, PREG_SPLIT_NO_EMPTY );
         $granted   = array_values( array_intersect( (array) $requested, self::SCOPES ) );
 
-        if ( empty( $granted ) ) {
+        // The default applies only when the client asked for nothing at all — a
+        // client that named scopes, none of which this API recognizes, gets none
+        // of them: silently upgrading a typo'd or garbage scope to edit_posts
+        // would grant more than the authorizing user (or a misconfigured client)
+        // actually asked for.
+        if ( empty( $granted ) && empty( $requested ) ) {
             $granted = array( self::DEFAULT_SCOPE );
         }
 
@@ -201,6 +206,12 @@ class WPAIB_OAuth_Server {
         $expires_at = gmdate( 'Y-m-d H:i:s', time() + WPAIB_OAUTH_TOKEN_TTL );
         $now        = current_time( 'mysql', true );
 
+        // Every caller today already passes a normalised scope (the auth code's
+        // own stored scope, or a prior token's during refresh), but this is the
+        // gate that decides what a token is stamped with: it should never trust
+        // a caller to have done that, only enforce it.
+        $normalized = implode( ' ', self::normalize_scope( $scope ) );
+
         $result = $wpdb->insert(
             $wpdb->prefix . 'wpaib_oauth_tokens',
             array(
@@ -208,7 +219,7 @@ class WPAIB_OAuth_Server {
                 'refresh_token_hash' => $rt_hash,
                 'client_id'          => $client_id,
                 'user_id'            => (int) $user_id,
-                'scope'              => substr( sanitize_text_field( $scope ), 0, 255 ),
+                'scope'              => substr( $normalized, 0, 255 ),
                 'expires_at'         => $expires_at,
                 'created_at'         => $now,
             ),
@@ -224,7 +235,7 @@ class WPAIB_OAuth_Server {
             'refresh_token' => $plain_rt,
             'token_type'    => 'Bearer',
             'expires_in'    => WPAIB_OAUTH_TOKEN_TTL,
-            'scope'         => $scope,
+            'scope'         => $normalized,
         );
     }
 
