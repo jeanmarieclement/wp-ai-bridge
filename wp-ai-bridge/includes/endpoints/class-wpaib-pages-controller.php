@@ -27,7 +27,7 @@ class WPAIB_Pages_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'list_pages' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'edit_pages' ),
 					'args'                => array(
 						'status'           => array(
 							'default'           => 'any',
@@ -65,7 +65,7 @@ class WPAIB_Pages_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_page' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'edit_pages' ),
 					'args'                => array(
 						'content_rendered' => array(
 							'default'           => true,

@@ -68,6 +68,10 @@ class WPAIB_CPT_Controller {
 						'after_id' => array(
 							'sanitize_callback' => 'absint',
 						),
+						'content_rendered' => array(
+							'default'           => true,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
 					),
 				),
 				array(
@@ -87,6 +91,12 @@ class WPAIB_CPT_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_item' ),
 					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+					'args'                => array(
+						'content_rendered' => array(
+							'default'           => true,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+					),
 				),
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
@@ -154,6 +164,7 @@ class WPAIB_CPT_Controller {
 		$per_page = WPAIB_Rest_Helper::per_page( $request->get_param( 'per_page' ) );
 		$page     = max( 1, (int) $request->get_param( 'page' ) );
 		$after_id = WPAIB_Rest_Helper::after_id( $request->get_param( 'after_id' ) );
+		$rendered = (bool) $request->get_param( 'content_rendered' );
 
 		// Stessa espansione degli stati e stesso cursore degli altri endpoint di
 		// lettura: un CPT fa parte del sito quanto un post, e lo schema OpenAPI
@@ -170,7 +181,7 @@ class WPAIB_CPT_Controller {
 
 		$items = array();
 		foreach ( $query->posts as $p ) {
-			$items[] = $this->prepare_item( $p );
+			$items[] = $this->prepare_item( $p, $rendered );
 		}
 
 		$response = array(
@@ -215,7 +226,7 @@ class WPAIB_CPT_Controller {
 			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this item.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
-		return new WP_REST_Response( $this->prepare_item( $post ), 200 );
+		return new WP_REST_Response( $this->prepare_item( $post, (bool) $request->get_param( 'content_rendered' ) ), 200 );
 	}
 
 	/**
@@ -461,7 +472,7 @@ class WPAIB_CPT_Controller {
 	 * @param WP_Post $post Post.
 	 * @return array
 	 */
-	private function prepare_item( $post ) {
+	private function prepare_item( $post, $rendered = false ) {
 		$item = array(
 			'id'             => (int) $post->ID,
 			'post_type'      => $post->post_type,
@@ -473,10 +484,20 @@ class WPAIB_CPT_Controller {
 			'author'         => (int) $post->post_author,
 			'date'           => $post->post_date_gmt,
 			'modified'       => $post->post_modified_gmt,
+			// Stessi nomi espliciti che portano /posts e /pages: un client di
+			// export tratta i CPT come tutto il resto invece che a parte.
+			'post_date_gmt'  => $post->post_date_gmt,
+			'post_modified_gmt' => $post->post_modified_gmt,
+			'comment_status' => $post->comment_status,
+			'menu_order'     => (int) $post->menu_order,
 			'parent'         => (int) $post->post_parent,
 			'featured_media' => (int) get_post_thumbnail_id( $post->ID ),
 			'link'           => get_permalink( $post->ID ),
 		);
+
+		if ( $rendered ) {
+			$item['content_rendered'] = WPAIB_Rest_Helper::render_content( $post );
+		}
 
 		// Tassonomie associate al CPT.
 		$taxonomies      = get_object_taxonomies( $post->post_type, 'objects' );

@@ -216,6 +216,27 @@ class WPAIB_Auth {
 
 		wp_set_current_user( $data['user_id'] );
 
+		// Lo scope del token va verificato oltre alla capability dell'utente:
+		// senza, un token emesso per `edit_posts` da un amministratore apriva
+		// anche /users, /site/full e le rotte di plugin e aggiornamenti, perché
+		// l'unico controllo era su cosa può fare l'utente, mai su cosa il client
+		// è stato autorizzato a chiedere.
+		$scope = isset( $data['scope'] ) ? $data['scope'] : '';
+
+		if ( ! WPAIB_OAuth_Server::scope_allows( $scope, $capability ) ) {
+			WPAIB_Logger::log( array(
+				'endpoint'    => $endpoint,
+				'method'      => $method,
+				'status_code' => 403,
+				'outcome'     => 'bearer_out_of_scope',
+			) );
+			return new WP_Error(
+				'wpaib_insufficient_scope',
+				__( 'The access token does not grant this scope.', 'wp-ai-bridge' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		if ( ! current_user_can( $capability ) ) {
 			WPAIB_Logger::log( array(
 				'endpoint'    => $endpoint,

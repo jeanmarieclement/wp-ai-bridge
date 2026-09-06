@@ -82,8 +82,20 @@ class WPAIB_Site_Controller {
 		$uuid = get_option( 'wpaib_site_uuid' );
 
 		if ( ! is_string( $uuid ) || ! wp_is_uuid( $uuid, 4 ) ) {
+			// add_option() è atomico: la INSERT fallisce se la riga esiste già.
+			// Con update_option() due prime richieste in parallelo genererebbero
+			// due UUID diversi e quella che perde la corsa restituirebbe un
+			// identificativo mai salvato — due sorgenti distinte per un consumatore
+			// che sta importando lo stesso sito.
 			$uuid = wp_generate_uuid4();
-			update_option( 'wpaib_site_uuid', $uuid, true );
+
+			if ( ! add_option( 'wpaib_site_uuid', $uuid, '', true ) ) {
+				$stored = get_option( 'wpaib_site_uuid' );
+				if ( is_string( $stored ) && wp_is_uuid( $stored, 4 ) ) {
+					return $stored;
+				}
+				update_option( 'wpaib_site_uuid', $uuid, true );
+			}
 		}
 
 		return $uuid;

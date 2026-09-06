@@ -132,8 +132,25 @@ class WPAIB_OpenAPI_Controller {
 							'authorizationCode' => array(
 								'authorizationUrl' => home_url( '/wpaib/oauth/authorize' ),
 								'tokenUrl'         => rest_url( WPAIB_API_NAMESPACE . '/oauth/token' ),
+								// Uno scope per capability: il token concede solo ciò che
+								// elenca, quindi un client che deve leggere utenti, menu o
+								// configurazione del sito deve chiederli esplicitamente.
 								'scopes'           => array(
-									'edit_posts' => 'Crea e modifica post, pagine, media, categorie e tag',
+									'edit_posts'         => 'Legge e scrive gli articoli, e legge categorie, tag e CPT',
+									'edit_pages'         => 'Legge e scrive le pagine',
+									'upload_files'       => 'Legge la libreria media e carica file',
+									'delete_posts'       => 'Cestina o elimina articoli e media',
+									'delete_pages'       => 'Cestina o elimina pagine',
+									'manage_categories'  => 'Crea categorie e tag',
+									'moderate_comments'  => 'Legge i commenti non approvati, con email e IP, e li modera',
+									'list_users'         => 'Legge l\'elenco degli utenti (mai password né hash)',
+									'edit_theme_options' => 'Legge menu di navigazione e tema attivo',
+									'manage_options'     => 'Legge la configurazione completa del sito',
+									'activate_plugins'   => 'Elenca, attiva e disattiva i plugin',
+									'delete_plugins'     => 'Elimina plugin',
+									'update_core'        => 'Aggiorna il core di WordPress',
+									'update_plugins'     => 'Aggiorna i plugin',
+									'update_themes'      => 'Aggiorna i temi',
 								),
 							),
 						),

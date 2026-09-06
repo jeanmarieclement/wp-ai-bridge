@@ -8,7 +8,7 @@
 
 A WordPress plugin that exposes secure REST endpoints for content management via **per-user API keys** or **OAuth2** (Authorization Code flow). Designed for integration with external AI services (Claude.ai, ChatGPT, custom automations).
 
-**Version:** 1.5.0  
+**Version:** 1.6.0  
 **Compatibility:** WordPress 6.0+, PHP 7.4+  
 **License:** MIT
 
@@ -147,10 +147,13 @@ Every REST request passes these cascading checks:
 | 2 | Rate limiter | Max 300 requests/min per key/token |
 | 3 | Auth — Bearer | Validates OAuth2 access token: hash lookup + expiry + revocation |
 | 3 | Auth — API Key | SHA-256 hash against DB, regex format pre-check |
-| 4 | WordPress capability | Verifies `edit_posts` on the user linked to the credential |
-| 5 | Input sanitization | `sanitize_*` + `wp_kses_post` on all data |
+| 4 | OAuth2 scope | For Bearer tokens: the capability the route needs must be named in the token's scope |
+| 5 | WordPress capability | Verifies the capability that route requires on the user linked to the credential |
+| 6 | Per-record visibility | Lists return public content plus the user's own; other people's drafts and private records need `edit_others_posts` |
+| 7 | Input sanitization | `sanitize_*` + `wp_kses_post` on all data |
 
 **OAuth2 security properties:**
+- Token scopes are enforced: a token reaches only the capabilities its scope names, whatever the authorising user could otherwise do
 - Authorization codes are one-shot (invalidated immediately after use)
 - Client secrets stored as SHA-256 hashes only
 - Access and refresh tokens stored as SHA-256 hashes only
@@ -319,6 +322,14 @@ It is the presence of `after_id` that selects cursor mode, not its value. `after
 
 `any` covers every registered non-internal status, not just the five core ones. That matters on sites running an editorial or e-commerce plugin: those declare reserved workflow statuses with `exclude_from_search`, which `WP_Query`'s own `'any'` drops silently — content that would simply go missing from an export claiming to be complete.
 
+### What a credential can actually read
+
+A read endpoint returns what the same user would see in wp-admin, never more. Public content is everyone's; drafts, pending, private and trashed content is returned only to the user who authored it, unless the credential holds `edit_others_posts` (or `edit_others_pages`, or the equivalent for a custom post type) — which an Editor and an Administrator do, so a real export is unaffected.
+
+Each endpoint asks for the capability WordPress itself asks for: `/posts` and `/cpt/{type}` want `edit_posts`, `/pages` wants `edit_pages`, `/media` wants `upload_files`, `/users` wants `list_users`, `/menus` and `/theme` want `edit_theme_options`, `/site/full` wants `manage_options`.
+
+With OAuth2 the token's scope is a second gate, applied before the capability: a token names the capabilities it was granted and reaches nothing else, even when the person who authorised it is an administrator. Scopes are listed in `/openapi.json`; a client that needs the full export surface must request them explicitly (for example `edit_posts edit_pages upload_files list_users edit_theme_options manage_options`). A token issued without a scope gets `edit_posts`.
+
 ### Read-only endpoints for a full migration
 
 | Endpoint | Capability | Returns |
@@ -326,6 +337,7 @@ It is the presence of `after_id` that selects cursor mode, not its value. `after
 | `GET /users` | `list_users` | id, login, email, display name, roles, description, avatar URL. **No passwords, no hashes** |
 | `GET /users/{id}` | `list_users` | The same for a single user |
 | `GET /menus` | `edit_theme_options` | Classic and block-theme menus, assigned locations, items, hierarchy, item type and target object |
+| `GET /media` | `upload_files` | Attachments with source URL, dimensions, size, alt text, parent and author |
 | `GET /theme` | `edit_theme_options` | Active theme (slug, name, version), stylesheet and template URLs, sidebars, representative URLs to capture |
 | `GET /site/full` | `manage_options` | Title, description, language, timezone, front page and page-for-posts, logo, favicon, permalink structure, `site_uuid` |
 | `GET /comments` | `edit_posts` / `moderate_comments` | Comments with parent, author URL, user id, status, type and parent post type |

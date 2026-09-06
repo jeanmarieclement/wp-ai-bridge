@@ -58,7 +58,7 @@ class WPAIB_Media_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'list_media' ),
-					'permission_callback' => WPAIB_Auth::require_cap( 'edit_posts' ),
+					'permission_callback' => WPAIB_Auth::require_cap( 'upload_files' ),
 					'args'                => array(
 						'per_page'  => array(
 							'default'           => 10,
@@ -167,25 +167,38 @@ class WPAIB_Media_Controller {
 			$filesize = (int) filesize( $file );
 		}
 
+		// url/alt calcolati una volta sola: erano ricavati due volte a testa per
+		// ogni allegato, e in un elenco da 100 sono 200 chiamate inutili.
+		$url    = wp_get_attachment_url( $id );
+		$alt    = get_post_meta( $id, '_wp_attachment_image_alt', true );
+		$parent = (int) $attachment->post_parent;
+		$author = (int) $attachment->post_author;
+
 		return array(
 			'id'                => $id,
 			'title'             => $attachment->post_title,
 			'slug'              => $attachment->post_name,
-			'url'               => wp_get_attachment_url( $id ),
-			'source_url'        => wp_get_attachment_url( $id ),
+			'url'               => $url,
+			'source_url'        => $url,
+			'link'              => $url,
 			'mime_type'         => $attachment->post_mime_type,
 			'width'             => isset( $metadata['width'] ) ? (int) $metadata['width'] : null,
 			'height'            => isset( $metadata['height'] ) ? (int) $metadata['height'] : null,
 			'filesize'          => $filesize,
 			'date'              => $attachment->post_date_gmt,
+			'modified'          => $attachment->post_modified_gmt,
 			'post_date_gmt'     => $attachment->post_date_gmt,
 			'post_modified_gmt' => $attachment->post_modified_gmt,
-			'alt'               => get_post_meta( $id, '_wp_attachment_image_alt', true ),
-			'alt_text'          => get_post_meta( $id, '_wp_attachment_image_alt', true ),
+			'alt'               => $alt,
+			'alt_text'          => $alt,
 			'caption'           => $attachment->post_excerpt,
 			'description'       => $attachment->post_content,
-			'post_parent'       => (int) $attachment->post_parent,
-			'author_id'         => (int) $attachment->post_author,
+			// parent/author hanno lo stesso nome degli altri endpoint; post_parent
+			// e author_id restano per non rompere chi li legge già.
+			'parent'            => $parent,
+			'post_parent'       => $parent,
+			'author'            => $author,
+			'author_id'         => $author,
 		);
 	}
 

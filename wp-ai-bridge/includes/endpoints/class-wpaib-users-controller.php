@@ -96,9 +96,12 @@ class WPAIB_Users_Controller {
 
 		$query = WPAIB_Rest_Helper::query_users( $args, $after_id );
 
+		$results = $query->get_results();
+		$counts  = $this->post_counts( wp_list_pluck( $results, 'ID' ) );
+
 		$items = array();
-		foreach ( $query->get_results() as $user ) {
-			$items[] = $this->prepare_user( $user );
+		foreach ( $results as $user ) {
+			$items[] = $this->prepare_user( $user, $counts );
 		}
 
 		$total = (int) $query->get_total();
@@ -142,6 +145,43 @@ class WPAIB_Users_Controller {
 	}
 
 	/**
+	 * Conta in una query sola gli articoli pubblicati di un gruppo di utenti.
+	 *
+	 * @param array $user_ids ID degli utenti della pagina corrente.
+	 * @return array Mappa user_id => numero di articoli.
+	 */
+	private function post_counts( array $user_ids ) {
+		global $wpdb;
+
+		$user_ids = array_filter( array_map( 'intval', $user_ids ) );
+		if ( empty( $user_ids ) ) {
+			return array();
+		}
+
+		$placeholders = implode( ', ', array_fill( 0, count( $user_ids ), '%d' ) );
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT post_author, COUNT(*) AS total
+				 FROM {$wpdb->posts}
+				 WHERE post_type = 'post' AND post_status = 'publish'
+				   AND post_author IN ( {$placeholders} )
+				 GROUP BY post_author",
+				$user_ids
+			)
+		);
+		// phpcs:enable
+
+		$counts = array();
+		foreach ( (array) $rows as $row ) {
+			$counts[ (int) $row->post_author ] = (int) $row->total;
+		}
+
+		return $counts;
+	}
+
+	/**
 	 * Prepara la rappresentazione di un utente.
 	 *
 	 * Volutamente assenti user_pass e ogni altro materiale crittografico: questo
@@ -150,8 +190,15 @@ class WPAIB_Users_Controller {
 	 * @param WP_User $user Utente.
 	 * @return array
 	 */
-	private function prepare_user( $user ) {
+	private function prepare_user( $user, $counts = null ) {
 		$id = (int) $user->ID;
+
+		// count_user_posts() costa una query per utente e non è memoizzata: su una
+		// pagina da 100 utenti sarebbero 100 query in più. In elenco il conteggio
+		// arriva già aggregato; sulla rotta singola la query è una sola comunque.
+		$posts_count = is_array( $counts )
+			? ( isset( $counts[ $id ] ) ? (int) $counts[ $id ] : 0 )
+			: (int) count_user_posts( $id, 'post' );
 
 		return array(
 			'id'           => $id,
@@ -168,7 +215,7 @@ class WPAIB_Users_Controller {
 			'role'         => ! empty( $user->roles ) ? reset( $user->roles ) : '',
 			'registered'   => $user->user_registered,
 			'avatar_url'   => get_avatar_url( $id ),
-			'posts_count'  => (int) count_user_posts( $id, 'post' ),
+			'posts_count'  => $posts_count,
 			'author_link'  => get_author_posts_url( $id ),
 		);
 	}

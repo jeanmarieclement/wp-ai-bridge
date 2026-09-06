@@ -69,28 +69,67 @@ class WPAIB_Rest_Helper {
 	 */
 	public static function query_posts( array $args, $after_id = null ) {
 		$after_id = self::after_id( $after_id );
+		$args     = self::restrict_to_visible( $args );
 
-		if ( null === $after_id ) {
-			return new WP_Query( $args );
+		if ( null !== $after_id ) {
+			$args['wpaib_after_id'] = $after_id;
+			$args['orderby']        = 'ID';
+			$args['order']          = 'ASC';
+			unset( $args['paged'] );
+
+			// Senza paged ogni pagina del cursore è "pagina 1" e WP_Query, che per una
+			// query su 'post' si considera is_home, ripescherebbe gli articoli in
+			// evidenza mettendoli in testa a ogni pagina — duplicati, ordine per ID
+			// rotto, e per giunta forzati a post_status 'publish' anche quando si
+			// stanno chiedendo le bozze.
+			$args['ignore_sticky_posts'] = true;
 		}
-
-		$args['wpaib_after_id'] = $after_id;
-		$args['orderby']        = 'ID';
-		$args['order']          = 'ASC';
-		unset( $args['paged'] );
-
-		// Senza paged ogni pagina del cursore è "pagina 1" e WP_Query, che per una
-		// query su 'post' si considera is_home, ripescherebbe gli articoli in
-		// evidenza mettendoli in testa a ogni pagina — duplicati, ordine per ID
-		// rotto, e per giunta forzati a post_status 'publish' anche quando si
-		// stanno chiedendo le bozze.
-		$args['ignore_sticky_posts'] = true;
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_posts_where' ), 10, 2 );
 		$query = new WP_Query( $args );
 		remove_filter( 'posts_where', array( __CLASS__, 'filter_posts_where' ), 10 );
 
 		return $query;
+	}
+
+	/**
+	 * Limita una query ai contenuti che l'utente corrente può davvero vedere.
+	 *
+	 * Le rotte singole verificano `edit_post` sull'ID richiesto, ma un elenco non
+	 * ha un ID su cui chiamarla: senza questa restrizione una chiave con la sola
+	 * `edit_posts` — un Autore, un Collaboratore — leggerebbe da `/posts` le
+	 * bozze e i contenuti privati di chiunque altro, cioè esattamente quelli che
+	 * la rotta singola le nega con un 403.
+	 *
+	 * La regola è quella del backend WordPress: gli stati pubblici sono di tutti,
+	 * tutto il resto solo se l'utente ne è l'autore. Chi ha `edit_others_posts`
+	 * per quel tipo di contenuto (Editore, Amministratore) non viene toccato, ed
+	 * è il caso di un export completo.
+	 *
+	 * `perm => 'readable'` di WP_Query non basta: filtra gli stati privati ma
+	 * lascia passare le bozze altrui.
+	 *
+	 * @param array $args Argomenti WP_Query.
+	 * @return array
+	 */
+	public static function restrict_to_visible( array $args ) {
+		$post_type = isset( $args['post_type'] ) ? $args['post_type'] : 'post';
+		if ( is_array( $post_type ) ) {
+			$post_type = reset( $post_type );
+		}
+
+		$object = get_post_type_object( $post_type );
+		$cap    = $object && isset( $object->cap->edit_others_posts )
+			? $object->cap->edit_others_posts
+			: 'edit_others_posts';
+
+		if ( current_user_can( $cap ) ) {
+			return $args;
+		}
+
+		$args['wpaib_visible_for'] = get_current_user_id();
+
+		return $args;
 	}
 
 	/**
@@ -103,12 +142,34 @@ class WPAIB_Rest_Helper {
 	public static function filter_posts_where( $where, $query ) {
 		global $wpdb;
 
-		$after_id = $query instanceof WP_Query ? (int) $query->get( 'wpaib_after_id' ) : 0;
-		if ( $after_id < 1 ) {
+		if ( ! $query instanceof WP_Query ) {
 			return $where;
 		}
 
-		return $where . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $after_id );
+		$after_id = (int) $query->get( 'wpaib_after_id' );
+		if ( $after_id > 0 ) {
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $after_id );
+		}
+
+		$visible_for = $query->get( 'wpaib_visible_for' );
+		if ( '' !== $visible_for && null !== $visible_for ) {
+			$public = array_keys( get_post_stati( array( 'public' => true ) ) );
+
+			// Un utente non autenticato non possiede nulla: restano i soli
+			// contenuti pubblici, mai un OR su post_author = 0.
+			$clauses = array();
+			if ( ! empty( $public ) ) {
+				$placeholders = implode( ', ', array_fill( 0, count( $public ), '%s' ) );
+				$clauses[]    = $wpdb->prepare( "{$wpdb->posts}.post_status IN ( {$placeholders} )", $public ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			}
+			if ( (int) $visible_for > 0 ) {
+				$clauses[] = $wpdb->prepare( "{$wpdb->posts}.post_author = %d", (int) $visible_for );
+			}
+
+			$where .= $clauses ? ' AND ( ' . implode( ' OR ', $clauses ) . ' )' : ' AND 1=0';
+		}
+
+		return $where;
 	}
 
 	/**

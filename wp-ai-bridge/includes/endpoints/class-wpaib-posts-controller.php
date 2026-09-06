@@ -505,6 +505,9 @@ class WPAIB_Posts_Controller {
 			'post_modified_gmt' => $post->post_modified_gmt,
 			'comment_status'    => $post->comment_status,
 			'menu_order'        => (int) $post->menu_order,
+			// Sempre 0 per gli articoli, ma presente come su pagine, CPT e media:
+			// un client di export legge lo stesso campo per ogni tipo.
+			'parent'            => (int) $post->post_parent,
 			'categories'        => $category_ids,
 			'tags'              => wp_list_pluck( $tags, 'name' ),
 			// Gli ID sono l'unica base stabile per una mappatura fra siti: i nomi
@@ -575,8 +578,10 @@ class WPAIB_Posts_Controller {
 			$args['post_type'] = $post_type;
 		}
 
-		// Con il cursore un limite serve sempre, altrimenti la prima pagina è già tutta.
-		if ( $per_page < 1 && null !== $after_id ) {
+		// Un limite serve sempre. Senza, WP_Comment_Query gira senza LIMIT e
+		// carica in memoria ogni commento del sito: su un sito con decine di
+		// migliaia di commenti la richiesta esaurisce la memoria di PHP.
+		if ( $per_page < 1 ) {
 			$per_page = WPAIB_Rest_Helper::MAX_PER_PAGE;
 		}
 		if ( $per_page > 0 ) {
