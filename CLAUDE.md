@@ -29,6 +29,7 @@ Endpoint disponibili:
 - `GET/POST /media` (upload base64, max 5 MB, tipi: jpg/png/gif/webp)
 - `GET/POST /categories`, `GET/POST /tags`
 - `GET /comments`, `GET/POST /posts/{id}/comments`, `POST /comments/{id}`, `POST /comments/bulk`
+- `GET /cpt` (elenco CPT registrati), `GET/POST /cpt/{type}`, `GET/POST/DELETE /cpt/{type}/{id}`
 - `GET /users`, `GET /users/{id}` (sola lettura, `list_users`)
 - `GET /menus`, `GET /theme` (sola lettura, `edit_theme_options`)
 - `GET /site`, `GET /site/full` (sola lettura, `manage_options` per `/site/full`)
@@ -100,11 +101,14 @@ Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `w
 
 ## Lettura per export completo (dalla 1.6.0)
 
-- Paginazione a cursore: `after_id` su `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, `/users`. La paginazione per numero di pagina non è stabile mentre il contenuto cambia
+- Paginazione a cursore: `after_id` su `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, `/users`, `/cpt/{type}`. La paginazione per numero di pagina non è stabile mentre il contenuto cambia
+- È la **presenza** del parametro a scegliere la modalità, non il valore: `after_id` assente (`null`) = paginazione classica, `after_id=0` = cursore iniziale. Per questo gli arg REST non dichiarano `default` per `after_id`, e i controller confrontano con `null ===` / `null !==`, mai con `> 0`
 - Ogni cursore è implementato con un filtro (`posts_where`, `comments_clauses`, `pre_user_query`, `terms_clauses`) agganciato a una query var custom `wpaib_after_id`, aggiunto subito prima della query e rimosso subito dopo: nessun'altra query della richiesta viene toccata
-- In modalità cursore la risposta porta `next_after_id`, `has_more` e `total_remaining` al posto di `total`/`page`/`total_pages`
+- La query di conteggio va filtrata con lo stesso cursore, altrimenti `total_remaining` conta l'intera collezione. Su `WP_Comment_Query` serve anche un `cache_domain` che varia col cursore: la chiave di cache non include l'SQL, quindi con un object cache persistente il conteggio filtrato tornerebbe da un'altra pagina
+- In modalità cursore la risposta porta `next_after_id`, `has_more` e `total_remaining` al posto di `total`/`page`/`total_pages`. `has_more` è `total_remaining > count(items)`, esatto: nessuna richiesta finale a vuoto
 - `content_rendered` (attivo di default su `/posts` e `/pages`) è `apply_filters( 'the_content', ... )`: solo così blocchi riutilizzabili, query loop, gallerie dinamiche e shortcode hanno HTML
-- `status=any` resta "tutto tranne il cestino"; `trash` va chiesto esplicitamente
+- `status=any` resta "tutto tranne il cestino"; `trash` va chiesto esplicitamente. `any` viene espanso via `get_post_stati( array( 'internal' => false ) )`, non passato letterale a `WP_Query`: il suo `'any'` scarta anche gli stati registrati con `exclude_from_search`, cioè gli stati di workflow riservati dei plugin editoriali
+- `/menus` copre entrambi i sistemi: `nav_menu` (temi classici) e post `wp_navigation` con voci serializzate in blocchi (temi a blocchi, i core dalla Twenty Twenty-Two). Le voci a blocchi hanno un `id` sintetico, non un post reale, usato per esprimere `parent`
 - I commenti non approvati e i dati personali dell'autore (email, IP) richiedono `moderate_comments`, non basta `edit_posts`
 - `wpaib_site_uuid` in `wp_options`: UUIDv4 opaco generato alla prima richiesta di `/site/full`, sopravvive a un cambio di dominio
 - Il 429 porta l'header `Retry-After` con i secondi che restano nella finestra

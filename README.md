@@ -305,15 +305,19 @@ curl "https://your-site.com/wp-json/wpaib/v1/posts?after_id=412&per_page=100&sta
   -H "X-API-Key: wpaib_..."
 ```
 
-Available on `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, `/users`. With a cursor, `total_remaining` counts the records left from the cursor onward and replaces `total`, `page` and `total_pages`.
+Available on `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, `/users` and `/cpt/{type}`. With a cursor, `total_remaining` counts the records left from the cursor onward and replaces `total`, `page` and `total_pages`.
+
+It is the presence of `after_id` that selects cursor mode, not its value. `after_id=0` is the opening cursor of an export starting from scratch and returns cursor metadata; omitting the parameter entirely gives you classic page-number pagination with `total`, `page` and `total_pages`. `has_more` is exact — when it is `false` there is nothing left, so the walk above never spends a final empty request to find that out.
 
 ### Rendered content
 
 `post_content` alone is not enough: reusable blocks, query loops, dynamic galleries and shortcodes carry no inner HTML. `/posts` and `/pages` return `content_rendered` — the output of `apply_filters( 'the_content', … )` — alongside the raw content. Pass `content_rendered=false` to skip it when you only need the source.
 
-### Trashed content
+### Trashed content and custom statuses
 
 `status=any` means everything except the trash, as it always has. Ask for `status=trash` explicitly to carry the trash over.
+
+`any` covers every registered non-internal status, not just the five core ones. That matters on sites running an editorial or e-commerce plugin: those declare reserved workflow statuses with `exclude_from_search`, which `WP_Query`'s own `'any'` drops silently — content that would simply go missing from an export claiming to be complete.
 
 ### Read-only endpoints for a full migration
 
@@ -321,12 +325,14 @@ Available on `/posts`, `/pages`, `/media`, `/comments`, `/categories`, `/tags`, 
 |----------|-----------|---------|
 | `GET /users` | `list_users` | id, login, email, display name, roles, description, avatar URL. **No passwords, no hashes** |
 | `GET /users/{id}` | `list_users` | The same for a single user |
-| `GET /menus` | `edit_theme_options` | Registered menus, assigned location, items, hierarchy, item type and target object |
+| `GET /menus` | `edit_theme_options` | Classic and block-theme menus, assigned locations, items, hierarchy, item type and target object |
 | `GET /theme` | `edit_theme_options` | Active theme (slug, name, version), stylesheet and template URLs, sidebars, representative URLs to capture |
 | `GET /site/full` | `manage_options` | Title, description, language, timezone, front page and page-for-posts, logo, favicon, permalink structure, `site_uuid` |
 | `GET /comments` | `edit_posts` / `moderate_comments` | Comments with parent, author URL, user id, status, type and parent post type |
 
 `/comments` accepts `after_id` for an export, or `per_page` + `page` for simple paging. It returns approved comments with `edit_posts`. Any other `status` (`hold`, `spam`, `trash`, `all`) requires `moderate_comments`, which also unlocks the author's email and IP address — personal data that stays out of reach of the lower capability.
+
+`/menus` covers both menu systems. Classic themes keep their menus in the `nav_menu` taxonomy; block themes (every core theme since Twenty Twenty-Two) keep them in `wp_navigation` posts with the entries serialised as blocks. Both are returned, with `type` saying which is which, so an FSE site does not export an empty navigation. A `core/page-list` block is expanded into the pages it resolves to at render time, and `core/home-link` and `core/loginout` are resolved to their real label and URL. Block entries carry a synthetic `id` — they have no post of their own — used to express `parent`, so submenu nesting survives; classic entries keep their real `nav_menu_item` ID. A menu assigned to several theme locations reports all of them in `locations`, with `location` kept as the first for convenience.
 
 ### Recognising the same source site
 
