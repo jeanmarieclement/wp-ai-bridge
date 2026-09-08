@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP AI Bridge 1.2.1\n"
+"Project-Id-Version: WP AI Bridge 1.6.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-ai-bridge\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-13T14:32:14+00:00\n"
+"POT-Creation-Date: 2026-09-08T14:10:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-ai-bridge\n"
@@ -302,7 +302,7 @@ msgid "Client creato. Salva subito queste credenziali — il secret non verrà p
 msgstr ""
 
 #: admin/views/oauth-clients.php:59
-#: admin/views/oauth-clients.php:150
+#: admin/views/oauth-clients.php:151
 msgid "Client ID"
 msgstr ""
 
@@ -311,12 +311,12 @@ msgid "Client Secret"
 msgstr ""
 
 #: admin/views/oauth-clients.php:61
-#: admin/views/oauth-clients.php:134
+#: admin/views/oauth-clients.php:135
 msgid "Authorization URL"
 msgstr ""
 
 #: admin/views/oauth-clients.php:62
-#: admin/views/oauth-clients.php:135
+#: admin/views/oauth-clients.php:136
 msgid "Token URL"
 msgstr ""
 
@@ -329,123 +329,123 @@ msgid "WP AI Bridge funge da Authorization Server OAuth2. Segui i passaggi per l
 msgstr ""
 
 #: admin/views/oauth-clients.php:77
-msgid "Crea un client qui sotto con:"
+msgid "Crea un client qui sotto con questa Redirect URI:"
 msgstr ""
 
-#: admin/views/oauth-clients.php:78
-msgid "Redirect URI:"
-msgstr ""
-
-#: admin/views/oauth-clients.php:80
-msgid "In Claude.ai → Impostazioni → Connettori → Aggiungi connettore personalizzato"
+#: admin/views/oauth-clients.php:79
+msgid "Callback usata dai connettori MCP. Se colleghi Claude.ai come tool OAuth generico (non MCP), aggiungi su una seconda riga anche"
 msgstr ""
 
 #: admin/views/oauth-clients.php:81
+msgid "In Claude.ai → Impostazioni → Connettori → Aggiungi connettore personalizzato"
+msgstr ""
+
+#: admin/views/oauth-clients.php:82
 msgid "Compila i campi:"
 msgstr ""
 
-#: admin/views/oauth-clients.php:83
+#: admin/views/oauth-clients.php:84
 msgid "URL server MCP"
 msgstr ""
 
-#: admin/views/oauth-clients.php:88
+#: admin/views/oauth-clients.php:89
 msgid "Clicca Aggiungi → accedi a WP → Autorizza. Fine."
 msgstr ""
 
-#: admin/views/oauth-clients.php:96
+#: admin/views/oauth-clients.php:97
 msgid "In ChatGPT → Esplora GPT → Crea GPT → Configura → Aggiungi azioni"
 msgstr ""
 
-#: admin/views/oauth-clients.php:97
+#: admin/views/oauth-clients.php:98
 msgid "Importa lo schema OpenAPI da:"
 msgstr ""
 
-#: admin/views/oauth-clients.php:100
+#: admin/views/oauth-clients.php:101
 msgid "In Autenticazione scegli OAuth → annota la Callback URL mostrata da ChatGPT (es. "
 msgstr ""
 
-#: admin/views/oauth-clients.php:101
+#: admin/views/oauth-clients.php:102
 msgid "Crea un client qui sotto con quella Redirect URI esatta"
 msgstr ""
 
-#: admin/views/oauth-clients.php:102
+#: admin/views/oauth-clients.php:103
 msgid "Torna in ChatGPT e compila:"
 msgstr ""
 
-#: admin/views/oauth-clients.php:117
+#: admin/views/oauth-clients.php:118
 msgid "Gemini non supporta ancora OAuth2 per le integrazioni esterne. Usa l'autenticazione tramite API Key."
 msgstr ""
 
-#: admin/views/oauth-clients.php:119
+#: admin/views/oauth-clients.php:120
 msgid "Vai su Utenti → Il tuo profilo → WP AI Bridge — API Keys → Genera chiave"
 msgstr ""
 
-#: admin/views/oauth-clients.php:120
+#: admin/views/oauth-clients.php:121
 msgid "Importa lo schema OpenAPI in Google AI Studio o Gemini Gems:"
 msgstr ""
 
-#: admin/views/oauth-clients.php:123
+#: admin/views/oauth-clients.php:124
 msgid "Imposta l'header di autenticazione:"
 msgstr ""
 
-#: admin/views/oauth-clients.php:132
+#: admin/views/oauth-clients.php:133
 msgid "URL OAuth2 di questo sito"
 msgstr ""
 
-#: admin/views/oauth-clients.php:136
+#: admin/views/oauth-clients.php:137
 msgid "MCP Server URL"
 msgstr ""
 
-#: admin/views/oauth-clients.php:137
+#: admin/views/oauth-clients.php:138
 msgid "OpenAPI Schema"
 msgstr ""
 
-#: admin/views/oauth-clients.php:141
+#: admin/views/oauth-clients.php:142
 msgid "Client registrati"
 msgstr ""
 
-#: admin/views/oauth-clients.php:144
+#: admin/views/oauth-clients.php:145
 msgid "Nessun client OAuth2 registrato."
 msgstr ""
 
-#: admin/views/oauth-clients.php:149
+#: admin/views/oauth-clients.php:150
 msgid "Nome"
 msgstr ""
 
-#: admin/views/oauth-clients.php:151
-#: admin/views/oauth-clients.php:201
+#: admin/views/oauth-clients.php:152
+#: admin/views/oauth-clients.php:202
 msgid "Redirect URI"
 msgstr ""
 
-#: admin/views/oauth-clients.php:152
+#: admin/views/oauth-clients.php:153
 msgid "Creato"
 msgstr ""
 
-#: admin/views/oauth-clients.php:171
+#: admin/views/oauth-clients.php:172
 msgid "Eliminare questo client?"
 msgstr ""
 
-#: admin/views/oauth-clients.php:176
+#: admin/views/oauth-clients.php:177
 msgid "Elimina"
 msgstr ""
 
-#: admin/views/oauth-clients.php:187
+#: admin/views/oauth-clients.php:188
 msgid "Aggiungi client"
 msgstr ""
 
-#: admin/views/oauth-clients.php:194
+#: admin/views/oauth-clients.php:195
 msgid "Nome client"
 msgstr ""
 
-#: admin/views/oauth-clients.php:197
+#: admin/views/oauth-clients.php:198
 msgid "es. Claude.ai"
 msgstr ""
 
-#: admin/views/oauth-clients.php:205
-msgid "Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali)."
+#: admin/views/oauth-clients.php:206
+msgid "Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali). Il confronto è esatto: la URI registrata deve coincidere carattere per carattere con quella inviata dal client."
 msgstr ""
 
-#: admin/views/oauth-clients.php:210
+#: admin/views/oauth-clients.php:211
 msgid "Crea client"
 msgstr ""
 
@@ -517,25 +517,33 @@ msgstr ""
 msgid "Not allowed to revoke this key."
 msgstr ""
 
-#: includes/class-wpaib-auth.php:94
-#: includes/class-wpaib-auth.php:190
-#: includes/endpoints/class-wpaib-mcp-controller.php:687
-#: includes/endpoints/class-wpaib-mcp-controller.php:701
-#: includes/endpoints/class-wpaib-mcp-controller.php:728
-#: includes/endpoints/class-wpaib-mcp-controller.php:741
-#: includes/endpoints/class-wpaib-mcp-controller.php:755
-#: includes/endpoints/class-wpaib-mcp-controller.php:767
-#: includes/endpoints/class-wpaib-mcp-controller.php:788
-#: includes/endpoints/class-wpaib-mcp-controller.php:800
-#: includes/endpoints/class-wpaib-posts-controller.php:407
+#: includes/class-wpaib-auth.php:118
+#: includes/class-wpaib-auth.php:271
+#: includes/endpoints/class-wpaib-mcp-controller.php:848
+#: includes/endpoints/class-wpaib-mcp-controller.php:863
+#: includes/endpoints/class-wpaib-mcp-controller.php:874
+#: includes/endpoints/class-wpaib-mcp-controller.php:886
+#: includes/endpoints/class-wpaib-mcp-controller.php:899
+#: includes/endpoints/class-wpaib-mcp-controller.php:913
+#: includes/endpoints/class-wpaib-mcp-controller.php:928
+#: includes/endpoints/class-wpaib-mcp-controller.php:941
+#: includes/endpoints/class-wpaib-mcp-controller.php:952
+#: includes/endpoints/class-wpaib-mcp-controller.php:967
+#: includes/endpoints/class-wpaib-mcp-controller.php:980
+#: includes/endpoints/class-wpaib-posts-controller.php:453
+#: includes/endpoints/class-wpaib-posts-controller.php:557
 msgid "Insufficient permissions."
 msgstr ""
 
-#: includes/class-wpaib-auth.php:136
+#: includes/class-wpaib-auth.php:165
 msgid "Too many requests."
 msgstr ""
 
-#: includes/class-wpaib-auth.php:211
+#: includes/class-wpaib-auth.php:259
+msgid "The access token does not grant this scope."
+msgstr ""
+
+#: includes/class-wpaib-auth.php:292
 #: includes/class-wpaib-oauth-authorize.php:84
 msgid "Authentication required."
 msgstr ""
@@ -572,212 +580,388 @@ msgstr ""
 msgid "Unable to save OAuth2 client."
 msgstr ""
 
-#: includes/class-wpaib-oauth-server.php:29
+#: includes/class-wpaib-oauth-server.php:98
 msgid "Cannot generate auth code."
 msgstr ""
 
-#: includes/class-wpaib-oauth-server.php:55
+#: includes/class-wpaib-oauth-server.php:126
 msgid "Cannot save auth code."
 msgstr ""
 
-#: includes/class-wpaib-oauth-server.php:130
+#: includes/class-wpaib-oauth-server.php:201
 msgid "Cannot generate tokens."
 msgstr ""
 
-#: includes/class-wpaib-oauth-server.php:153
+#: includes/class-wpaib-oauth-server.php:230
 msgid "Cannot save tokens."
 msgstr ""
 
-#: includes/class-wpaib-plugin.php:100
+#: includes/class-wpaib-plugin.php:110
 msgid "HTTPS is required for this endpoint."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:566
+#: includes/endpoints/class-wpaib-appearance-controller.php:254
+msgid "Home"
+msgstr ""
+
+#: includes/endpoints/class-wpaib-appearance-controller.php:257
+msgid "Log in"
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:223
+#: includes/endpoints/class-wpaib-cpt-controller.php:327
+#: includes/endpoints/class-wpaib-cpt-controller.php:403
+msgid "Item not found."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:226
+msgid "Cannot read this item."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:249
+msgid "Cannot create items of this type."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:254
+#: includes/endpoints/class-wpaib-cpt-controller.php:335
+#: includes/endpoints/class-wpaib-pages-controller.php:168
+#: includes/endpoints/class-wpaib-pages-controller.php:224
+#: includes/endpoints/class-wpaib-posts-controller.php:238
+#: includes/endpoints/class-wpaib-posts-controller.php:348
+msgid "Invalid JSON body."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:259
+#: includes/endpoints/class-wpaib-pages-controller.php:173
+#: includes/endpoints/class-wpaib-posts-controller.php:258
+msgid "Title is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:330
+msgid "Cannot edit this item."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:406
+msgid "Cannot delete this item."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-cpt-controller.php:411
+msgid "Could not delete item."
+msgstr ""
+
+#. translators: %s: post type slug
+#: includes/endpoints/class-wpaib-cpt-controller.php:461
+#, php-format
+msgid "Custom post type \"%s\" not found or not accessible."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:708
 msgid "Tool name is required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:574
+#: includes/endpoints/class-wpaib-mcp-controller.php:716
 msgid "Tool not available."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:588
-#: includes/endpoints/class-wpaib-mcp-controller.php:604
-#: includes/endpoints/class-wpaib-mcp-controller.php:615
+#: includes/endpoints/class-wpaib-mcp-controller.php:731
+#: includes/endpoints/class-wpaib-mcp-controller.php:749
+#: includes/endpoints/class-wpaib-mcp-controller.php:761
 msgid "Missing post ID."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:618
+#: includes/endpoints/class-wpaib-mcp-controller.php:764
 msgid "Insufficient permissions to delete posts."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:630
+#: includes/endpoints/class-wpaib-mcp-controller.php:777
 msgid "Insufficient permissions to upload files."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:644
+#: includes/endpoints/class-wpaib-mcp-controller.php:797
 msgid "Insufficient permissions to manage categories."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:673
+#: includes/endpoints/class-wpaib-mcp-controller.php:833
 msgid "Post ID and content are required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:684
+#: includes/endpoints/class-wpaib-mcp-controller.php:845
 msgid "Comment ID and status are required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:698
+#: includes/endpoints/class-wpaib-mcp-controller.php:860
 msgid "Comment IDs and status are required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:719
-#: includes/endpoints/class-wpaib-mcp-controller.php:738
-#: includes/endpoints/class-wpaib-mcp-controller.php:752
+#: includes/endpoints/class-wpaib-mcp-controller.php:889
+#: includes/endpoints/class-wpaib-mcp-controller.php:910
+#: includes/endpoints/class-wpaib-mcp-controller.php:925
 msgid "Missing page ID."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:785
+#: includes/endpoints/class-wpaib-mcp-controller.php:964
 msgid "Missing media ID."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-mcp-controller.php:822
+#: includes/endpoints/class-wpaib-mcp-controller.php:1006
+msgid "Insufficient permissions to manage plugins."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1015
+#: includes/endpoints/class-wpaib-mcp-controller.php:1028
+#: includes/endpoints/class-wpaib-mcp-controller.php:1041
+#: includes/endpoints/class-wpaib-plugins-controller.php:96
+msgid "Plugin path is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1018
+msgid "Insufficient permissions to activate plugins."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1031
+msgid "Insufficient permissions to deactivate plugins."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1044
+msgid "Insufficient permissions to delete plugins."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1054
+#: includes/endpoints/class-wpaib-mcp-controller.php:1069
+msgid "Insufficient permissions to manage updates."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1066
+msgid "Parameters \"type\" and \"slug\" are required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1080
+msgid "Parameter \"type\" is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1083
+#: includes/endpoints/class-wpaib-mcp-controller.php:1099
+msgid "Insufficient permissions to apply updates."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1096
+msgid "Parameter \"items\" must be a non-empty array."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-mcp-controller.php:1109
 #, php-format
 msgid "Tool \"%s\" is not supported."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:157
+#: includes/endpoints/class-wpaib-media-controller.php:217
 msgid "Media not found."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:160
+#: includes/endpoints/class-wpaib-media-controller.php:220
 msgid "Cannot delete this media."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:165
+#: includes/endpoints/class-wpaib-media-controller.php:225
 msgid "Could not delete media."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:202
+#: includes/endpoints/class-wpaib-media-controller.php:262
 msgid "No file provided."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:213
-#: includes/endpoints/class-wpaib-media-controller.php:253
+#: includes/endpoints/class-wpaib-media-controller.php:273
+#: includes/endpoints/class-wpaib-media-controller.php:313
 msgid "File too large."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:239
+#: includes/endpoints/class-wpaib-media-controller.php:299
 msgid "Invalid filename."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:249
+#: includes/endpoints/class-wpaib-media-controller.php:309
 msgid "Invalid base64 content."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:260
+#: includes/endpoints/class-wpaib-media-controller.php:320
 msgid "File type not allowed."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:277
+#: includes/endpoints/class-wpaib-media-controller.php:337
 msgid "Could not write file."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-media-controller.php:302
+#: includes/endpoints/class-wpaib-media-controller.php:362
 msgid "Could not create attachment."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-pages-controller.php:133
-#: includes/endpoints/class-wpaib-pages-controller.php:199
-#: includes/endpoints/class-wpaib-pages-controller.php:252
+#: includes/endpoints/class-wpaib-pages-controller.php:150
+#: includes/endpoints/class-wpaib-pages-controller.php:216
+#: includes/endpoints/class-wpaib-pages-controller.php:269
 msgid "Page not found."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-pages-controller.php:136
+#: includes/endpoints/class-wpaib-pages-controller.php:153
 msgid "Cannot read this page."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-pages-controller.php:151
-#: includes/endpoints/class-wpaib-pages-controller.php:207
-#: includes/endpoints/class-wpaib-posts-controller.php:192
-#: includes/endpoints/class-wpaib-posts-controller.php:302
-msgid "Invalid JSON body."
-msgstr ""
-
-#: includes/endpoints/class-wpaib-pages-controller.php:156
-#: includes/endpoints/class-wpaib-posts-controller.php:212
-msgid "Title is required."
-msgstr ""
-
-#: includes/endpoints/class-wpaib-pages-controller.php:202
+#: includes/endpoints/class-wpaib-pages-controller.php:219
 msgid "Cannot edit this page."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-pages-controller.php:255
+#: includes/endpoints/class-wpaib-pages-controller.php:272
 msgid "Cannot delete this page."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-pages-controller.php:260
+#: includes/endpoints/class-wpaib-pages-controller.php:277
 msgid "Could not delete page."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:230
-#: includes/endpoints/class-wpaib-posts-controller.php:333
+#: includes/endpoints/class-wpaib-plugins-controller.php:106
+#: includes/endpoints/class-wpaib-plugins-controller.php:114
+msgid "Invalid plugin path."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:125
+msgid "Plugin not found."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:176
+msgid "Plugin is already active."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:191
+msgid "Plugin activated successfully."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:214
+msgid "Cannot deactivate WP AI Bridge via its own API."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:224
+msgid "Plugin is already inactive."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:236
+msgid "Plugin deactivated successfully."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:260
+msgid "Cannot delete WP AI Bridge via its own API."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:278
+msgid "Plugin deletion failed. Check filesystem permissions."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-plugins-controller.php:287
+msgid "Plugin deleted successfully."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:276
+#: includes/endpoints/class-wpaib-posts-controller.php:379
 msgid "Invalid date format. Use ISO 8601."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:274
-#: includes/endpoints/class-wpaib-posts-controller.php:294
-#: includes/endpoints/class-wpaib-posts-controller.php:374
-#: includes/endpoints/class-wpaib-posts-controller.php:474
-#: includes/endpoints/class-wpaib-posts-controller.php:511
+#: includes/endpoints/class-wpaib-posts-controller.php:320
+#: includes/endpoints/class-wpaib-posts-controller.php:340
+#: includes/endpoints/class-wpaib-posts-controller.php:420
+#: includes/endpoints/class-wpaib-posts-controller.php:572
+#: includes/endpoints/class-wpaib-posts-controller.php:689
 msgid "Post not found."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:278
+#: includes/endpoints/class-wpaib-posts-controller.php:324
 msgid "Cannot read this post."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:297
+#: includes/endpoints/class-wpaib-posts-controller.php:343
 msgid "Cannot edit this post."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:377
+#: includes/endpoints/class-wpaib-posts-controller.php:423
 msgid "Cannot delete this post."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:382
+#: includes/endpoints/class-wpaib-posts-controller.php:428
 msgid "Could not delete post."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:398
-#: includes/endpoints/class-wpaib-posts-controller.php:582
+#: includes/endpoints/class-wpaib-posts-controller.php:444
+#: includes/endpoints/class-wpaib-posts-controller.php:760
 msgid "IDs array and status are required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:404
-#: includes/endpoints/class-wpaib-posts-controller.php:562
-#: includes/endpoints/class-wpaib-posts-controller.php:588
+#: includes/endpoints/class-wpaib-posts-controller.php:450
+#: includes/endpoints/class-wpaib-posts-controller.php:548
+#: includes/endpoints/class-wpaib-posts-controller.php:740
+#: includes/endpoints/class-wpaib-posts-controller.php:766
 msgid "Invalid status."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:506
+#: includes/endpoints/class-wpaib-posts-controller.php:575
+msgid "Cannot read comments on this post."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-posts-controller.php:684
 msgid "Comment content is required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:529
+#: includes/endpoints/class-wpaib-posts-controller.php:707
 msgid "Could not create comment."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:556
+#: includes/endpoints/class-wpaib-posts-controller.php:734
 msgid "Status is required."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-posts-controller.php:566
+#: includes/endpoints/class-wpaib-posts-controller.php:744
 msgid "Could not update comment status."
 msgstr ""
 
-#: includes/endpoints/class-wpaib-taxonomy-controller.php:138
+#: includes/endpoints/class-wpaib-taxonomy-controller.php:222
 msgid "Name is required."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:307
+msgid "\"slug\" è obbligatorio per aggiornamenti di plugin e tema."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:344
+msgid "\"items\" deve essere un array non vuoto."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:380
+msgid "Aggiornamento core già eseguito in questa request."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:697
+msgid "Impossibile inizializzare il filesystem. Verifica i permessi del server."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:754
+#, php-format
+msgid "Plugin \"%s\" non trovato tra i plugin installati."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:788
+msgid "Aggiornamento plugin fallito."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:840
+msgid "Aggiornamento tema fallito."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:879
+msgid "Nessun aggiornamento core disponibile."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-updates-controller.php:898
+#, php-format
+msgid "WordPress aggiornato alla versione %s."
+msgstr ""
+
+#: includes/endpoints/class-wpaib-users-controller.php:141
+msgid "User not found."
 msgstr ""
 
 #: includes/views/oauth-consent.php:25
