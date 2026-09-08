@@ -927,9 +927,8 @@ class WPAIB_OpenAPI_Controller {
 							),
 							$this->pagination_params( 0 )
 						),
-						'responses'   => array_merge(
-							$this->ok_response( 'Commenti recuperati.' ),
-							array( '403' => array( 'description' => 'Stato diverso da approve senza la capability moderate_comments.' ) )
+						'responses'   => $this->ok_response( 'Commenti recuperati.' ) + array(
+							'403' => array( 'description' => 'Stato diverso da approve senza la capability moderate_comments.' ),
 						),
 					),
 				),
@@ -962,9 +961,8 @@ class WPAIB_OpenAPI_Controller {
 						'parameters'  => array(
 							array( 'name' => 'id', 'in' => 'path', 'required' => true, 'schema' => array( 'type' => 'integer' ) ),
 						),
-						'responses'   => array_merge(
-							$this->ok_response( 'Utente recuperato.' ),
-							array( '404' => array( 'description' => 'Utente non trovato.' ) )
+						'responses'   => $this->ok_response( 'Utente recuperato.' ) + array(
+							'404' => array( 'description' => 'Utente non trovato.' ),
 						),
 					),
 				),

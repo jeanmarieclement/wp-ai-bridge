@@ -78,8 +78,17 @@ foreach ( $schema['paths'] as $path => $operations ) {
 			$operation_ids[] = $operation['operationId'];
 		}
 
-		if ( empty( $operation['responses'] ) ) {
+		if ( empty( $operation['responses'] ) || ! is_array( $operation['responses'] ) ) {
 			wpaib_fail( "{$method} {$path} has no responses" );
+		} else {
+			if ( array_keys( $operation['responses'] ) === range( 0, count( $operation['responses'] ) - 1 ) ) {
+				wpaib_fail( "{$method} {$path} responses is a sequential array (list) instead of a status-code keyed map" );
+			}
+			foreach ( $operation['responses'] as $status_code => $resp ) {
+				if ( ! is_array( $resp ) || empty( $resp['description'] ) ) {
+					wpaib_fail( "{$method} {$path} response '{$status_code}' is malformed or missing description" );
+				}
+			}
 		}
 
 		if ( ! isset( $operation['parameters'] ) ) {
@@ -90,6 +99,16 @@ foreach ( $schema['paths'] as $path => $operations ) {
 			if ( ! is_array( $parameter ) || empty( $parameter['name'] ) || empty( $parameter['in'] ) ) {
 				wpaib_fail( "{$method} {$path} parameter #{$i} is malformed" );
 			}
+		}
+	}
+}
+
+// Verifica che nel JSON finale ogni responses sia un oggetto e non una lista.
+$decoded_json = json_decode( $json );
+foreach ( $decoded_json->paths as $path => $operations ) {
+	foreach ( $operations as $method => $operation ) {
+		if ( isset( $operation->responses ) && is_array( $operation->responses ) ) {
+			wpaib_fail( "JSON responses for {$method} {$path} serialized as an array instead of an object" );
 		}
 	}
 }
