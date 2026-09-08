@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2026-09-08
+
+### Fixed
+- **OpenAPI response status code map keys for ChatGPT Actions**: `GET /comments` and `GET /users/{id}` used `array_merge()` on response arrays with numeric keys (`'200'`, `'403'`, `'404'`), causing PHP to reindex them as sequential integer lists `[0, 1]` which serialized to JSON arrays instead of objects. This triggered `AttributeError: 'list' object has no attribute 'keys'` when imported into ChatGPT Actions. Changed to array union `+` to preserve HTTP status code keys.
+
+### Added
+- **Dynamic MCP tools counter and ChatGPT compatibility badge**: the settings screen (`options-general.php?page=wpaib-tools`) now displays a real-time counter (`x/y tool selezionati`) updated instantly via JavaScript upon checkbox toggle. Includes visual feedback for ChatGPT Actions (which limits schemas to a maximum of 30 operations): a green badge when &le; 30 tools are selected and a warning notice when > 30 tools are selected.
+- **Bulk selection actions and category toggles**: added "Seleziona tutti" and "Deseleziona tutti" quick buttons, plus category-level master checkboxes supporting the indeterminate state.
+- **Exposed all 32 MCP tools in settings**: the settings screen and save handler now include the 8 tools for Plugin management (`get_plugins`, `activate_plugin`, `deactivate_plugin`, `delete_plugin`) and Updates management (`get_updates`, `get_changelog`, `apply_update`, `bulk_update`), unified in `WPAIB_Admin::get_tool_categories()`.
+- **Dynamic `openapi.json` filtering**: `/openapi.json` now filters out operations associated with tools disabled in `wpaib_disabled_tools` and removes empty paths. Disabling unused categories (e.g. Plugin and Updates) reduces total operations from 36 to 25, allowing direct import into ChatGPT Custom GPTs without exceeding the 30-action ceiling.
+
+---
+
 ## [1.6.0] - 2026-09-04
 
 ### Added
