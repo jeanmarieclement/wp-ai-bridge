@@ -15,6 +15,17 @@ require_once __DIR__ . '/bootstrap.php';
 /**
  * Stub minimi: al controller serve solo poter costruire URL e registrare rotte.
  */
+$GLOBALS['test_options'] = array();
+
+function get_option( $name, $default = false ) {
+	return isset( $GLOBALS['test_options'][ $name ] ) ? $GLOBALS['test_options'][ $name ] : $default;
+}
+
+function update_option( $name, $value ) {
+	$GLOBALS['test_options'][ $name ] = $value;
+	return true;
+}
+
 function untrailingslashit( $s ) {
 	return rtrim( $s, '/' );
 }
@@ -33,10 +44,15 @@ function rest_ensure_response( $d ) {
 
 function register_rest_route() {}
 
+function __( $text, $domain = 'default' ) {
+	return $text;
+}
+
 class WP_REST_Server {
 	const READABLE = 'GET';
 }
 
+require_once WPAIB_TEST_PLUGIN_DIR . '/admin/class-wpaib-admin.php';
 require_once WPAIB_TEST_PLUGIN_DIR . '/includes/endpoints/class-wpaib-openapi-controller.php';
 
 $controller = new WPAIB_OpenAPI_Controller();
@@ -119,7 +135,44 @@ wpaib_check(
 	true
 );
 
+// Verifica allineamento e conteggio di tutti i 32 tool MCP registrati
+$admin_tool_slugs = WPAIB_Admin::get_all_tool_slugs();
+wpaib_check( 'WPAIB_Admin registers exactly 32 MCP tools', count( $admin_tool_slugs ), 32 );
+wpaib_check( 'all 32 tool slugs are unique', count( array_unique( $admin_tool_slugs ) ), 32 );
+
+// Verifica categorie
+$categories = WPAIB_Admin::get_tool_categories();
+wpaib_check( 'WPAIB_Admin defines 8 tool categories', count( $categories ), 8 );
+wpaib_check( 'categories include Plugin', isset( $categories['Plugin'] ), true );
+wpaib_check( 'categories include Aggiornamenti', isset( $categories['Aggiornamenti'] ), true );
+
+// Verifica filtraggio openapi.json quando vengono disabilitati i tool
+// Simuliamo la disabilitazione dei tool Plugin e Aggiornamenti (8 tool)
+$GLOBALS['test_options']['wpaib_disabled_tools'] = array(
+	'get_plugins', 'activate_plugin', 'deactivate_plugin', 'delete_plugin',
+	'get_updates', 'get_changelog', 'apply_update', 'bulk_update',
+);
+
+$filtered_schema = $controller->get_openapi_schema();
+$filtered_paths  = array_keys( $filtered_schema['paths'] );
+$filtered_op_ids = array();
+foreach ( $filtered_schema['paths'] as $p => $ops ) {
+	foreach ( $ops as $m => $op ) {
+		if ( ! empty( $op['operationId'] ) ) {
+			$filtered_op_ids[] = $op['operationId'];
+		}
+	}
+}
+
+wpaib_check( 'filtered openapi has <= 30 operations for ChatGPT Actions', count( $filtered_op_ids ) <= 30, true );
+wpaib_check( 'filtered openapi has exactly 25 operations', count( $filtered_op_ids ), 25 );
+wpaib_check( 'filtered openapi does not declare /plugins', in_array( '/plugins', $filtered_paths, true ), false );
+wpaib_check( 'filtered openapi does not declare /plugins/activate', in_array( '/plugins/activate', $filtered_paths, true ), false );
+wpaib_check( 'filtered openapi does not declare /updates', in_array( '/updates', $filtered_paths, true ), false );
+wpaib_check( 'filtered openapi still declares /posts', in_array( '/posts', $filtered_paths, true ), true );
+
 printf( "\n%d operations over %d paths, %d bytes of JSON\n", count( $operation_ids ), count( $paths ), strlen( $json ) );
+printf( "Filtered (for ChatGPT): %d operations over %d paths\n", count( $filtered_op_ids ), count( $filtered_paths ) );
 
 wpaib_finish( 'openapi-schema' );
 

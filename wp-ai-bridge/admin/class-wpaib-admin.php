@@ -186,7 +186,38 @@ class WPAIB_Admin {
 	}
 
 	/**
-	 * Handler per salvare le impostazioni dei tool.
+	 * Restituisce le categorie e l'elenco completo dei tool MCP disponibili.
+	 *
+	 * @return array<string, array<int, string>>
+	 */
+	public static function get_tool_categories() {
+		return array(
+			__( 'Post', 'wp-ai-bridge' )          => array( 'get_posts', 'get_post', 'create_post', 'update_post', 'delete_post', 'bulk_update_posts' ),
+			__( 'Pagine', 'wp-ai-bridge' )        => array( 'get_pages', 'get_page', 'create_page', 'update_page', 'delete_page' ),
+			__( 'Media', 'wp-ai-bridge' )         => array( 'get_media', 'upload_media', 'delete_media' ),
+			__( 'Commenti', 'wp-ai-bridge' )      => array( 'get_comments', 'add_comment', 'moderate_comment', 'bulk_moderate_comments' ),
+			__( 'Tassonomie', 'wp-ai-bridge' )    => array( 'get_categories', 'create_category', 'get_tags', 'create_tag' ),
+			__( 'Sito & Ricerca', 'wp-ai-bridge' ) => array( 'get_site_info', 'search' ),
+			__( 'Plugin', 'wp-ai-bridge' )        => array( 'get_plugins', 'activate_plugin', 'deactivate_plugin', 'delete_plugin' ),
+			__( 'Aggiornamenti', 'wp-ai-bridge' ) => array( 'get_updates', 'get_changelog', 'apply_update', 'bulk_update' ),
+		);
+	}
+
+	/**
+	 * Restituisce l'elenco di tutti gli slug dei tool MCP registrati.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function get_all_tool_slugs() {
+		$slugs = array();
+		foreach ( self::get_tool_categories() as $tools ) {
+			$slugs = array_merge( $slugs, $tools );
+		}
+		return $slugs;
+	}
+
+	/**
+	 * Handler per salvare i tool abilitati.
 	 *
 	 * @return void
 	 */
@@ -197,14 +228,7 @@ class WPAIB_Admin {
 
 		check_admin_referer( 'wpaib_save_tools' );
 
-		$all_tools = array(
-			'get_posts', 'get_post', 'create_post', 'update_post', 'delete_post', 'bulk_update_posts',
-			'get_pages', 'get_page', 'create_page', 'update_page', 'delete_page',
-			'get_media', 'upload_media', 'delete_media',
-			'get_comments', 'add_comment', 'moderate_comment', 'bulk_moderate_comments',
-			'get_categories', 'create_category', 'get_tags', 'create_tag',
-			'get_site_info', 'search',
-		);
+		$all_tools = self::get_all_tool_slugs();
 
 		$enabled  = isset( $_POST['wpaib_tools'] ) && is_array( $_POST['wpaib_tools'] )
 			? array_map( 'sanitize_key', $_POST['wpaib_tools'] )

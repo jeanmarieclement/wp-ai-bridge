@@ -1192,6 +1192,68 @@ class WPAIB_OpenAPI_Controller {
 			),
 		);
 
+		// Filtra le operazioni disabilitate nelle impostazioni dei tool (wpaib_disabled_tools).
+		$disabled = function_exists( 'get_option' ) ? get_option( 'wpaib_disabled_tools', array() ) : array();
+		if ( ! empty( $disabled ) && is_array( $disabled ) ) {
+			$map = $this->get_operation_tool_map();
+			foreach ( $schema['paths'] as $path => $methods ) {
+				foreach ( $methods as $method => $op ) {
+					$op_id = isset( $op['operationId'] ) ? $op['operationId'] : '';
+					if ( isset( $map[ $op_id ] ) && in_array( $map[ $op_id ], $disabled, true ) ) {
+						unset( $schema['paths'][ $path ][ $method ] );
+					}
+				}
+				if ( empty( $schema['paths'][ $path ] ) ) {
+					unset( $schema['paths'][ $path ] );
+				}
+			}
+		}
+
 		return rest_ensure_response( $schema );
+	}
+
+	/**
+	 * Mappa tra operationId OpenAPI e lo slug del corrispondente tool MCP.
+	 *
+	 * @return array<string, string>
+	 */
+	public function get_operation_tool_map() {
+		return array(
+			// Post
+			'listPosts'        => 'get_posts',
+			'createPost'       => 'create_post',
+			'getPost'          => 'get_post',
+			'updatePost'       => 'update_post',
+			'deletePost'       => 'delete_post',
+			// Pagine
+			'listPages'        => 'get_pages',
+			// Media
+			'listMedia'        => 'get_media',
+			'uploadMedia'      => 'upload_media',
+			// Commenti
+			'listComments'     => 'get_comments',
+			// Categorie
+			'listCategories'   => 'get_categories',
+			'createCategory'   => 'create_category',
+			// Tag
+			'listTags'         => 'get_tags',
+			'createTag'        => 'create_tag',
+			// Sito
+			'getSiteInfo'      => 'get_site_info',
+			'getFullSiteInfo'  => 'get_site_info',
+			// Plugin
+			'listPlugins'      => 'get_plugins',
+			'deletePlugin'     => 'delete_plugin',
+			'activatePlugin'   => 'activate_plugin',
+			'deactivatePlugin' => 'deactivate_plugin',
+			// Aggiornamenti
+			'getAllUpdates'    => 'get_updates',
+			'getCoreUpdates'   => 'get_updates',
+			'getPluginUpdates' => 'get_updates',
+			'getThemeUpdates'  => 'get_updates',
+			'getChangelog'     => 'get_changelog',
+			'applyUpdate'      => 'apply_update',
+			'bulkUpdate'       => 'bulk_update',
+		);
 	}
 }
