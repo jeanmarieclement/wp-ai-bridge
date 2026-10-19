@@ -7,13 +7,18 @@
 set -euo pipefail
 
 # ---------- Configurazione ---------------------------------------------------
-PLUGIN_SLUG="wp-ai-bridge"
-PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${PLUGIN_SLUG}"
+PLUGIN_SLUG="ai-bridge"
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/wp-ai-bridge"
 BUILD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/build"
 DIST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/dist"
 
+MAIN_FILE="ai-bridge.php"
+if [ ! -f "${SRC_DIR}/${MAIN_FILE}" ]; then
+    MAIN_FILE="wp-ai-bridge.php"
+fi
+
 # Legge la versione direttamente dal file principale del plugin
-VERSION=$(grep -m1 "Version:" "${PLUGIN_DIR}/wp-ai-bridge.php" | awk '{print $NF}')
+VERSION=$(grep -m1 "Version:" "${SRC_DIR}/${MAIN_FILE}" | awk '{print $NF}')
 
 ZIP_NAME="${PLUGIN_SLUG}-${VERSION}.zip"
 ZIP_PATH="${DIST_DIR}/${ZIP_NAME}"
@@ -35,13 +40,14 @@ INCLUDE=(
     "index.php"
     "mcp-connector.php"
     "uninstall.php"
-    "wp-ai-bridge.php"
+    "${MAIN_FILE}"
+    "readme.txt"
     "README.md"
     "CHANGELOG.md"
 )
 
 for item in "${INCLUDE[@]}"; do
-    src="${PLUGIN_DIR}/${item}"
+    src="${SRC_DIR}/${item}"
     if [ -e "${src}" ]; then
         cp -r "${src}" "${BUILD_DIR}/${PLUGIN_SLUG}/"
     else
@@ -65,7 +71,7 @@ find "${BUILD_DIR}" -name "*.map" -delete
 # ---------- Genera file .pot per i traduttori --------------------------------
 echo "🌐  Generazione file di traduzione .pot..."
 if command -v wp &> /dev/null; then
-    wp i18n make-pot "${PLUGIN_DIR}/" "${PLUGIN_DIR}/languages/${PLUGIN_SLUG}.pot" --domain="${PLUGIN_SLUG}"
+    wp i18n make-pot "${SRC_DIR}/" "${SRC_DIR}/languages/${PLUGIN_SLUG}.pot" --domain="${PLUGIN_SLUG}"
     echo "✓   Generato languages/${PLUGIN_SLUG}.pot"
 else
     echo "⚠️   WP-CLI non trovato — .pot non generato (installa con: https://wp-cli.org)"

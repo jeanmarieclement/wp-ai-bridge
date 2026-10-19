@@ -12,7 +12,11 @@
  * 3. Supporto nativo integrato in WordPress.
  */
 
-if ( count( $argv ) < 3 ) {
+if ( 'cli' !== php_sapi_name() ) {
+	exit;
+}
+
+if ( ! isset( $argv ) || count( $argv ) < 3 ) {
 	fwrite( STDERR, "Errore: Parametri mancanti.\nUso: php mcp-connector.php <BASE_REST_URL> <API_KEY>\n" );
 	exit( 1 );
 }

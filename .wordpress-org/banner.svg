@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1544 500" width="1544" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <filter id="bannerGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1544" height="500" fill="url(#bg)"/>
+
+  <!-- Subtle ambient decorative glow circles -->
+  <circle cx="1300" cy="250" r="280" fill="#38bdf8" opacity="0.08" filter="url(#bannerGlow)"/>
+  <circle cx="200" cy="100" r="180" fill="#818cf8" opacity="0.06" filter="url(#bannerGlow)"/>
+  <circle cx="900" cy="420" r="200" fill="#c084fc" opacity="0.05" filter="url(#bannerGlow)"/>
+
+  <!-- Tech grid pattern lines -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.4">
+    <line x1="0" y1="125" x2="1544" y2="125"/>
+    <line x1="0" y1="250" x2="1544" y2="250"/>
+    <line x1="0" y1="375" x2="1544" y2="375"/>
+    <line x1="200" y1="0" x2="200" y2="500"/>
+    <line x1="600" y1="0" x2="600" y2="500"/>
+    <line x1="1000" y1="0" x2="1000" y2="500"/>
+    <line x1="1400" y1="0" x2="1400" y2="500"/>
+  </g>
+
+  <!-- Left Content Area -->
+  <!-- Badge -->
+  <rect x="120" y="70" width="230" height="36" rx="18" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.5"/>
+  <circle cx="140" cy="88" r="5" fill="#38bdf8"/>
+  <text x="156" y="94" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#38bdf8" letter-spacing="1.5">REST &amp; MCP</text>
+
+  <!-- Main Title -->
+  <text x="120" y="190" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="84" font-weight="800" fill="#ffffff" letter-spacing="-1">
+    AI <tspan fill="url(#primaryGrad)">Bridge</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="120" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="400" fill="#94a3b8">
+    Connect WordPress to Claude, ChatGPT &amp; MCP Clients
+  </text>
+
+  <!-- Feature Pills / Badges -->
+  <g transform="translate(120, 285)">
+    <!-- Pill 1 -->
+    <rect x="0" y="0" width="160" height="42" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="80" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#e2e8f0" text-anchor="middle">REST &amp; OAuth2</text>
+
+    <!-- Pill 2 -->
+    <rect x="175" y="0" width="160" height="42" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="255" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#e2e8f0" text-anchor="middle">32 MCP Tools</text>
+
+    <!-- Pill 3 -->
+    <rect x="350" y="0" width="180" height="42" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="440" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#e2e8f0" text-anchor="middle">OpenAPI 3.0.3</text>
+
+    <!-- Pill 4 -->
+    <rect x="545" y="0" width="185" height="42" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="637" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#e2e8f0" text-anchor="middle">Cursor Pagination</text>
+  </g>
+
+  <!-- Footer description in banner -->
+  <text x="120" y="380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="500" fill="#64748b">
+    Secure Content Management • Native PHP Stdio Connector • Zero Dependencies
+  </text>
+
+  <!-- Right Graphic Illustration: The Bridge & Connected Nodes -->
+  <g transform="translate(1180, 250)">
+    <!-- Outer Orbit Ring -->
+    <circle cx="0" cy="0" r="160" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="6 8" opacity="0.6"/>
+    <circle cx="0" cy="0" r="110" fill="none" stroke="url(#primaryGrad)" stroke-width="2" opacity="0.4"/>
+
+    <!-- Left Node (WordPress) -->
+    <g transform="translate(-110, 0)">
+      <circle cx="0" cy="0" r="42" fill="#1e293b" stroke="#38bdf8" stroke-width="3" filter="url(#bannerGlow)"/>
+      <path d="M -16 -12 L 0 20 L 16 -12" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="0" cy="-20" r="4" fill="#38bdf8"/>
+    </g>
+
+    <!-- Right Node (AI) -->
+    <g transform="translate(110, 0)">
+      <circle cx="0" cy="0" r="42" fill="#1e293b" stroke="#c084fc" stroke-width="3" filter="url(#bannerGlow)"/>
+      <!-- AI Sparkle -->
+      <path d="M 0 -22 Q 0 0 16 0 Q 0 0 0 22 Q 0 0 -16 0 Q 0 0 0 -22 Z" fill="url(#primaryGrad)"/>
+    </g>
+
+    <!-- Bridge Arcs -->
+    <path d="M -68 0 C -30 -60, 30 -60, 68 0" fill="none" stroke="url(#primaryGrad)" stroke-width="6" stroke-linecap="round" filter="url(#bannerGlow)"/>
+    <path d="M -68 0 C -30 60, 30 60, 68 0" fill="none" stroke="url(#primaryGrad)" stroke-width="4" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.8"/>
+
+    <!-- Core Center Pulse -->
+    <circle cx="0" cy="0" r="14" fill="#ffffff" filter="url(#bannerGlow)"/>
+    <circle cx="0" cy="0" r="24" fill="none" stroke="#818cf8" stroke-width="3" opacity="0.7"/>
+
+    <!-- Orbiting satellite nodes -->
+    <circle cx="0" cy="-160" r="8" fill="#38bdf8" filter="url(#bannerGlow)"/>
+    <circle cx="0" cy="160" r="8" fill="#c084fc" filter="url(#bannerGlow)"/>
+    <circle cx="-138" cy="-80" r="6" fill="#818cf8"/>
+    <circle cx="138" cy="80" r="6" fill="#38bdf8"/>
+  </g>
+</svg>

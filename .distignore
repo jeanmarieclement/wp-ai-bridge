@@ -1,0 +1,31 @@
+# Development & CI/CD
+.git
+.github
+.gitignore
+.gitattributes
+.distignore
+.env
+.env.local
+.mcp.json
+.mcp.json.example
+.claude
+
+# Docker & local development
+docker-compose.yml
+
+# Docs & Dev guidelines
+CLAUDE.md
+CONTRIBUTORS.md
+SECURITY.md
+docs/
+tests/
+
+# Build & packaging
+build/
+build.sh
+dist/
+bin/
+deploy-to-svn.sh
+
+# WordPress.org assets (these belong in SVN /assets/, not /trunk/ or /tags/)
+.wordpress-org/

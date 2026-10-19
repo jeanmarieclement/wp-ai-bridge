@@ -18,3 +18,4 @@ build/*
 dist/*
 docs/*
 docker-compose.yml
+.svn-checkout/

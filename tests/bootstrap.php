@@ -18,8 +18,8 @@ define( 'ABSPATH', sys_get_temp_dir() . '/' );
 define( 'WPAIB_API_NAMESPACE', 'wpaib/v1' );
 
 if ( ! defined( 'WPAIB_VERSION' ) ) {
-	// Letta dall'intestazione del plugin, così la suite non la duplica.
-	$wpaib_main = file_get_contents( WPAIB_TEST_PLUGIN_DIR . '/wp-ai-bridge.php' );
+	$main_file  = file_exists( WPAIB_TEST_PLUGIN_DIR . '/ai-bridge.php' ) ? WPAIB_TEST_PLUGIN_DIR . '/ai-bridge.php' : WPAIB_TEST_PLUGIN_DIR . '/wp-ai-bridge.php';
+	$wpaib_main = file_get_contents( $main_file );
 	preg_match( "/define\(\s*'WPAIB_VERSION',\s*'([^']+)'/", $wpaib_main, $wpaib_m );
 	define( 'WPAIB_VERSION', isset( $wpaib_m[1] ) ? $wpaib_m[1] : '0.0.0' );
 }
