@@ -115,7 +115,7 @@ class WPAIB_Auth {
 			);
 			return new WP_Error(
 				'wpaib_forbidden',
-				__( 'Insufficient permissions.', 'wp-ai-bridge' ),
+				__( 'Insufficient permissions.', 'ai-bridge' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -162,7 +162,7 @@ class WPAIB_Auth {
 
 		return new WP_Error(
 			'wpaib_rate_limited',
-			__( 'Too many requests.', 'wp-ai-bridge' ),
+			__( 'Too many requests.', 'ai-bridge' ),
 			array(
 				'status'      => 429,
 				'retry_after' => $retry_after,
@@ -256,7 +256,7 @@ class WPAIB_Auth {
 			) );
 			return new WP_Error(
 				'wpaib_insufficient_scope',
-				__( 'The access token does not grant this scope.', 'wp-ai-bridge' ),
+				__( 'The access token does not grant this scope.', 'ai-bridge' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -268,7 +268,7 @@ class WPAIB_Auth {
 				'status_code' => 403,
 				'outcome'     => 'bearer_forbidden',
 			) );
-			return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		WPAIB_Logger::log( array(
@@ -289,7 +289,7 @@ class WPAIB_Auth {
 	private static function generic_auth_error() {
 		return new WP_Error(
 			'wpaib_unauthorized',
-			__( 'Authentication required.', 'wp-ai-bridge' ),
+			__( 'Authentication required.', 'ai-bridge' ),
 			array( 'status' => 401 )
 		);
 	}

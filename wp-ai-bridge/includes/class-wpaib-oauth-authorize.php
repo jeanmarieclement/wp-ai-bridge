@@ -51,7 +51,7 @@ class WPAIB_OAuth_Authorize {
 
         if ( $error ) {
             if ( 'invalid_redirect_uri' === $error || 'unknown_client' === $error ) {
-                wp_die( esc_html__( 'OAuth2 Error: invalid client or redirect URI.', 'wp-ai-bridge' ), 400 );
+                wp_die( esc_html__( 'OAuth2 Error: invalid client or redirect URI.', 'ai-bridge' ), 400 );
             }
             wp_redirect(
                 add_query_arg(
@@ -77,11 +77,11 @@ class WPAIB_OAuth_Authorize {
         $client_id = isset( $_POST['client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['client_id'] ) ) : '';
 
         if ( ! wp_verify_nonce( $nonce, 'wpaib_oauth_consent_' . $client_id ) ) {
-            wp_die( esc_html__( 'Security check failed.', 'wp-ai-bridge' ), 403 );
+            wp_die( esc_html__( 'Security check failed.', 'ai-bridge' ), 403 );
         }
 
         if ( ! is_user_logged_in() ) {
-            wp_die( esc_html__( 'Authentication required.', 'wp-ai-bridge' ), 401 );
+            wp_die( esc_html__( 'Authentication required.', 'ai-bridge' ), 401 );
         }
 
         $redirect_uri           = isset( $_POST['redirect_uri'] )          ? esc_url_raw( wp_unslash( $_POST['redirect_uri'] ) ) : '';
@@ -93,7 +93,7 @@ class WPAIB_OAuth_Authorize {
 
         // Valida redirect_uri PRIMA di usarla in qualsiasi redirect (sia allow che deny).
         if ( ! WPAIB_OAuth_Client_Manager::validate_redirect_uri( $client_id, $redirect_uri ) ) {
-            wp_die( esc_html__( 'Invalid redirect URI.', 'wp-ai-bridge' ), 400 );
+            wp_die( esc_html__( 'Invalid redirect URI.', 'ai-bridge' ), 400 );
         }
 
         if ( 'deny' === $decision ) {
@@ -102,7 +102,7 @@ class WPAIB_OAuth_Authorize {
         }
 
         if ( 'allow' !== $decision ) {
-            wp_die( esc_html__( 'Invalid decision.', 'wp-ai-bridge' ), 400 );
+            wp_die( esc_html__( 'Invalid decision.', 'ai-bridge' ), 400 );
         }
 
         $user_id = get_current_user_id();

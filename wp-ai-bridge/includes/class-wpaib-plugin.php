@@ -20,9 +20,6 @@ class WPAIB_Plugin {
 	 * @return void
 	 */
 	public static function init() {
-		// Carica le traduzioni del plugin.
-		load_plugin_textdomain( 'wp-ai-bridge', false, dirname( plugin_basename( WPAIB_PLUGIN_FILE ) ) . '/languages' );
-
 		// Registra route REST.
 		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
 
@@ -101,13 +98,13 @@ class WPAIB_Plugin {
 		}
 
 		// Consenti HTTP in ambiente di sviluppo locale per facilitare i test
-		$host     = isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '';
+		$host     = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 		$is_local = in_array( wp_get_environment_type(), array( 'local', 'development' ), true ) || strpos( $host, 'localhost' ) !== false || strpos( $host, '127.0.0.1' ) !== false;
 
 		if ( ! is_ssl() && ! $is_local ) {
 			return new WP_Error(
 				'wpaib_https_required',
-				__( 'HTTPS is required for this endpoint.', 'wp-ai-bridge' ),
+				__( 'HTTPS is required for this endpoint.', 'ai-bridge' ),
 				array( 'status' => 403 )
 			);
 		}

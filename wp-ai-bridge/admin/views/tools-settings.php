@@ -23,45 +23,45 @@ $tab_conn_url  = admin_url( 'options-general.php?page=wpaib-tools&tab=connection
 $tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'WP AI Bridge', 'wp-ai-bridge' ); ?></h1>
+	<h1><?php esc_html_e( 'AI Bridge', 'ai-bridge' ); ?></h1>
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( $tab_tools_url ); ?>"
 		   class="nav-tab nav-tab-active">
-			<?php esc_html_e( 'Tool MCP', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Tool MCP', 'ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'OAuth2 Clients', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'OAuth2 Clients', 'ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_conn_url ); ?>"
 		   class="nav-tab">
-			<?php esc_html_e( 'Connessioni', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Connessioni', 'ai-bridge' ); ?>
 		</a>
 	</nav>
 
-	<p style="margin-top:1em;"><?php esc_html_e( 'Seleziona i tool che vuoi esporre tramite le API. I tool non selezionati vengono rimossi dall\'elenco MCP, bloccati in esecuzione ed esclusi dallo schema OpenAPI.', 'wp-ai-bridge' ); ?></p>
+	<p style="margin-top:1em;"><?php esc_html_e( 'Seleziona i tool che vuoi esporre tramite le API. I tool non selezionati vengono rimossi dall\'elenco MCP, bloccati in esecuzione ed esclusi dallo schema OpenAPI.', 'ai-bridge' ); ?></p>
 
 	<?php if ( $saved ) : ?>
 		<div class="notice notice-success is-dismissible">
-			<p><?php esc_html_e( 'Impostazioni salvate con successo.', 'wp-ai-bridge' ); ?></p>
+			<p><?php esc_html_e( 'Impostazioni salvate con successo.', 'ai-bridge' ); ?></p>
 		</div>
 	<?php endif; ?>
 
 	<div id="wpaib-tools-summary-box" style="background:#fff; border:1px solid #c3c4c7; border-left:4px solid #2271b1; padding:12px 18px; margin:1.2em 0; max-width:760px; border-radius:3px;">
 		<div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;">
 			<div>
-				<strong style="font-size:14px;"><?php esc_html_e( 'Tool selezionati:', 'wp-ai-bridge' ); ?></strong>
+				<strong style="font-size:14px;"><?php esc_html_e( 'Tool selezionati:', 'ai-bridge' ); ?></strong>
 				<span style="font-size:14px; font-weight:600; margin-left:4px;">
 					<span id="wpaib-selected-count"><?php echo (int) $selected_count; ?></span>/<span id="wpaib-total-count"><?php echo (int) $total_tools; ?></span>
 				</span>
 				<span id="wpaib-chatgpt-badge" style="margin-left:12px; display:inline-block;"></span>
 			</div>
 			<div class="wpaib-quick-actions">
-				<button type="button" id="wpaib-btn-select-all" class="button button-secondary"><?php esc_html_e( 'Seleziona tutti', 'wp-ai-bridge' ); ?></button>
-				<button type="button" id="wpaib-btn-deselect-all" class="button button-secondary" style="margin-left:4px;"><?php esc_html_e( 'Deseleziona tutti', 'wp-ai-bridge' ); ?></button>
+				<button type="button" id="wpaib-btn-select-all" class="button button-secondary"><?php esc_html_e( 'Seleziona tutti', 'ai-bridge' ); ?></button>
+				<button type="button" id="wpaib-btn-deselect-all" class="button button-secondary" style="margin-left:4px;"><?php esc_html_e( 'Deseleziona tutti', 'ai-bridge' ); ?></button>
 			</div>
 		</div>
 		<div id="wpaib-chatgpt-notice" style="margin-top:8px; font-size:12px; color:#50575e; display:none;">
-			<?php esc_html_e( 'Nota ChatGPT Actions (Custom GPT): OpenAI consente fino a 30 operazioni per schema. Selezionando 30 o meno tool, il file openapi.json potrà essere importato direttamente.', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Nota ChatGPT Actions (Custom GPT): OpenAI consente fino a 30 operazioni per schema. Selezionando 30 o meno tool, il file openapi.json potrà essere importato direttamente.', 'ai-bridge' ); ?>
 		</div>
 	</div>
 
@@ -73,10 +73,10 @@ $tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 			<thead>
 				<tr>
 					<th style="width:40px; text-align:center;">
-						<input type="checkbox" id="wpaib-toggle-all" title="<?php esc_attr_e( 'Inverti selezione globale', 'wp-ai-bridge' ); ?>">
+						<input type="checkbox" id="wpaib-toggle-all" title="<?php esc_attr_e( 'Inverti selezione globale', 'ai-bridge' ); ?>">
 					</th>
-					<th><?php esc_html_e( 'Tool', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Categoria', 'wp-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Tool', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Categoria', 'ai-bridge' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -90,7 +90,7 @@ $tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 								type="checkbox"
 								class="wpaib-cat-toggle"
 								data-category="<?php echo esc_attr( $cat_slug ); ?>"
-								title="<?php /* translators: %s: Nome della categoria di tool */ echo esc_attr( sprintf( __( 'Seleziona/Deseleziona tutti in %s', 'wp-ai-bridge' ), $cat_label ) ); ?>"
+								title="<?php /* translators: %s: Nome della categoria di tool */ echo esc_attr( sprintf( __( 'Seleziona/Deseleziona tutti in %s', 'ai-bridge' ), $cat_label ) ); ?>"
 							>
 						</td>
 						<td colspan="2">
@@ -122,7 +122,7 @@ $tab_oauth_url = admin_url( 'options-general.php?page=wpaib-tools&tab=oauth' );
 		</table>
 
 		<p class="submit">
-			<?php submit_button( __( 'Salva impostazioni', 'wp-ai-bridge' ), 'primary', 'submit', false ); ?>
+			<?php submit_button( __( 'Salva impostazioni', 'ai-bridge' ), 'primary', 'submit', false ); ?>
 		</p>
 	</form>
 </div>

@@ -109,14 +109,14 @@ class WPAIB_OpenAPI_Controller {
 		$schema = array(
 			'openapi' => '3.0.3',
 			'info'    => array(
-				'title'       => 'WP AI Bridge Connector API',
+				'title'       => 'AI Bridge Connector API',
 				'description' => 'API REST standard per l\'integrazione diretta e agentica del sito WordPress all\'interno di Custom Actions di ChatGPT, Estensioni di Google Gemini e Custom Tools di Claude.ai.',
 				'version'     => WPAIB_VERSION,
 			),
 			'servers' => array(
 				array(
 					'url'         => $base_url,
-					'description' => 'Endpoint REST di WP AI Bridge',
+					'description' => 'Endpoint REST di AI Bridge',
 				),
 			),
 			'components' => array(
@@ -772,7 +772,7 @@ class WPAIB_OpenAPI_Controller {
 					),
 					'delete' => array(
 						'summary'     => 'Elimina un plugin',
-						'description' => 'Elimina definitivamente un plugin dal filesystem dopo averlo disattivato. Non può eliminare WP AI Bridge. Richiede delete_plugins.',
+						'description' => 'Elimina definitivamente un plugin dal filesystem dopo averlo disattivato. Non può eliminare AI Bridge. Richiede delete_plugins.',
 						'operationId' => 'deletePlugin',
 						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'delete_plugins' ) ) ),
 						'requestBody' => array(
@@ -794,7 +794,7 @@ class WPAIB_OpenAPI_Controller {
 						),
 						'responses'   => array(
 							'200' => array( 'description' => 'Plugin eliminato.' ),
-							'400' => array( 'description' => 'Parametro non valido o tentativo di eliminare WP AI Bridge.' ),
+							'400' => array( 'description' => 'Parametro non valido o tentativo di eliminare AI Bridge.' ),
 							'403' => array( 'description' => 'Permessi insufficienti.' ),
 							'404' => array( 'description' => 'Plugin non trovato.' ),
 						),
@@ -834,7 +834,7 @@ class WPAIB_OpenAPI_Controller {
 				'/plugins/deactivate' => array(
 					'post' => array(
 						'summary'     => 'Disattiva un plugin',
-						'description' => 'Disattiva un plugin WordPress attivo. Non può disattivare WP AI Bridge. Richiede activate_plugins.',
+						'description' => 'Disattiva un plugin WordPress attivo. Non può disattivare AI Bridge. Richiede activate_plugins.',
 						'operationId' => 'deactivatePlugin',
 						'security'   => array( array( 'ApiKeyAuth' => array() ), array( 'OAuth2' => array( 'activate_plugins' ) ) ),
 						'requestBody' => array(
@@ -856,7 +856,7 @@ class WPAIB_OpenAPI_Controller {
 						),
 						'responses'   => array(
 							'200' => array( 'description' => 'Plugin disattivato (o già inattivo).' ),
-							'400' => array( 'description' => 'Parametro non valido o tentativo di disattivare WP AI Bridge.' ),
+							'400' => array( 'description' => 'Parametro non valido o tentativo di disattivare AI Bridge.' ),
 							'403' => array( 'description' => 'Permessi insufficienti.' ),
 							'404' => array( 'description' => 'Plugin non trovato.' ),
 						),

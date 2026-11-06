@@ -105,16 +105,16 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 );
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'WP AI Bridge', 'wp-ai-bridge' ); ?></h1>
+	<h1><?php esc_html_e( 'AI Bridge', 'ai-bridge' ); ?></h1>
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( $tab_tools_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'Tool MCP', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Tool MCP', 'ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'OAuth2 Clients', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'OAuth2 Clients', 'ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_conn_url ); ?>" class="nav-tab nav-tab-active">
-			<?php esc_html_e( 'Connessioni', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Connessioni', 'ai-bridge' ); ?>
 		</a>
 	</nav>
 
@@ -123,28 +123,28 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		<input type="hidden" name="tab"  value="connections">
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Utente / Chiave', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Utente / Chiave', 'ai-bridge' ); ?>
 			<select name="filter_key" style="margin-top:2px;">
-				<option value=""><?php esc_html_e( '— Tutte —', 'wp-ai-bridge' ); ?></option>
+				<option value=""><?php esc_html_e( '— Tutte —', 'ai-bridge' ); ?></option>
 				<?php foreach ( $all_keys as $k ) : ?>
 					<option value="<?php echo esc_attr( $k->id ); ?>"
 						<?php selected( $filter_key, $k->id ); ?>>
-						<?php echo esc_html( ( $k->display_name ?: '?' ) . ' — ' . ( $k->label ?: esc_html__( 'senza etichetta', 'wp-ai-bridge' ) ) ); ?>
+						<?php echo esc_html( ( $k->display_name ?: '?' ) . ' — ' . ( $k->label ?: esc_html__( 'senza etichetta', 'ai-bridge' ) ) ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Endpoint', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Endpoint', 'ai-bridge' ); ?>
 			<input type="text" name="filter_endpoint" value="<?php echo esc_attr( $filter_endpoint ); ?>"
 				placeholder="/wpaib/v1/..." style="margin-top:2px;width:180px;">
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Outcome', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Outcome', 'ai-bridge' ); ?>
 			<select name="filter_outcome" style="margin-top:2px;">
-				<option value=""><?php esc_html_e( '— Tutti —', 'wp-ai-bridge' ); ?></option>
+				<option value=""><?php esc_html_e( '— Tutti —', 'ai-bridge' ); ?></option>
 				<?php foreach ( $all_outcomes as $oc ) : ?>
 					<option value="<?php echo esc_attr( $oc ); ?>" <?php selected( $filter_outcome, $oc ); ?>>
 						<?php echo esc_html( $oc ); ?>
@@ -154,9 +154,9 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Metodo', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Metodo', 'ai-bridge' ); ?>
 			<select name="filter_method" style="margin-top:2px;">
-				<option value=""><?php esc_html_e( '— Tutti —', 'wp-ai-bridge' ); ?></option>
+				<option value=""><?php esc_html_e( '— Tutti —', 'ai-bridge' ); ?></option>
 				<?php foreach ( array( 'GET', 'POST', 'PUT', 'DELETE', 'PATCH' ) as $m ) : ?>
 					<option value="<?php echo esc_attr( $m ); ?>" <?php selected( strtoupper( $filter_method ), $m ); ?>>
 						<?php echo esc_html( $m ); ?>
@@ -166,44 +166,44 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Da', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'Da', 'ai-bridge' ); ?>
 			<input type="date" name="filter_date_from" value="<?php echo esc_attr( $filter_date_from ); ?>" style="margin-top:2px;">
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'A', 'wp-ai-bridge' ); ?>
+			<?php esc_html_e( 'A', 'ai-bridge' ); ?>
 			<input type="date" name="filter_date_to" value="<?php echo esc_attr( $filter_date_to ); ?>" style="margin-top:2px;">
 		</label>
 
-		<?php submit_button( __( 'Filtra', 'wp-ai-bridge' ), 'secondary', 'filter_submit', false ); ?>
+		<?php submit_button( __( 'Filtra', 'ai-bridge' ), 'secondary', 'filter_submit', false ); ?>
 
 		<?php if ( $filter_key || $filter_endpoint || $filter_outcome || $filter_method || $filter_date_from || $filter_date_to ) : ?>
 			<a class="button" href="<?php echo esc_url( $tab_conn_url ); ?>">
-				<?php esc_html_e( 'Reset', 'wp-ai-bridge' ); ?>
+				<?php esc_html_e( 'Reset', 'ai-bridge' ); ?>
 			</a>
 		<?php endif; ?>
 	</form>
 
 	<?php if ( empty( $rows ) ) : ?>
-		<p style="margin-top:1em;"><?php esc_html_e( 'Nessuna connessione registrata.', 'wp-ai-bridge' ); ?></p>
+		<p style="margin-top:1em;"><?php esc_html_e( 'Nessuna connessione registrata.', 'ai-bridge' ); ?></p>
 	<?php else : ?>
 		<p style="margin-top:1em;">
 			<?php
 			/* translators: %d: number of connections */
-			printf( esc_html__( '%d connessioni totali.', 'wp-ai-bridge' ), (int) $total );
+			printf( esc_html__( '%d connessioni totali.', 'ai-bridge' ), (int) $total );
 			?>
 		</p>
 		<table class="widefat striped">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Timestamp', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Utente', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Chiave', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Endpoint', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Metodo', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Status', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Outcome', 'wp-ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'IP', 'wp-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Timestamp', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Utente', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Chiave', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Endpoint', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Metodo', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Outcome', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'IP', 'ai-bridge' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -237,14 +237,14 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 						'filter_date_to'   => $filter_date_to ?: null,
 						'paged'            => $paged - 1,
 					) ) ) ); ?>">
-						&larr; <?php esc_html_e( 'Precedente', 'wp-ai-bridge' ); ?>
+						&larr; <?php esc_html_e( 'Precedente', 'ai-bridge' ); ?>
 					</a>
 				<?php endif; ?>
 				<span style="margin:0 8px;">
 					<?php
 					printf(
 						/* translators: 1: current page, 2: total pages */
-						esc_html__( 'Pagina %1$d di %2$d', 'wp-ai-bridge' ),
+						esc_html__( 'Pagina %1$d di %2$d', 'ai-bridge' ),
 						(int) $paged,
 						(int) $total_pages
 					);
@@ -262,7 +262,7 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 						'filter_date_to'   => $filter_date_to ?: null,
 						'paged'            => $paged + 1,
 					) ) ) ); ?>">
-						<?php esc_html_e( 'Successiva', 'wp-ai-bridge' ); ?> &rarr;
+						<?php esc_html_e( 'Successiva', 'ai-bridge' ); ?> &rarr;
 					</a>
 				<?php endif; ?>
 			</div>

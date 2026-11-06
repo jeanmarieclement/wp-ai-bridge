@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * WP AI Bridge — MCP Stdio Connector in PHP nativo
+ * AI Bridge — MCP Stdio Connector in PHP nativo
  *
  * Fa da ponte sul protocollo JSON-RPC 2.0 (stdio) tra i client/IDE locali 
  * (Cursor, Roo Code, Claude Desktop, Antigravity) e l'istanza WordPress locale o remota.
@@ -12,12 +12,17 @@
  * 3. Supporto nativo integrato in WordPress.
  */
 
-if ( 'cli' !== php_sapi_name() ) {
-	exit;
+// Standalone CLI script launched by local MCP clients (php mcp-connector.php ...),
+// outside WordPress: WP functions are unavailable here, so PHP natives are used.
+// Any web request is refused.
+if ( ! defined( 'ABSPATH' ) ) {
+	if ( 'cli' !== PHP_SAPI ) {
+		exit;
+	}
 }
 
 if ( ! isset( $argv ) || count( $argv ) < 3 ) {
-	fwrite( STDERR, "Errore: Parametri mancanti.\nUso: php mcp-connector.php <BASE_REST_URL> <API_KEY>\n" );
+	fwrite( STDERR, "Errore: Parametri mancanti.\nUso: php mcp-connector.php <BASE_REST_URL> <API_KEY>\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- CLI script, no WP_Filesystem.
 	exit( 1 );
 }
 
@@ -29,7 +34,7 @@ $api_key  = $argv[2];
  *
  * @param array $response Array associativo della risposta.
  */
-function send_mcp_response( $response ) {
+function wpaib_send_mcp_response( $response ) {
 	echo json_encode( $response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
 }
 
@@ -40,7 +45,7 @@ function send_mcp_response( $response ) {
  * @param string $api_key Chiave API.
  * @return bool
  */
-function probe_url( $url, $api_key ) {
+function wpaib_probe_url( $url, $api_key ) {
 	$ctx = stream_context_create( array(
 		'http' => array(
 			'method'        => 'GET',
@@ -69,10 +74,10 @@ function probe_url( $url, $api_key ) {
  * @param string $url Base URL corrente.
  * @return string|null
  */
-function fallback_url( $url ) {
+function wpaib_fallback_url( $url ) {
 	// Query string → pretty permalink.
 	if ( strpos( $url, '?rest_route=' ) !== false ) {
-		$parts = parse_url( $url );
+		$parts = parse_url( $url ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- runs outside WordPress.
 		$base  = $parts['scheme'] . '://' . $parts['host'];
 		if ( ! empty( $parts['port'] ) ) {
 			$base .= ':' . $parts['port'];
@@ -94,10 +99,10 @@ function fallback_url( $url ) {
 }
 
 // Verifica URL e applica fallback automatico se necessario.
-if ( ! probe_url( $base_url, $api_key ) ) {
-	$alt = fallback_url( $base_url );
-	if ( null !== $alt && probe_url( $alt, $api_key ) ) {
-		fwrite( STDERR, "Info: URL fallback attivo → {$alt}\n" );
+if ( ! wpaib_probe_url( $base_url, $api_key ) ) {
+	$alt = wpaib_fallback_url( $base_url );
+	if ( null !== $alt && wpaib_probe_url( $alt, $api_key ) ) {
+		fwrite( STDERR, "Info: URL fallback attivo → {$alt}\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- CLI script, no WP_Filesystem.
 		$base_url = $alt;
 	}
 }
@@ -119,7 +124,7 @@ while ( ( $line = fgets( STDIN ) ) !== false ) {
 
 	// 1. Handshake di Inizializzazione (initialize)
 	if ( 'initialize' === $method ) {
-		send_mcp_response(
+		wpaib_send_mcp_response(
 			array(
 				'jsonrpc' => '2.0',
 				'id'      => $id,
@@ -172,7 +177,7 @@ while ( ( $line = fgets( STDIN ) ) !== false ) {
 			$err_msg  = ( is_array( $err_body ) && isset( $err_body['message'] ) )
 				? $err_body['message']
 				: 'Errore di connessione al server WordPress durante il recupero dei tool. (HTTP ' . $http_status . ')';
-			send_mcp_response(
+			wpaib_send_mcp_response(
 				array(
 					'jsonrpc' => '2.0',
 					'id'      => $id,
@@ -188,7 +193,7 @@ while ( ( $line = fgets( STDIN ) ) !== false ) {
 		$data = json_decode( $res, true );
 		if ( ! is_array( $data ) || ! isset( $data['tools'] ) ) {
 			$err_msg = ( is_array( $data ) && isset( $data['message'] ) ) ? $data['message'] : 'Risposta non valida dal server WordPress.';
-			send_mcp_response(
+			wpaib_send_mcp_response(
 				array(
 					'jsonrpc' => '2.0',
 					'id'      => $id,
@@ -201,7 +206,7 @@ while ( ( $line = fgets( STDIN ) ) !== false ) {
 			continue;
 		}
 
-		send_mcp_response(
+		wpaib_send_mcp_response(
 			array(
 				'jsonrpc' => '2.0',
 				'id'      => $id,
@@ -258,7 +263,7 @@ while ( ( $line = fgets( STDIN ) ) !== false ) {
 			$content_text = json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		}
 
-		send_mcp_response(
+		wpaib_send_mcp_response(
 			array(
 				'jsonrpc' => '2.0',
 				'id'      => $id,
@@ -278,7 +283,7 @@ while ( ( $line = fgets( STDIN ) ) !== false ) {
 
 	// Metodo JSON-RPC non supportato
 	if ( null !== $id ) {
-		send_mcp_response(
+		wpaib_send_mcp_response(
 			array(
 				'jsonrpc' => '2.0',
 				'id'      => $id,

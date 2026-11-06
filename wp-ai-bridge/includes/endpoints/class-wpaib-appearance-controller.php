@@ -251,10 +251,10 @@ class WPAIB_Appearance_Controller {
 				$url   = isset( $attrs['url'] ) ? $attrs['url'] : '';
 
 				if ( 'core/home-link' === $block['blockName'] ) {
-					$label = '' !== $label ? $label : __( 'Home', 'wp-ai-bridge' );
+					$label = '' !== $label ? $label : __( 'Home', 'ai-bridge' );
 					$url   = home_url( '/' );
 				} elseif ( 'core/loginout' === $block['blockName'] ) {
-					$label = '' !== $label ? $label : __( 'Log in', 'wp-ai-bridge' );
+					$label = '' !== $label ? $label : __( 'Log in', 'ai-bridge' );
 					$url   = wp_login_url();
 				}
 

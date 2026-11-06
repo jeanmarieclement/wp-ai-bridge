@@ -214,15 +214,15 @@ class WPAIB_Media_Controller {
 		$attachment = get_post( $id );
 
 		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Media not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Media not found.', 'ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'delete_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this media.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this media.', 'ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$result = wp_delete_attachment( $id, $force );
 		if ( ! $result ) {
-			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete media.', 'wp-ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete media.', 'ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -259,7 +259,7 @@ class WPAIB_Media_Controller {
 			return $this->handle_base64_upload( $params['image_base64'], $params['filename'] );
 		}
 
-		return new WP_Error( 'wpaib_no_file', __( 'No file provided.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+		return new WP_Error( 'wpaib_no_file', __( 'No file provided.', 'ai-bridge' ), array( 'status' => 400 ) );
 	}
 
 	/**
@@ -270,7 +270,7 @@ class WPAIB_Media_Controller {
 	 */
 	private function handle_multipart_upload( $file ) {
 		if ( ! isset( $file['size'] ) || $file['size'] > $this->max_size ) {
-			return new WP_Error( 'wpaib_file_too_large', __( 'File too large.', 'wp-ai-bridge' ), array( 'status' => 413 ) );
+			return new WP_Error( 'wpaib_file_too_large', __( 'File too large.', 'ai-bridge' ), array( 'status' => 413 ) );
 		}
 
 		$overrides = array(
@@ -296,7 +296,7 @@ class WPAIB_Media_Controller {
 	private function handle_base64_upload( $base64, $filename ) {
 		$filename = sanitize_file_name( $filename );
 		if ( empty( $filename ) ) {
-			return new WP_Error( 'wpaib_invalid_filename', __( 'Invalid filename.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_filename', __( 'Invalid filename.', 'ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		// Rimuove eventuale prefisso data: URI.
@@ -306,18 +306,18 @@ class WPAIB_Media_Controller {
 
 		$decoded = base64_decode( $base64, true );
 		if ( false === $decoded ) {
-			return new WP_Error( 'wpaib_invalid_base64', __( 'Invalid base64 content.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_base64', __( 'Invalid base64 content.', 'ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		if ( strlen( $decoded ) > $this->max_size ) {
-			return new WP_Error( 'wpaib_file_too_large', __( 'File too large.', 'wp-ai-bridge' ), array( 'status' => 413 ) );
+			return new WP_Error( 'wpaib_file_too_large', __( 'File too large.', 'ai-bridge' ), array( 'status' => 413 ) );
 		}
 
 		// Verifica MIME effettivo dal contenuto (non si fida dell'estensione).
 		$finfo = new finfo( FILEINFO_MIME_TYPE );
 		$mime  = $finfo->buffer( $decoded );
 		if ( ! isset( $this->allowed_mimes[ $mime ] ) ) {
-			return new WP_Error( 'wpaib_mime_not_allowed', __( 'File type not allowed.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_mime_not_allowed', __( 'File type not allowed.', 'ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		// Forza estensione coerente col MIME rilevato.
@@ -334,7 +334,7 @@ class WPAIB_Media_Controller {
 		$file_url  = trailingslashit( $upload_dir['url'] ) . basename( $file_path );
 
 		if ( false === file_put_contents( $file_path, $decoded ) ) {
-			return new WP_Error( 'wpaib_write_failed', __( 'Could not write file.', 'wp-ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_write_failed', __( 'Could not write file.', 'ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		return $this->create_attachment( $file_path, $file_url, $mime );
@@ -358,8 +358,8 @@ class WPAIB_Media_Controller {
 
 		$attach_id = wp_insert_attachment( $attachment, $file_path );
 		if ( is_wp_error( $attach_id ) || 0 === $attach_id ) {
-			@unlink( $file_path );
-			return new WP_Error( 'wpaib_attach_failed', __( 'Could not create attachment.', 'wp-ai-bridge' ), array( 'status' => 500 ) );
+			wp_delete_file( $file_path );
+			return new WP_Error( 'wpaib_attach_failed', __( 'Could not create attachment.', 'ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		$metadata = wp_generate_attachment_metadata( $attach_id, $file_path );

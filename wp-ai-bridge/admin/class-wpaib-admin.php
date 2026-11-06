@@ -39,8 +39,8 @@ class WPAIB_Admin {
 	 */
 	public static function register_admin_menu() {
 		add_options_page(
-			'WP AI Bridge — Tool',
-			'WP AI Bridge',
+			'AI Bridge — Tool',
+			'AI Bridge',
 			'manage_options',
 			'wpaib-tools',
 			array( __CLASS__, 'render_tools_page' )
@@ -68,7 +68,7 @@ class WPAIB_Admin {
 	 */
 	public static function render_tools_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Accesso non consentito.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Accesso non consentito.', 'ai-bridge' ) );
 		}
 
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'tools';
@@ -123,7 +123,7 @@ class WPAIB_Admin {
 	 */
 	public static function handle_create_oauth_client() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Accesso non consentito.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Accesso non consentito.', 'ai-bridge' ) );
 		}
 
 		check_admin_referer( 'wpaib_create_oauth_client' );
@@ -170,7 +170,7 @@ class WPAIB_Admin {
 	 */
 	public static function handle_delete_oauth_client() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Accesso non consentito.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Accesso non consentito.', 'ai-bridge' ) );
 		}
 
 		check_admin_referer( 'wpaib_delete_oauth_client' );
@@ -192,14 +192,14 @@ class WPAIB_Admin {
 	 */
 	public static function get_tool_categories() {
 		return array(
-			__( 'Post', 'wp-ai-bridge' )          => array( 'get_posts', 'get_post', 'create_post', 'update_post', 'delete_post', 'bulk_update_posts' ),
-			__( 'Pagine', 'wp-ai-bridge' )        => array( 'get_pages', 'get_page', 'create_page', 'update_page', 'delete_page' ),
-			__( 'Media', 'wp-ai-bridge' )         => array( 'get_media', 'upload_media', 'delete_media' ),
-			__( 'Commenti', 'wp-ai-bridge' )      => array( 'get_comments', 'add_comment', 'moderate_comment', 'bulk_moderate_comments' ),
-			__( 'Tassonomie', 'wp-ai-bridge' )    => array( 'get_categories', 'create_category', 'get_tags', 'create_tag' ),
-			__( 'Sito & Ricerca', 'wp-ai-bridge' ) => array( 'get_site_info', 'search' ),
-			__( 'Plugin', 'wp-ai-bridge' )        => array( 'get_plugins', 'activate_plugin', 'deactivate_plugin', 'delete_plugin' ),
-			__( 'Aggiornamenti', 'wp-ai-bridge' ) => array( 'get_updates', 'get_changelog', 'apply_update', 'bulk_update' ),
+			__( 'Post', 'ai-bridge' )          => array( 'get_posts', 'get_post', 'create_post', 'update_post', 'delete_post', 'bulk_update_posts' ),
+			__( 'Pagine', 'ai-bridge' )        => array( 'get_pages', 'get_page', 'create_page', 'update_page', 'delete_page' ),
+			__( 'Media', 'ai-bridge' )         => array( 'get_media', 'upload_media', 'delete_media' ),
+			__( 'Commenti', 'ai-bridge' )      => array( 'get_comments', 'add_comment', 'moderate_comment', 'bulk_moderate_comments' ),
+			__( 'Tassonomie', 'ai-bridge' )    => array( 'get_categories', 'create_category', 'get_tags', 'create_tag' ),
+			__( 'Sito & Ricerca', 'ai-bridge' ) => array( 'get_site_info', 'search' ),
+			__( 'Plugin', 'ai-bridge' )        => array( 'get_plugins', 'activate_plugin', 'deactivate_plugin', 'delete_plugin' ),
+			__( 'Aggiornamenti', 'ai-bridge' ) => array( 'get_updates', 'get_changelog', 'apply_update', 'bulk_update' ),
 		);
 	}
 
@@ -223,7 +223,7 @@ class WPAIB_Admin {
 	 */
 	public static function handle_save_tools() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Accesso non consentito.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Accesso non consentito.', 'ai-bridge' ) );
 		}
 
 		check_admin_referer( 'wpaib_save_tools' );
@@ -283,7 +283,7 @@ class WPAIB_Admin {
 		check_ajax_referer( 'wpaib_admin_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( esc_html__( 'Unauthorized.', 'wp-ai-bridge' ) );
+			wp_send_json_error( esc_html__( 'Unauthorized.', 'ai-bridge' ) );
 		}
 
 		$user_id = isset( $_POST['user_id'] ) ? (int) $_POST['user_id'] : 0;
@@ -291,7 +291,7 @@ class WPAIB_Admin {
 
 		// Solo per sé stessi o admin.
 		if ( $user_id !== get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( esc_html__( 'Forbidden.', 'wp-ai-bridge' ) );
+			wp_send_json_error( esc_html__( 'Forbidden.', 'ai-bridge' ) );
 		}
 
 		$result = WPAIB_API_Key_Manager::generate( $user_id, $label );
@@ -316,7 +316,7 @@ class WPAIB_Admin {
 		check_ajax_referer( 'wpaib_admin_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( esc_html__( 'Unauthorized.', 'wp-ai-bridge' ) );
+			wp_send_json_error( esc_html__( 'Unauthorized.', 'ai-bridge' ) );
 		}
 
 		$key_id  = isset( $_POST['key_id'] ) ? (int) $_POST['key_id'] : 0;
@@ -324,7 +324,7 @@ class WPAIB_Admin {
 
 		// Solo per sé stessi o admin.
 		if ( $user_id !== get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( esc_html__( 'Forbidden.', 'wp-ai-bridge' ) );
+			wp_send_json_error( esc_html__( 'Forbidden.', 'ai-bridge' ) );
 		}
 
 		$result = WPAIB_API_Key_Manager::revoke( $key_id, get_current_user_id() );
@@ -344,7 +344,7 @@ class WPAIB_Admin {
 	 */
 	public static function handle_generate() {
 		if ( ! is_user_logged_in() ) {
-			wp_die( esc_html__( 'Unauthorized.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Unauthorized.', 'ai-bridge' ) );
 		}
 
 		check_admin_referer( 'wpaib_generate_key' );
@@ -354,7 +354,7 @@ class WPAIB_Admin {
 
 		// Solo per sé stessi o admin.
 		if ( $user_id !== get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Forbidden.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Forbidden.', 'ai-bridge' ) );
 		}
 
 		$result = WPAIB_API_Key_Manager::generate( $user_id, $label );
@@ -381,7 +381,7 @@ class WPAIB_Admin {
 	 */
 	public static function handle_revoke() {
 		if ( ! is_user_logged_in() ) {
-			wp_die( esc_html__( 'Unauthorized.', 'wp-ai-bridge' ) );
+			wp_die( esc_html__( 'Unauthorized.', 'ai-bridge' ) );
 		}
 
 		check_admin_referer( 'wpaib_revoke_key' );

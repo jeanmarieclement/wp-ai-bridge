@@ -5,7 +5,7 @@
  * Description:       Espone endpoint REST sicuri e tool MCP per gestione contenuti tramite API key per utente e OAuth2. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni).
  * Version:           1.6.1
  * Requires at least: 6.0
- * Tested up to:      6.7
+ * Tested up to:      7.1
  * Requires PHP:      7.4
  * Author:            Jean-Marie Clément
  * Author URI:        https://jmclement.net

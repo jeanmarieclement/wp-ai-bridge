@@ -27,13 +27,13 @@ class WPAIB_API_Key_Manager {
 
 		$user_id = (int) $user_id;
 		if ( $user_id <= 0 || ! get_userdata( $user_id ) ) {
-			return new WP_Error( 'wpaib_invalid_user', __( 'Invalid user.', 'wp-ai-bridge' ) );
+			return new WP_Error( 'wpaib_invalid_user', __( 'Invalid user.', 'ai-bridge' ) );
 		}
 
 		try {
 			$random_bytes = random_bytes( WPAIB_KEY_LENGTH_BYTES );
 		} catch ( Exception $e ) {
-			return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate secure random key.', 'wp-ai-bridge' ) );
+			return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate secure random key.', 'ai-bridge' ) );
 		}
 
 		// Prefisso "wpaib_" per identificare visivamente la chiave + hex del random.
@@ -52,7 +52,7 @@ class WPAIB_API_Key_Manager {
 		);
 
 		if ( false === $result ) {
-			return new WP_Error( 'wpaib_db_error', __( 'Unable to save API key.', 'wp-ai-bridge' ) );
+			return new WP_Error( 'wpaib_db_error', __( 'Unable to save API key.', 'ai-bridge' ) );
 		}
 
 		return array(
@@ -134,12 +134,12 @@ class WPAIB_API_Key_Manager {
 		);
 
 		if ( ! $row ) {
-			return new WP_Error( 'wpaib_key_not_found', __( 'API key not found.', 'wp-ai-bridge' ) );
+			return new WP_Error( 'wpaib_key_not_found', __( 'API key not found.', 'ai-bridge' ) );
 		}
 
 		// Solo il proprietario o un admin può revocare.
 		if ( (int) $row->user_id !== $user_id && ! user_can( $user_id, 'manage_options' ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Not allowed to revoke this key.', 'wp-ai-bridge' ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Not allowed to revoke this key.', 'ai-bridge' ) );
 		}
 
 		$updated = $wpdb->update(

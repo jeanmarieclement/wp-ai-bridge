@@ -302,6 +302,7 @@ class WPAIB_Rest_Helper {
 	 */
 	public static function can_read_comment_post( $post ) {
 		global $wpdb;
+		// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery -- comment_post_visibility_sql() is assembled only from $wpdb->prepare() fragments.
 		return $post instanceof WP_Post && (bool) $wpdb->get_var(
 			$wpdb->prepare( "SELECT ID FROM {$wpdb->posts} AS wpaib_parent WHERE ID = %d AND ", $post->ID ) . self::comment_post_visibility_sql()
 		);

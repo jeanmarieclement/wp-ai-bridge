@@ -95,7 +95,7 @@ class WPAIB_OAuth_Server {
         try {
             $plain_code = 'wpaib_ac_' . bin2hex( random_bytes( 32 ) );
         } catch ( Exception $e ) {
-            return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate auth code.', 'wp-ai-bridge' ) );
+            return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate auth code.', 'ai-bridge' ) );
         }
 
         $code_hash  = hash( 'sha256', $plain_code );
@@ -123,7 +123,7 @@ class WPAIB_OAuth_Server {
         $result = $wpdb->insert( $wpdb->prefix . 'wpaib_oauth_codes', $data, $formats );
 
         if ( false === $result ) {
-            return new WP_Error( 'wpaib_db_error', __( 'Cannot save auth code.', 'wp-ai-bridge' ) );
+            return new WP_Error( 'wpaib_db_error', __( 'Cannot save auth code.', 'ai-bridge' ) );
         }
 
         return $plain_code;
@@ -198,7 +198,7 @@ class WPAIB_OAuth_Server {
             $plain_at = 'wpaib_at_' . bin2hex( random_bytes( 32 ) );
             $plain_rt = 'wpaib_rt_' . bin2hex( random_bytes( 32 ) );
         } catch ( Exception $e ) {
-            return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate tokens.', 'wp-ai-bridge' ) );
+            return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate tokens.', 'ai-bridge' ) );
         }
 
         $at_hash    = hash( 'sha256', $plain_at );
@@ -227,7 +227,7 @@ class WPAIB_OAuth_Server {
         );
 
         if ( false === $result ) {
-            return new WP_Error( 'wpaib_db_error', __( 'Cannot save tokens.', 'wp-ai-bridge' ) );
+            return new WP_Error( 'wpaib_db_error', __( 'Cannot save tokens.', 'ai-bridge' ) );
         }
 
         return array(
