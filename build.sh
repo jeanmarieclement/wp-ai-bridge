@@ -7,12 +7,12 @@
 set -euo pipefail
 
 # ---------- Configurazione ---------------------------------------------------
-PLUGIN_SLUG="ai-bridge"
+PLUGIN_SLUG="jmc-ai-bridge"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/wp-ai-bridge"
 BUILD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/build"
 DIST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/dist"
 
-MAIN_FILE="ai-bridge.php"
+MAIN_FILE="jmc-ai-bridge.php"
 if [ ! -f "${SRC_DIR}/${MAIN_FILE}" ]; then
     MAIN_FILE="wp-ai-bridge.php"
 fi

@@ -1,8 +1,8 @@
-=== AI Bridge ===
+=== JMC AI Bridge ===
 Contributors: jmclement
 Donate link: https://jmclement.net/
 Tags: ai, rest-api, mcp, claude, chatgpt
-Requires at least: 6.0
+Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.6.1
@@ -13,7 +13,7 @@ Connect your site to external AI services (Claude, ChatGPT, MCP clients, automat
 
 == Description ==
 
-AI Bridge turns your site into an AI-ready CMS by exposing secure, high-performance REST and Model Context Protocol (MCP) endpoints. Connect ChatGPT, Claude.ai, Anthropic models, Cursor, Roo Code, n8n, Make, or custom automation pipelines with granular permissions and enterprise-grade security.
+JMC AI Bridge turns your site into an AI-ready CMS by exposing secure, high-performance REST and Model Context Protocol (MCP) endpoints. Connect ChatGPT, Claude.ai, Anthropic models, Cursor, Roo Code, n8n, Make, or custom automation pipelines with granular permissions and enterprise-grade security.
 
 = Highlights =
 
@@ -39,14 +39,14 @@ AI Bridge turns your site into an AI-ready CMS by exposing secure, high-performa
 
 == Installation ==
 
-1. Upload the `ai-bridge` folder to your `/wp-content/plugins/` directory, or install the plugin directly from the WordPress Admin plugin search.
+1. Upload the `jmc-ai-bridge` folder to your `/wp-content/plugins/` directory, or install the plugin directly from the WordPress Admin plugin search.
 2. Activate the plugin through the **Plugins** menu in WordPress.
 3. If using OAuth2 or MCP rewrite endpoints, visit **Settings -> Permalinks** and click **Save Changes** once to flush rewrite rules.
 
 = API Key Quickstart =
 
 1. In WordPress Admin, navigate to **Users -> Profile** (or edit any user).
-2. Scroll to the **AI Bridge — API Keys** section.
+2. Scroll to the **JMC AI Bridge — API Keys** section.
 3. Enter a label for the key (e.g. `Claude Assistant`) and click **Generate Key**.
 4. Copy the generated key immediately (it is hashed with SHA-256 and will not be displayed again).
 5. Use the key in your requests:
@@ -54,22 +54,22 @@ AI Bridge turns your site into an AI-ready CMS by exposing secure, high-performa
 
 = OAuth2 Quickstart =
 
-1. In WordPress Admin, navigate to **Settings -> AI Bridge -> OAuth2 Clients**.
+1. In WordPress Admin, navigate to **Settings -> JMC AI Bridge -> OAuth2 Clients**.
 2. Click **Create New Client**, provide a name and redirect URI (e.g. `https://claude.ai/api/mcp/auth_callback` or ChatGPT Actions callback).
 3. Copy the Client ID and Client Secret to configure your external application.
 
 == Frequently Asked Questions ==
 
 = Does this plugin send data to external third-party servers? =
-No. AI Bridge runs entirely on your WordPress server. It exposes endpoints and tools for external clients to connect to your site. It never "phones home" or transmits any data without your explicit invocation.
+No. JMC AI Bridge runs entirely on your WordPress server. It exposes endpoints and tools for external clients to connect to your site. It never "phones home" or transmits any data without your explicit invocation.
 
 = Are API keys stored securely? =
 Yes. API keys are generated with 32 cryptographically secure random bytes and stored in the database hashed using SHA-256. The plaintext key is shown only once upon creation.
 
-= How do I connect AI Bridge to Claude.ai or ChatGPT? =
-* **For ChatGPT Custom GPTs**: Go to **Settings -> AI Bridge**, filter the active tools (keeping <= 30 operations), copy the `/wp-json/wpaib/v1/openapi.json` URL, and paste it into ChatGPT Actions Schema.
+= How do I connect JMC AI Bridge to Claude.ai or ChatGPT? =
+* **For ChatGPT Custom GPTs**: Go to **Settings -> JMC AI Bridge**, filter the active tools (keeping <= 30 operations), copy the `/wp-json/wpaib/v1/openapi.json` URL, and paste it into ChatGPT Actions Schema.
 * **For Claude Desktop / Cursor (Local MCP)**: Use the included `mcp-connector.php`:
-  `php wp-content/plugins/ai-bridge/mcp-connector.php https://your-site.com/wp-json/wpaib/v1 wpaib_your_key`
+  `php wp-content/plugins/jmc-ai-bridge/mcp-connector.php https://your-site.com/wp-json/wpaib/v1 wpaib_your_key`
 
 = What happens if I deactivate or uninstall the plugin? =
 Deactivating the plugin simply stops the REST and MCP endpoints. Uninstalling the plugin via WordPress Admin removes the database tables (`wp_wpaib_*`), scheduled crons, and saved options cleanly.

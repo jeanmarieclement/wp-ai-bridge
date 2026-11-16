@@ -219,7 +219,7 @@ class WPAIB_Taxonomy_Controller {
 	private function create_term( WP_REST_Request $request, $taxonomy ) {
 		$params = $request->get_json_params();
 		if ( empty( $params['name'] ) ) {
-			return new WP_Error( 'wpaib_missing_name', __( 'Name is required.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_name', __( 'Name is required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$name        = sanitize_text_field( $params['name'] );

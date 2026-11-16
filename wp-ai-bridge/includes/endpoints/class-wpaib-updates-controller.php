@@ -304,7 +304,7 @@ class WPAIB_Updates_Controller {
 		if ( 'core' !== $type && empty( $slug ) ) {
 			return new WP_Error(
 				'wpaib_missing_slug',
-				__( '"slug" è obbligatorio per aggiornamenti di plugin e tema.', 'ai-bridge' ),
+				__( '"slug" è obbligatorio per aggiornamenti di plugin e tema.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -341,7 +341,7 @@ class WPAIB_Updates_Controller {
 		if ( empty( $items ) || ! is_array( $items ) ) {
 			return new WP_Error(
 				'wpaib_invalid_params',
-				__( '"items" deve essere un array non vuoto.', 'ai-bridge' ),
+				__( '"items" deve essere un array non vuoto.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -377,7 +377,7 @@ class WPAIB_Updates_Controller {
 					'type'    => 'core',
 					'slug'    => 'wordpress',
 					'success' => false,
-					'message' => __( 'Aggiornamento core già eseguito in questa request.', 'ai-bridge' ),
+					'message' => __( 'Aggiornamento core già eseguito in questa request.', 'jmc-ai-bridge' ),
 				);
 				continue;
 			}
@@ -694,7 +694,7 @@ class WPAIB_Updates_Controller {
 		if ( ! WP_Filesystem() ) {
 			return new WP_Error(
 				'wpaib_filesystem_error',
-				__( 'Impossibile inizializzare il filesystem. Verifica i permessi del server.', 'ai-bridge' ),
+				__( 'Impossibile inizializzare il filesystem. Verifica i permessi del server.', 'jmc-ai-bridge' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -752,7 +752,7 @@ class WPAIB_Updates_Controller {
 			return new WP_Error(
 				'wpaib_plugin_not_found',
 				/* translators: %s: plugin slug. */
-				sprintf( __( 'Plugin "%s" non trovato tra i plugin installati.', 'ai-bridge' ), $slug ),
+				sprintf( __( 'Plugin "%s" non trovato tra i plugin installati.', 'jmc-ai-bridge' ), $slug ),
 				array( 'status' => 404 )
 			);
 		}
@@ -786,7 +786,7 @@ class WPAIB_Updates_Controller {
 			$errors = $skin->get_errors();
 			$msg    = $errors->has_errors()
 				? implode( '; ', $errors->get_error_messages() )
-				: __( 'Aggiornamento plugin fallito.', 'ai-bridge' );
+				: __( 'Aggiornamento plugin fallito.', 'jmc-ai-bridge' );
 			return new WP_Error( 'wpaib_update_failed', $msg, array( 'status' => 500 ) );
 		}
 
@@ -838,7 +838,7 @@ class WPAIB_Updates_Controller {
 			$errors = $skin->get_errors();
 			$msg    = $errors->has_errors()
 				? implode( '; ', $errors->get_error_messages() )
-				: __( 'Aggiornamento tema fallito.', 'ai-bridge' );
+				: __( 'Aggiornamento tema fallito.', 'jmc-ai-bridge' );
 			return new WP_Error( 'wpaib_update_failed', $msg, array( 'status' => 500 ) );
 		}
 
@@ -877,7 +877,7 @@ class WPAIB_Updates_Controller {
 				array(
 					'success' => false,
 					'type'    => 'core',
-					'message' => __( 'Nessun aggiornamento core disponibile.', 'ai-bridge' ),
+					'message' => __( 'Nessun aggiornamento core disponibile.', 'jmc-ai-bridge' ),
 				),
 				200
 			);
@@ -897,7 +897,7 @@ class WPAIB_Updates_Controller {
 				'type'        => 'core',
 				'new_version' => $target->version,
 				/* translators: %s: WordPress version number. */
-				'message'     => sprintf( __( 'WordPress aggiornato alla versione %s.', 'ai-bridge' ), $target->version ),
+				'message'     => sprintf( __( 'WordPress aggiornato alla versione %s.', 'jmc-ai-bridge' ), $target->version ),
 			),
 			200
 		);

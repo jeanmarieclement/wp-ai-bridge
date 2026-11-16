@@ -22,7 +22,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_SLUG="ai-bridge"
+PLUGIN_SLUG="jmc-ai-bridge"
 PLUGIN_SRC="${ROOT_DIR}/wp-ai-bridge"
 ASSETS_SRC="${ROOT_DIR}/.wordpress-org"
 SVN_URL="https://plugins.svn.wordpress.org/${PLUGIN_SLUG}"
@@ -40,7 +40,7 @@ if ! command -v svn &> /dev/null; then
 fi
 
 # 2. Legge e verifica le versioni
-PHP_FILE="${PLUGIN_SRC}/ai-bridge.php"
+PHP_FILE="${PLUGIN_SRC}/jmc-ai-bridge.php"
 if [ ! -f "${PHP_FILE}" ]; then
     PHP_FILE="${PLUGIN_SRC}/wp-ai-bridge.php"
 fi

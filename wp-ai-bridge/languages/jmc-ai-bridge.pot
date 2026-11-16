@@ -2,40 +2,44 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: AI Bridge 1.6.1\n"
+"Project-Id-Version: JMC AI Bridge 1.6.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-ai-bridge\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-06T17:08:57+00:00\n"
+"POT-Creation-Date: 2026-11-16T09:47:28+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: ai-bridge\n"
+"X-Domain: jmc-ai-bridge\n"
 
 #. Plugin Name of the plugin
-#: ai-bridge.php
-#: admin/views/connections.php:108
+#: jmc-ai-bridge.php
+#: admin/views/connections.php:127
 #: admin/views/oauth-clients.php:38
 #: admin/views/tools-settings.php:26
-msgid "AI Bridge"
+msgid "JMC AI Bridge"
 msgstr ""
 
 #. Plugin URI of the plugin
-#. Author URI of the plugin
-#: ai-bridge.php
-msgid "https://jmclement.net"
+#: jmc-ai-bridge.php
+msgid "https://github.com/jeanmarieclement/wp-ai-bridge"
 msgstr ""
 
 #. Description of the plugin
-#: ai-bridge.php
+#: jmc-ai-bridge.php
 msgid "Espone endpoint REST sicuri e tool MCP per gestione contenuti tramite API key per utente e OAuth2. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni)."
 msgstr ""
 
 #. Author of the plugin
-#: ai-bridge.php
+#: jmc-ai-bridge.php
 msgid "Jean-Marie Clément"
+msgstr ""
+
+#. Author URI of the plugin
+#: jmc-ai-bridge.php
+msgid "https://jmclement.net"
 msgstr ""
 
 #: admin/class-wpaib-admin.php:71
@@ -91,7 +95,7 @@ msgid "Forbidden."
 msgstr ""
 
 #: admin/views/api-keys-section.php:18
-msgid "AI Bridge — API Keys & MCP Connector"
+msgid "JMC AI Bridge — API Keys & MCP Connector"
 msgstr ""
 
 #: admin/views/api-keys-section.php:23
@@ -160,7 +164,7 @@ msgid "Ultimo utilizzo"
 msgstr ""
 
 #: admin/views/api-keys-section.php:85
-#: admin/views/connections.php:206
+#: admin/views/connections.php:225
 msgid "IP"
 msgstr ""
 
@@ -224,109 +228,109 @@ msgstr ""
 msgid "Confermi la revoca? Non sarà più reversibile."
 msgstr ""
 
-#: admin/views/connections.php:111
+#: admin/views/connections.php:130
 #: admin/views/oauth-clients.php:41
 #: admin/views/tools-settings.php:30
 msgid "Tool MCP"
 msgstr ""
 
-#: admin/views/connections.php:114
+#: admin/views/connections.php:133
 #: admin/views/oauth-clients.php:44
 #: admin/views/tools-settings.php:33
 msgid "OAuth2 Clients"
 msgstr ""
 
-#: admin/views/connections.php:117
+#: admin/views/connections.php:136
 #: admin/views/oauth-clients.php:47
 #: admin/views/tools-settings.php:37
 msgid "Connessioni"
 msgstr ""
 
-#: admin/views/connections.php:126
+#: admin/views/connections.php:145
 msgid "Utente / Chiave"
 msgstr ""
 
-#: admin/views/connections.php:128
+#: admin/views/connections.php:147
 msgid "— Tutte —"
 msgstr ""
 
-#: admin/views/connections.php:132
+#: admin/views/connections.php:151
 msgid "senza etichetta"
 msgstr ""
 
-#: admin/views/connections.php:139
-#: admin/views/connections.php:202
+#: admin/views/connections.php:158
+#: admin/views/connections.php:221
 msgid "Endpoint"
 msgstr ""
 
-#: admin/views/connections.php:145
-#: admin/views/connections.php:205
+#: admin/views/connections.php:164
+#: admin/views/connections.php:224
 msgid "Outcome"
 msgstr ""
 
-#: admin/views/connections.php:147
-#: admin/views/connections.php:159
+#: admin/views/connections.php:166
+#: admin/views/connections.php:178
 msgid "— Tutti —"
 msgstr ""
 
-#: admin/views/connections.php:157
-#: admin/views/connections.php:203
+#: admin/views/connections.php:176
+#: admin/views/connections.php:222
 msgid "Metodo"
 msgstr ""
 
-#: admin/views/connections.php:169
+#: admin/views/connections.php:188
 msgid "Da"
 msgstr ""
 
-#: admin/views/connections.php:174
+#: admin/views/connections.php:193
 msgid "A"
 msgstr ""
 
-#: admin/views/connections.php:178
+#: admin/views/connections.php:197
 msgid "Filtra"
 msgstr ""
 
-#: admin/views/connections.php:182
+#: admin/views/connections.php:201
 msgid "Reset"
 msgstr ""
 
-#: admin/views/connections.php:188
+#: admin/views/connections.php:207
 msgid "Nessuna connessione registrata."
 msgstr ""
 
 #. translators: %d: number of connections
-#: admin/views/connections.php:193
+#: admin/views/connections.php:212
 #, php-format
 msgid "%d connessioni totali."
 msgstr ""
 
-#: admin/views/connections.php:199
+#: admin/views/connections.php:218
 msgid "Timestamp"
 msgstr ""
 
-#: admin/views/connections.php:200
+#: admin/views/connections.php:219
 msgid "Utente"
 msgstr ""
 
-#: admin/views/connections.php:201
+#: admin/views/connections.php:220
 msgid "Chiave"
 msgstr ""
 
-#: admin/views/connections.php:204
+#: admin/views/connections.php:223
 msgid "Status"
 msgstr ""
 
-#: admin/views/connections.php:240
+#: admin/views/connections.php:259
 msgid "Precedente"
 msgstr ""
 
 #. translators: 1: current page, 2: total pages
-#: admin/views/connections.php:247
+#: admin/views/connections.php:266
 #, php-format
 msgid "Pagina %1$d di %2$d"
 msgstr ""
 
-#: admin/views/connections.php:265
+#: admin/views/connections.php:284
 msgid "Successiva"
 msgstr ""
 
@@ -358,7 +362,7 @@ msgid "Come configurare i client AI"
 msgstr ""
 
 #: admin/views/oauth-clients.php:69
-msgid "AI Bridge funge da Authorization Server OAuth2. Segui i passaggi per la piattaforma che vuoi collegare."
+msgid "JMC AI Bridge funge da Authorization Server OAuth2. Segui i passaggi per la piattaforma che vuoi collegare."
 msgstr ""
 
 #: admin/views/oauth-clients.php:77
@@ -410,7 +414,7 @@ msgid "Gemini non supporta ancora OAuth2 per le integrazioni esterne. Usa l'aute
 msgstr ""
 
 #: admin/views/oauth-clients.php:120
-msgid "Vai su Utenti → Il tuo profilo → AI Bridge — API Keys → Genera chiave"
+msgid "Vai su Utenti → Il tuo profilo → JMC AI Bridge — API Keys → Genera chiave"
 msgstr ""
 
 #: admin/views/oauth-clients.php:121
@@ -866,7 +870,7 @@ msgid "Plugin activated successfully."
 msgstr ""
 
 #: includes/endpoints/class-wpaib-plugins-controller.php:214
-msgid "Cannot deactivate AI Bridge via its own API."
+msgid "Cannot deactivate JMC AI Bridge via its own API."
 msgstr ""
 
 #: includes/endpoints/class-wpaib-plugins-controller.php:224
@@ -878,7 +882,7 @@ msgid "Plugin deactivated successfully."
 msgstr ""
 
 #: includes/endpoints/class-wpaib-plugins-controller.php:260
-msgid "Cannot delete AI Bridge via its own API."
+msgid "Cannot delete JMC AI Bridge via its own API."
 msgstr ""
 
 #: includes/endpoints/class-wpaib-plugins-controller.php:278

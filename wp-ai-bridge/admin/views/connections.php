@@ -42,79 +42,98 @@ if ( $filter_date_from && $filter_date_to && $filter_date_from > $filter_date_to
 	list( $filter_date_from, $filter_date_to ) = array( $filter_date_to, $filter_date_from );
 }
 
-// Costruisci WHERE dinamico.
-$where  = 'WHERE 1=1';
-$params = array();
+// Filtri in un'unica query statica: ogni condizione si disattiva quando il
+// filtro è vuoto, così tutto passa da un solo $wpdb->prepare().
+$endpoint_like = $filter_endpoint ? '%' . $wpdb->esc_like( $filter_endpoint ) . '%' : '';
+$date_from     = ( $filter_date_from ? $filter_date_from : '1000-01-01' ) . ' 00:00:00';
+$date_to       = ( $filter_date_to ? $filter_date_to : '9999-12-31' ) . ' 23:59:59';
 
-if ( $filter_key > 0 ) {
-	$where   .= ' AND l.api_key_id = %d';
-	$params[] = $filter_key;
-}
-if ( $filter_endpoint ) {
-	$where   .= ' AND l.endpoint LIKE %s';
-	$params[] = '%' . $wpdb->esc_like( $filter_endpoint ) . '%';
-}
-if ( $filter_outcome ) {
-	$where   .= ' AND l.outcome = %s';
-	$params[] = $filter_outcome;
-}
-if ( $filter_method ) {
-	$where   .= ' AND l.method = %s';
-	$params[] = $filter_method;
-}
-if ( $filter_date_from ) {
-	$where   .= ' AND l.timestamp >= %s';
-	$params[] = $filter_date_from . ' 00:00:00';
-}
-if ( $filter_date_to ) {
-	$where   .= ' AND l.timestamp <= %s';
-	$params[] = $filter_date_to . ' 23:59:59';
-}
+// phpcs:disable WordPress.DB.DirectDatabaseQuery -- custom audit table, admin-only view.
+$total = (int) $wpdb->get_var(
+	$wpdb->prepare(
+		"SELECT COUNT(*) FROM %i l
+		 WHERE ( %d = 0 OR l.api_key_id = %d )
+		   AND ( %s = '' OR l.endpoint LIKE %s )
+		   AND ( %s = '' OR l.outcome = %s )
+		   AND ( %s = '' OR l.method = %s )
+		   AND l.timestamp BETWEEN %s AND %s",
+		$table_log,
+		$filter_key,
+		$filter_key,
+		$endpoint_like,
+		$endpoint_like,
+		$filter_outcome,
+		$filter_outcome,
+		$filter_method,
+		$filter_method,
+		$date_from,
+		$date_to
+	)
+);
 
-// COUNT con filtri. Table names from $wpdb->prefix — no user input interpolated.
-$count_sql = "SELECT COUNT(*) FROM {$table_log} l {$where}"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-$total     = empty( $params )
-	? (int) $wpdb->get_var( $count_sql ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-	: (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-
-// Dati paginati con filtri.
-$data_sql    = "SELECT l.id, l.timestamp, l.ip, l.endpoint, l.method, l.status_code, l.outcome,
-                       k.label AS key_label, k.user_id AS key_user_id,
-                       u.display_name
-                FROM {$table_log} l
-                LEFT JOIN {$table_keys} k ON l.api_key_id = k.id
-                LEFT JOIN {$table_user} u ON k.user_id    = u.ID
-                {$where}
-                ORDER BY l.timestamp DESC
-                LIMIT %d OFFSET %d"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-$data_params = array_merge( $params, array( $per_page, $offset ) );
-$rows        = $wpdb->get_results( $wpdb->prepare( $data_sql, $data_params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+$rows = $wpdb->get_results(
+	$wpdb->prepare(
+		"SELECT l.id, l.timestamp, l.ip, l.endpoint, l.method, l.status_code, l.outcome,
+		        k.label AS key_label, k.user_id AS key_user_id,
+		        u.display_name
+		 FROM %i l
+		 LEFT JOIN %i k ON l.api_key_id = k.id
+		 LEFT JOIN %i u ON k.user_id = u.ID
+		 WHERE ( %d = 0 OR l.api_key_id = %d )
+		   AND ( %s = '' OR l.endpoint LIKE %s )
+		   AND ( %s = '' OR l.outcome = %s )
+		   AND ( %s = '' OR l.method = %s )
+		   AND l.timestamp BETWEEN %s AND %s
+		 ORDER BY l.timestamp DESC
+		 LIMIT %d OFFSET %d",
+		$table_log,
+		$table_keys,
+		$table_user,
+		$filter_key,
+		$filter_key,
+		$endpoint_like,
+		$endpoint_like,
+		$filter_outcome,
+		$filter_outcome,
+		$filter_method,
+		$filter_method,
+		$date_from,
+		$date_to,
+		$per_page,
+		$offset
+	)
+);
 
 $total_pages = max( 1, (int) ceil( $total / $per_page ) );
 $current_uid = get_current_user_id();
 
 // Dati per i select del form filtri.
-$all_keys     = $wpdb->get_results( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-	"SELECT k.id, k.label, u.display_name
-	 FROM {$table_keys} k
-	 LEFT JOIN {$table_user} u ON k.user_id = u.ID
-	 ORDER BY u.display_name, k.label" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+$all_keys = $wpdb->get_results(
+	$wpdb->prepare(
+		'SELECT k.id, k.label, u.display_name
+		 FROM %i k
+		 LEFT JOIN %i u ON k.user_id = u.ID
+		 ORDER BY u.display_name, k.label',
+		$table_keys,
+		$table_user
+	)
 );
-$all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-	"SELECT DISTINCT outcome FROM {$table_log} WHERE outcome != '' ORDER BY outcome" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+$all_outcomes = $wpdb->get_col(
+	$wpdb->prepare( "SELECT DISTINCT outcome FROM %i WHERE outcome != '' ORDER BY outcome", $table_log )
 );
+// phpcs:enable WordPress.DB.DirectDatabaseQuery
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'AI Bridge', 'ai-bridge' ); ?></h1>
+	<h1><?php esc_html_e( 'JMC AI Bridge', 'jmc-ai-bridge' ); ?></h1>
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( $tab_tools_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'Tool MCP', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Tool MCP', 'jmc-ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'OAuth2 Clients', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'OAuth2 Clients', 'jmc-ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_conn_url ); ?>" class="nav-tab nav-tab-active">
-			<?php esc_html_e( 'Connessioni', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Connessioni', 'jmc-ai-bridge' ); ?>
 		</a>
 	</nav>
 
@@ -123,28 +142,28 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		<input type="hidden" name="tab"  value="connections">
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Utente / Chiave', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Utente / Chiave', 'jmc-ai-bridge' ); ?>
 			<select name="filter_key" style="margin-top:2px;">
-				<option value=""><?php esc_html_e( '— Tutte —', 'ai-bridge' ); ?></option>
+				<option value=""><?php esc_html_e( '— Tutte —', 'jmc-ai-bridge' ); ?></option>
 				<?php foreach ( $all_keys as $k ) : ?>
 					<option value="<?php echo esc_attr( $k->id ); ?>"
 						<?php selected( $filter_key, $k->id ); ?>>
-						<?php echo esc_html( ( $k->display_name ?: '?' ) . ' — ' . ( $k->label ?: esc_html__( 'senza etichetta', 'ai-bridge' ) ) ); ?>
+						<?php echo esc_html( ( $k->display_name ?: '?' ) . ' — ' . ( $k->label ?: esc_html__( 'senza etichetta', 'jmc-ai-bridge' ) ) ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Endpoint', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Endpoint', 'jmc-ai-bridge' ); ?>
 			<input type="text" name="filter_endpoint" value="<?php echo esc_attr( $filter_endpoint ); ?>"
 				placeholder="/wpaib/v1/..." style="margin-top:2px;width:180px;">
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Outcome', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Outcome', 'jmc-ai-bridge' ); ?>
 			<select name="filter_outcome" style="margin-top:2px;">
-				<option value=""><?php esc_html_e( '— Tutti —', 'ai-bridge' ); ?></option>
+				<option value=""><?php esc_html_e( '— Tutti —', 'jmc-ai-bridge' ); ?></option>
 				<?php foreach ( $all_outcomes as $oc ) : ?>
 					<option value="<?php echo esc_attr( $oc ); ?>" <?php selected( $filter_outcome, $oc ); ?>>
 						<?php echo esc_html( $oc ); ?>
@@ -154,9 +173,9 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Metodo', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Metodo', 'jmc-ai-bridge' ); ?>
 			<select name="filter_method" style="margin-top:2px;">
-				<option value=""><?php esc_html_e( '— Tutti —', 'ai-bridge' ); ?></option>
+				<option value=""><?php esc_html_e( '— Tutti —', 'jmc-ai-bridge' ); ?></option>
 				<?php foreach ( array( 'GET', 'POST', 'PUT', 'DELETE', 'PATCH' ) as $m ) : ?>
 					<option value="<?php echo esc_attr( $m ); ?>" <?php selected( strtoupper( $filter_method ), $m ); ?>>
 						<?php echo esc_html( $m ); ?>
@@ -166,44 +185,44 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'Da', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Da', 'jmc-ai-bridge' ); ?>
 			<input type="date" name="filter_date_from" value="<?php echo esc_attr( $filter_date_from ); ?>" style="margin-top:2px;">
 		</label>
 
 		<label style="display:flex;flex-direction:column;font-size:12px;font-weight:600;">
-			<?php esc_html_e( 'A', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'A', 'jmc-ai-bridge' ); ?>
 			<input type="date" name="filter_date_to" value="<?php echo esc_attr( $filter_date_to ); ?>" style="margin-top:2px;">
 		</label>
 
-		<?php submit_button( __( 'Filtra', 'ai-bridge' ), 'secondary', 'filter_submit', false ); ?>
+		<?php submit_button( __( 'Filtra', 'jmc-ai-bridge' ), 'secondary', 'filter_submit', false ); ?>
 
 		<?php if ( $filter_key || $filter_endpoint || $filter_outcome || $filter_method || $filter_date_from || $filter_date_to ) : ?>
 			<a class="button" href="<?php echo esc_url( $tab_conn_url ); ?>">
-				<?php esc_html_e( 'Reset', 'ai-bridge' ); ?>
+				<?php esc_html_e( 'Reset', 'jmc-ai-bridge' ); ?>
 			</a>
 		<?php endif; ?>
 	</form>
 
 	<?php if ( empty( $rows ) ) : ?>
-		<p style="margin-top:1em;"><?php esc_html_e( 'Nessuna connessione registrata.', 'ai-bridge' ); ?></p>
+		<p style="margin-top:1em;"><?php esc_html_e( 'Nessuna connessione registrata.', 'jmc-ai-bridge' ); ?></p>
 	<?php else : ?>
 		<p style="margin-top:1em;">
 			<?php
 			/* translators: %d: number of connections */
-			printf( esc_html__( '%d connessioni totali.', 'ai-bridge' ), (int) $total );
+			printf( esc_html__( '%d connessioni totali.', 'jmc-ai-bridge' ), (int) $total );
 			?>
 		</p>
 		<table class="widefat striped">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Timestamp', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Utente', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Chiave', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Endpoint', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Metodo', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Status', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Outcome', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'IP', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Timestamp', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Utente', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Chiave', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Endpoint', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Metodo', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Outcome', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'IP', 'jmc-ai-bridge' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -237,14 +256,14 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 						'filter_date_to'   => $filter_date_to ?: null,
 						'paged'            => $paged - 1,
 					) ) ) ); ?>">
-						&larr; <?php esc_html_e( 'Precedente', 'ai-bridge' ); ?>
+						&larr; <?php esc_html_e( 'Precedente', 'jmc-ai-bridge' ); ?>
 					</a>
 				<?php endif; ?>
 				<span style="margin:0 8px;">
 					<?php
 					printf(
 						/* translators: 1: current page, 2: total pages */
-						esc_html__( 'Pagina %1$d di %2$d', 'ai-bridge' ),
+						esc_html__( 'Pagina %1$d di %2$d', 'jmc-ai-bridge' ),
 						(int) $paged,
 						(int) $total_pages
 					);
@@ -262,7 +281,7 @@ $all_outcomes = $wpdb->get_col( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrep
 						'filter_date_to'   => $filter_date_to ?: null,
 						'paged'            => $paged + 1,
 					) ) ) ); ?>">
-						<?php esc_html_e( 'Successiva', 'ai-bridge' ); ?> &rarr;
+						<?php esc_html_e( 'Successiva', 'jmc-ai-bridge' ); ?> &rarr;
 					</a>
 				<?php endif; ?>
 			</div>

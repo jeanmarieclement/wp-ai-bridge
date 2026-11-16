@@ -24,7 +24,7 @@ $nonce_value = wp_create_nonce( 'wpaib_oauth_consent_' . $client->client_id );
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?php
 /* translators: 1: OAuth client name, 2: site name. */
-printf( esc_html__( 'Autorizza %1$s — %2$s', 'ai-bridge' ), esc_html( $client->name ), esc_html( $site_name ) ); ?></title>
+printf( esc_html__( 'Autorizza %1$s — %2$s', 'jmc-ai-bridge' ), esc_html( $client->name ), esc_html( $site_name ) ); ?></title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f0f1; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
@@ -50,25 +50,25 @@ h1 { font-size: 1.25rem; margin-bottom: 1rem; color: #1d2327; }
 <div class="card">
 	<h1>
 		<span class="app-name"><?php echo esc_html( $client->name ); ?></span>
-		<?php esc_html_e( 'vuole accedere al tuo account', 'ai-bridge' ); ?>
+		<?php esc_html_e( 'vuole accedere al tuo account', 'jmc-ai-bridge' ); ?>
 	</h1>
 
 	<div class="user-info">
 		<?php printf(
 			/* translators: 1: user display name, 2: user email */
-			esc_html__( 'Stai autorizzando come: %1$s (%2$s)', 'ai-bridge' ),
+			esc_html__( 'Stai autorizzando come: %1$s (%2$s)', 'jmc-ai-bridge' ),
 			'<strong>' . esc_html( $user->display_name ) . '</strong>',
 			esc_html( $user->user_email )
 		); ?>
 	</div>
 
 	<div class="permissions">
-		<p><?php esc_html_e( "L'applicazione potrà:", 'ai-bridge' ); ?></p>
+		<p><?php esc_html_e( "L'applicazione potrà:", 'jmc-ai-bridge' ); ?></p>
 		<ul>
-			<li><?php esc_html_e( 'Leggere e creare post e pagine', 'ai-bridge' ); ?></li>
-			<li><?php esc_html_e( 'Caricare immagini nella media library', 'ai-bridge' ); ?></li>
-			<li><?php esc_html_e( 'Gestire categorie e tag', 'ai-bridge' ); ?></li>
-			<li><?php esc_html_e( 'Leggere le informazioni del sito', 'ai-bridge' ); ?></li>
+			<li><?php esc_html_e( 'Leggere e creare post e pagine', 'jmc-ai-bridge' ); ?></li>
+			<li><?php esc_html_e( 'Caricare immagini nella media library', 'jmc-ai-bridge' ); ?></li>
+			<li><?php esc_html_e( 'Gestire categorie e tag', 'jmc-ai-bridge' ); ?></li>
+			<li><?php esc_html_e( 'Leggere le informazioni del sito', 'jmc-ai-bridge' ); ?></li>
 		</ul>
 	</div>
 
@@ -85,10 +85,10 @@ h1 { font-size: 1.25rem; margin-bottom: 1rem; color: #1d2327; }
 
 		<div class="actions">
 			<button type="submit" name="decision" value="allow" class="btn btn-primary">
-				<?php esc_html_e( 'Autorizza', 'ai-bridge' ); ?>
+				<?php esc_html_e( 'Autorizza', 'jmc-ai-bridge' ); ?>
 			</button>
 			<button type="submit" name="decision" value="deny" class="btn btn-secondary">
-				<?php esc_html_e( 'Nega', 'ai-bridge' ); ?>
+				<?php esc_html_e( 'Nega', 'jmc-ai-bridge' ); ?>
 			</button>
 		</div>
 	</form>
@@ -96,7 +96,7 @@ h1 { font-size: 1.25rem; margin-bottom: 1rem; color: #1d2327; }
 	<p class="footer">
 		<?php printf(
 			/* translators: %s: site name */
-			esc_html__( 'Sito: %s', 'ai-bridge' ),
+			esc_html__( 'Sito: %s', 'jmc-ai-bridge' ),
 			esc_html( $site_name )
 		); ?>
 	</p>

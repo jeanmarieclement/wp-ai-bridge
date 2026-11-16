@@ -220,10 +220,10 @@ class WPAIB_CPT_Controller {
 		$post = get_post( $id );
 
 		if ( ! $post || $type !== $post->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Item not found.', 'ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Item not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this item.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this item.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		return new WP_REST_Response( $this->prepare_item( $post, (bool) $request->get_param( 'content_rendered' ) ), 200 );
@@ -246,17 +246,17 @@ class WPAIB_CPT_Controller {
 
 		// Verifica capability specifica del CPT per la creazione.
 		if ( ! current_user_can( $pt_object->cap->create_posts ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot create items of this type.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot create items of this type.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$params = $request->get_json_params();
 		if ( empty( $params ) || ! is_array( $params ) ) {
-			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$title = isset( $params['title'] ) ? sanitize_text_field( $params['title'] ) : '';
 		if ( empty( $title ) ) {
-			return new WP_Error( 'wpaib_missing_title', __( 'Title is required.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_title', __( 'Title is required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$content = isset( $params['content'] ) ? wp_kses_post( $params['content'] ) : '';
@@ -324,15 +324,15 @@ class WPAIB_CPT_Controller {
 		$post = get_post( $id );
 
 		if ( ! $post || $type !== $post->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Item not found.', 'ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Item not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot edit this item.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot edit this item.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$params = $request->get_json_params();
 		if ( empty( $params ) || ! is_array( $params ) ) {
-			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$pt_object = get_post_type_object( $type );
@@ -400,15 +400,15 @@ class WPAIB_CPT_Controller {
 		$post  = get_post( $id );
 
 		if ( ! $post || $type !== $post->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Item not found.', 'ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Item not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'delete_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this item.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this item.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$result = wp_delete_post( $id, $force );
 		if ( ! $result ) {
-			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete item.', 'ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete item.', 'jmc-ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
@@ -458,7 +458,7 @@ class WPAIB_CPT_Controller {
 			return new WP_Error(
 				'wpaib_invalid_post_type',
 				/* translators: %s: post type slug */
-				sprintf( __( 'Custom post type "%s" not found or not accessible.', 'ai-bridge' ), $type ),
+				sprintf( __( 'Custom post type "%s" not found or not accessible.', 'jmc-ai-bridge' ), $type ),
 				array( 'status' => 404 )
 			);
 		}

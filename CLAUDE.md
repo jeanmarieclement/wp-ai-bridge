@@ -41,7 +41,7 @@ Endpoint disponibili:
 
 ## Architettura
 
-Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `ai-bridge.php`.
+Plugin PHP puro, zero dipendenze esterne (no Composer). Autoloader manuale in `jmc-ai-bridge.php`.
 
 **Flusso di una richiesta REST:**
 1. `WPAIB_Plugin::enforce_https()` — rifiuta HTTP (escluso localhost/development)

@@ -93,7 +93,7 @@ class WPAIB_Plugins_Controller {
 		if ( empty( $plugin ) || ! is_string( $plugin ) ) {
 			return new WP_Error(
 				'wpaib_missing_plugin',
-				__( 'Plugin path is required.', 'ai-bridge' ),
+				__( 'Plugin path is required.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -103,7 +103,7 @@ class WPAIB_Plugins_Controller {
 		if ( false !== strpos( $plugin, '..' ) ) {
 			return new WP_Error(
 				'wpaib_invalid_plugin',
-				__( 'Invalid plugin path.', 'ai-bridge' ),
+				__( 'Invalid plugin path.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -111,7 +111,7 @@ class WPAIB_Plugins_Controller {
 		if ( '.php' !== substr( $plugin, -4 ) ) {
 			return new WP_Error(
 				'wpaib_invalid_plugin',
-				__( 'Invalid plugin path.', 'ai-bridge' ),
+				__( 'Invalid plugin path.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -122,7 +122,7 @@ class WPAIB_Plugins_Controller {
 		if ( ! isset( $all_plugins[ $plugin ] ) ) {
 			return new WP_Error(
 				'wpaib_plugin_not_found',
-				__( 'Plugin not found.', 'ai-bridge' ),
+				__( 'Plugin not found.', 'jmc-ai-bridge' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -173,7 +173,7 @@ class WPAIB_Plugins_Controller {
 				array(
 					'plugin'  => $plugin,
 					'status'  => 'active',
-					'message' => __( 'Plugin is already active.', 'ai-bridge' ),
+					'message' => __( 'Plugin is already active.', 'jmc-ai-bridge' ),
 				),
 				200
 			);
@@ -188,7 +188,7 @@ class WPAIB_Plugins_Controller {
 			array(
 				'plugin'  => $plugin,
 				'status'  => 'active',
-				'message' => __( 'Plugin activated successfully.', 'ai-bridge' ),
+				'message' => __( 'Plugin activated successfully.', 'jmc-ai-bridge' ),
 			),
 			200
 		);
@@ -197,7 +197,7 @@ class WPAIB_Plugins_Controller {
 	/**
 	 * Disattiva un plugin.
 	 *
-	 * Non è possibile disattivare AI Bridge tramite la propria API.
+	 * Non è possibile disattivare JMC AI Bridge tramite la propria API.
 	 *
 	 * @param WP_REST_Request $request Richiesta con campo `plugin`.
 	 * @return WP_REST_Response|WP_Error
@@ -211,7 +211,7 @@ class WPAIB_Plugins_Controller {
 		if ( plugin_basename( WPAIB_PLUGIN_FILE ) === $plugin ) {
 			return new WP_Error(
 				'wpaib_cannot_deactivate_self',
-				__( 'Cannot deactivate AI Bridge via its own API.', 'ai-bridge' ),
+				__( 'Cannot deactivate JMC AI Bridge via its own API.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -221,7 +221,7 @@ class WPAIB_Plugins_Controller {
 				array(
 					'plugin'  => $plugin,
 					'status'  => 'inactive',
-					'message' => __( 'Plugin is already inactive.', 'ai-bridge' ),
+					'message' => __( 'Plugin is already inactive.', 'jmc-ai-bridge' ),
 				),
 				200
 			);
@@ -233,7 +233,7 @@ class WPAIB_Plugins_Controller {
 			array(
 				'plugin'  => $plugin,
 				'status'  => 'inactive',
-				'message' => __( 'Plugin deactivated successfully.', 'ai-bridge' ),
+				'message' => __( 'Plugin deactivated successfully.', 'jmc-ai-bridge' ),
 			),
 			200
 		);
@@ -243,7 +243,7 @@ class WPAIB_Plugins_Controller {
 	 * Elimina un plugin dal filesystem.
 	 *
 	 * Il plugin viene disattivato prima dell'eliminazione se necessario.
-	 * Non è possibile eliminare AI Bridge tramite la propria API.
+	 * Non è possibile eliminare JMC AI Bridge tramite la propria API.
 	 *
 	 * @param WP_REST_Request $request Richiesta con campo `plugin`.
 	 * @return WP_REST_Response|WP_Error
@@ -257,7 +257,7 @@ class WPAIB_Plugins_Controller {
 		if ( plugin_basename( WPAIB_PLUGIN_FILE ) === $plugin ) {
 			return new WP_Error(
 				'wpaib_cannot_delete_self',
-				__( 'Cannot delete AI Bridge via its own API.', 'ai-bridge' ),
+				__( 'Cannot delete JMC AI Bridge via its own API.', 'jmc-ai-bridge' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -275,7 +275,7 @@ class WPAIB_Plugins_Controller {
 		if ( false === $result ) {
 			return new WP_Error(
 				'wpaib_delete_failed',
-				__( 'Plugin deletion failed. Check filesystem permissions.', 'ai-bridge' ),
+				__( 'Plugin deletion failed. Check filesystem permissions.', 'jmc-ai-bridge' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -284,7 +284,7 @@ class WPAIB_Plugins_Controller {
 			array(
 				'plugin'  => $plugin,
 				'status'  => 'deleted',
-				'message' => __( 'Plugin deleted successfully.', 'ai-bridge' ),
+				'message' => __( 'Plugin deleted successfully.', 'jmc-ai-bridge' ),
 			),
 			200
 		);

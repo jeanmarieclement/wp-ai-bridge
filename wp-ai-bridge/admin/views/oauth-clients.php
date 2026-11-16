@@ -35,16 +35,16 @@ $token_url = rest_url( WPAIB_API_NAMESPACE . '/oauth/token' );
 $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'AI Bridge', 'ai-bridge' ); ?></h1>
+	<h1><?php esc_html_e( 'JMC AI Bridge', 'jmc-ai-bridge' ); ?></h1>
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( $tab_tools_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'Tool MCP', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Tool MCP', 'jmc-ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_oauth_url ); ?>" class="nav-tab nav-tab-active">
-			<?php esc_html_e( 'OAuth2 Clients', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'OAuth2 Clients', 'jmc-ai-bridge' ); ?>
 		</a>
 		<a href="<?php echo esc_url( $tab_conn_url ); ?>" class="nav-tab">
-			<?php esc_html_e( 'Connessioni', 'ai-bridge' ); ?>
+			<?php esc_html_e( 'Connessioni', 'jmc-ai-bridge' ); ?>
 		</a>
 	</nav>
 
@@ -54,19 +54,19 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 
 	<?php if ( $new_client_id && $new_secret ) : ?>
 		<div class="notice notice-success">
-			<p><strong><?php esc_html_e( 'Client creato. Salva subito queste credenziali — il secret non verrà più mostrato.', 'ai-bridge' ); ?></strong></p>
+			<p><strong><?php esc_html_e( 'Client creato. Salva subito queste credenziali — il secret non verrà più mostrato.', 'jmc-ai-bridge' ); ?></strong></p>
 			<table class="widefat" style="max-width:640px;margin-top:8px;">
-				<tr><th><?php esc_html_e( 'Client ID', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $new_client_id ); ?></code></td></tr>
-				<tr><th><?php esc_html_e( 'Client Secret', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $new_secret ); ?></code></td></tr>
-				<tr><th><?php esc_html_e( 'Authorization URL', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $auth_url ); ?></code></td></tr>
-				<tr><th><?php esc_html_e( 'Token URL', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $token_url ); ?></code></td></tr>
+				<tr><th><?php esc_html_e( 'Client ID', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $new_client_id ); ?></code></td></tr>
+				<tr><th><?php esc_html_e( 'Client Secret', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $new_secret ); ?></code></td></tr>
+				<tr><th><?php esc_html_e( 'Authorization URL', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $auth_url ); ?></code></td></tr>
+				<tr><th><?php esc_html_e( 'Token URL', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $token_url ); ?></code></td></tr>
 			</table>
 		</div>
 	<?php endif; ?>
 
 	<!-- ===== GUIDA CONFIGURAZIONE ===== -->
-	<h2 style="margin-top:1.5em;"><?php esc_html_e( 'Come configurare i client AI', 'ai-bridge' ); ?></h2>
-	<p><?php esc_html_e( 'AI Bridge funge da Authorization Server OAuth2. Segui i passaggi per la piattaforma che vuoi collegare.', 'ai-bridge' ); ?></p>
+	<h2 style="margin-top:1.5em;"><?php esc_html_e( 'Come configurare i client AI', 'jmc-ai-bridge' ); ?></h2>
+	<p><?php esc_html_e( 'JMC AI Bridge funge da Authorization Server OAuth2. Segui i passaggi per la piattaforma che vuoi collegare.', 'jmc-ai-bridge' ); ?></p>
 
 	<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:1em;">
 
@@ -74,19 +74,19 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 		<div style="flex:1;min-width:280px;max-width:480px;border:1px solid #c3c4c7;border-radius:4px;padding:16px 20px;">
 			<h3 style="margin-top:0;">Claude.ai <span style="font-size:12px;font-weight:normal;color:#646970;">(connettore MCP)</span></h3>
 			<ol style="margin:0;padding-left:1.4em;line-height:1.8;">
-				<li><?php esc_html_e( 'Crea un client qui sotto con questa Redirect URI:', 'ai-bridge' ); ?><br>
+				<li><?php esc_html_e( 'Crea un client qui sotto con questa Redirect URI:', 'jmc-ai-bridge' ); ?><br>
 					<code>https://claude.ai/api/mcp/auth_callback</code><br>
-					<span style="color:#646970;font-size:12px;"><?php esc_html_e( 'Callback usata dai connettori MCP. Se colleghi Claude.ai come tool OAuth generico (non MCP), aggiungi su una seconda riga anche', 'ai-bridge' ); ?> <code style="font-size:11px;">https://claude.ai/api/oauth/callback</code></span>
+					<span style="color:#646970;font-size:12px;"><?php esc_html_e( 'Callback usata dai connettori MCP. Se colleghi Claude.ai come tool OAuth generico (non MCP), aggiungi su una seconda riga anche', 'jmc-ai-bridge' ); ?> <code style="font-size:11px;">https://claude.ai/api/oauth/callback</code></span>
 				</li>
-				<li><?php esc_html_e( 'In Claude.ai → Impostazioni → Connettori → Aggiungi connettore personalizzato', 'ai-bridge' ); ?></li>
-				<li><?php esc_html_e( 'Compila i campi:', 'ai-bridge' ); ?>
+				<li><?php esc_html_e( 'In Claude.ai → Impostazioni → Connettori → Aggiungi connettore personalizzato', 'jmc-ai-bridge' ); ?></li>
+				<li><?php esc_html_e( 'Compila i campi:', 'jmc-ai-bridge' ); ?>
 					<table style="margin-top:6px;border-collapse:collapse;width:100%;">
-						<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#646970;"><?php esc_html_e( 'URL server MCP', 'ai-bridge' ); ?></td><td><code style="font-size:11px;"><?php echo esc_html( $mcp_url ); ?></code></td></tr>
+						<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#646970;"><?php esc_html_e( 'URL server MCP', 'jmc-ai-bridge' ); ?></td><td><code style="font-size:11px;"><?php echo esc_html( $mcp_url ); ?></code></td></tr>
 						<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#646970;">OAuth Client ID</td><td><code style="font-size:11px;">wpaib_c_…</code></td></tr>
 						<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#646970;">Client Secret</td><td><code style="font-size:11px;">wpaib_s_…</code></td></tr>
 					</table>
 				</li>
-				<li><?php esc_html_e( 'Clicca Aggiungi → accedi a WP → Autorizza. Fine.', 'ai-bridge' ); ?></li>
+				<li><?php esc_html_e( 'Clicca Aggiungi → accedi a WP → Autorizza. Fine.', 'jmc-ai-bridge' ); ?></li>
 			</ol>
 		</div>
 
@@ -94,13 +94,13 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 		<div style="flex:1;min-width:280px;max-width:480px;border:1px solid #c3c4c7;border-radius:4px;padding:16px 20px;">
 			<h3 style="margin-top:0;">ChatGPT <span style="font-size:12px;font-weight:normal;color:#646970;">(Custom Actions / GPT)</span></h3>
 			<ol style="margin:0;padding-left:1.4em;line-height:1.8;">
-				<li><?php esc_html_e( 'In ChatGPT → Esplora GPT → Crea GPT → Configura → Aggiungi azioni', 'ai-bridge' ); ?></li>
-				<li><?php esc_html_e( 'Importa lo schema OpenAPI da:', 'ai-bridge' ); ?><br>
+				<li><?php esc_html_e( 'In ChatGPT → Esplora GPT → Crea GPT → Configura → Aggiungi azioni', 'jmc-ai-bridge' ); ?></li>
+				<li><?php esc_html_e( 'Importa lo schema OpenAPI da:', 'jmc-ai-bridge' ); ?><br>
 					<code style="font-size:11px;"><?php echo esc_html( rest_url( WPAIB_API_NAMESPACE . '/openapi.json' ) ); ?></code>
 				</li>
-				<li><?php esc_html_e( 'In Autenticazione scegli OAuth → annota la Callback URL mostrata da ChatGPT (es. ', 'ai-bridge' ); ?><code>https://chat.openai.com/aip/g-xxx/oauth/callback</code>)</li>
-				<li><?php esc_html_e( 'Crea un client qui sotto con quella Redirect URI esatta', 'ai-bridge' ); ?></li>
-				<li><?php esc_html_e( 'Torna in ChatGPT e compila:', 'ai-bridge' ); ?>
+				<li><?php esc_html_e( 'In Autenticazione scegli OAuth → annota la Callback URL mostrata da ChatGPT (es. ', 'jmc-ai-bridge' ); ?><code>https://chat.openai.com/aip/g-xxx/oauth/callback</code>)</li>
+				<li><?php esc_html_e( 'Crea un client qui sotto con quella Redirect URI esatta', 'jmc-ai-bridge' ); ?></li>
+				<li><?php esc_html_e( 'Torna in ChatGPT e compila:', 'jmc-ai-bridge' ); ?>
 					<table style="margin-top:6px;border-collapse:collapse;width:100%;">
 						<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#646970;">Client ID</td><td><code style="font-size:11px;">wpaib_c_…</code></td></tr>
 						<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#646970;">Client Secret</td><td><code style="font-size:11px;">wpaib_s_…</code></td></tr>
@@ -115,13 +115,13 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 		<!-- Gemini -->
 		<div style="flex:1;min-width:280px;max-width:480px;border:1px solid #c3c4c7;border-radius:4px;padding:16px 20px;">
 			<h3 style="margin-top:0;">Gemini / Google AI Studio <span style="font-size:12px;font-weight:normal;color:#646970;">(API Key)</span></h3>
-			<p style="margin-top:0;color:#646970;font-size:13px;"><?php esc_html_e( 'Gemini non supporta ancora OAuth2 per le integrazioni esterne. Usa l\'autenticazione tramite API Key.', 'ai-bridge' ); ?></p>
+			<p style="margin-top:0;color:#646970;font-size:13px;"><?php esc_html_e( 'Gemini non supporta ancora OAuth2 per le integrazioni esterne. Usa l\'autenticazione tramite API Key.', 'jmc-ai-bridge' ); ?></p>
 			<ol style="margin:0;padding-left:1.4em;line-height:1.8;">
-				<li><?php esc_html_e( 'Vai su Utenti → Il tuo profilo → AI Bridge — API Keys → Genera chiave', 'ai-bridge' ); ?></li>
-				<li><?php esc_html_e( 'Importa lo schema OpenAPI in Google AI Studio o Gemini Gems:', 'ai-bridge' ); ?><br>
+				<li><?php esc_html_e( 'Vai su Utenti → Il tuo profilo → JMC AI Bridge — API Keys → Genera chiave', 'jmc-ai-bridge' ); ?></li>
+				<li><?php esc_html_e( 'Importa lo schema OpenAPI in Google AI Studio o Gemini Gems:', 'jmc-ai-bridge' ); ?><br>
 					<code style="font-size:11px;"><?php echo esc_html( rest_url( WPAIB_API_NAMESPACE . '/openapi.json' ) ); ?></code>
 				</li>
-				<li><?php esc_html_e( 'Imposta l\'header di autenticazione:', 'ai-bridge' ); ?><br>
+				<li><?php esc_html_e( 'Imposta l\'header di autenticazione:', 'jmc-ai-bridge' ); ?><br>
 					<code style="font-size:11px;">X-API-Key: wpaib_…</code>
 				</li>
 			</ol>
@@ -130,27 +130,27 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 	</div><!-- /card grid -->
 
 	<!-- URL di riferimento -->
-	<h3 style="margin-top:2em;"><?php esc_html_e( 'URL OAuth2 di questo sito', 'ai-bridge' ); ?></h3>
+	<h3 style="margin-top:2em;"><?php esc_html_e( 'URL OAuth2 di questo sito', 'jmc-ai-bridge' ); ?></h3>
 	<table class="widefat" style="max-width:640px;">
-		<tr><th style="width:180px;"><?php esc_html_e( 'Authorization URL', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $auth_url ); ?></code></td></tr>
-		<tr><th><?php esc_html_e( 'Token URL', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $token_url ); ?></code></td></tr>
-		<tr><th><?php esc_html_e( 'MCP Server URL', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( $mcp_url ); ?></code></td></tr>
-		<tr><th><?php esc_html_e( 'OpenAPI Schema', 'ai-bridge' ); ?></th><td><code><?php echo esc_html( rest_url( WPAIB_API_NAMESPACE . '/openapi.json' ) ); ?></code></td></tr>
+		<tr><th style="width:180px;"><?php esc_html_e( 'Authorization URL', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $auth_url ); ?></code></td></tr>
+		<tr><th><?php esc_html_e( 'Token URL', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $token_url ); ?></code></td></tr>
+		<tr><th><?php esc_html_e( 'MCP Server URL', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( $mcp_url ); ?></code></td></tr>
+		<tr><th><?php esc_html_e( 'OpenAPI Schema', 'jmc-ai-bridge' ); ?></th><td><code><?php echo esc_html( rest_url( WPAIB_API_NAMESPACE . '/openapi.json' ) ); ?></code></td></tr>
 	</table>
 
 	<!-- ===== CLIENT REGISTRATI ===== -->
-	<h2 style="margin-top:2em;"><?php esc_html_e( 'Client registrati', 'ai-bridge' ); ?></h2>
+	<h2 style="margin-top:2em;"><?php esc_html_e( 'Client registrati', 'jmc-ai-bridge' ); ?></h2>
 
 	<?php if ( empty( $clients ) ) : ?>
-		<p><?php esc_html_e( 'Nessun client OAuth2 registrato.', 'ai-bridge' ); ?></p>
+		<p><?php esc_html_e( 'Nessun client OAuth2 registrato.', 'jmc-ai-bridge' ); ?></p>
 	<?php else : ?>
 		<table class="widefat striped" style="max-width:800px;">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Nome', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Client ID', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Redirect URI', 'ai-bridge' ); ?></th>
-					<th><?php esc_html_e( 'Creato', 'ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Nome', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Client ID', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Redirect URI', 'jmc-ai-bridge' ); ?></th>
+					<th><?php esc_html_e( 'Creato', 'jmc-ai-bridge' ); ?></th>
 					<th></th>
 				</tr>
 			</thead>
@@ -169,12 +169,12 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 					<td><?php echo esc_html( $client->created_at ); ?></td>
 					<td>
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-						      onsubmit="return confirm('<?php esc_attr_e( 'Eliminare questo client?', 'ai-bridge' ); ?>');">
+						      onsubmit="return confirm('<?php esc_attr_e( 'Eliminare questo client?', 'jmc-ai-bridge' ); ?>');">
 							<input type="hidden" name="action"    value="wpaib_delete_oauth_client">
 							<input type="hidden" name="client_id" value="<?php echo esc_attr( $client->client_id ); ?>">
 							<?php wp_nonce_field( 'wpaib_delete_oauth_client' ); ?>
 							<button type="submit" class="button button-small button-link-delete">
-								<?php esc_html_e( 'Elimina', 'ai-bridge' ); ?>
+								<?php esc_html_e( 'Elimina', 'jmc-ai-bridge' ); ?>
 							</button>
 						</form>
 					</td>
@@ -185,29 +185,29 @@ $mcp_url   = rest_url( WPAIB_API_NAMESPACE . '/mcp' );
 	<?php endif; ?>
 
 	<!-- ===== AGGIUNGI CLIENT ===== -->
-	<h2 style="margin-top:2em;"><?php esc_html_e( 'Aggiungi client', 'ai-bridge' ); ?></h2>
+	<h2 style="margin-top:2em;"><?php esc_html_e( 'Aggiungi client', 'jmc-ai-bridge' ); ?></h2>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="max-width:500px;">
 		<input type="hidden" name="action" value="wpaib_create_oauth_client">
 		<?php wp_nonce_field( 'wpaib_create_oauth_client' ); ?>
 
 		<table class="form-table">
 			<tr>
-				<th><label for="client_name"><?php esc_html_e( 'Nome client', 'ai-bridge' ); ?></label></th>
+				<th><label for="client_name"><?php esc_html_e( 'Nome client', 'jmc-ai-bridge' ); ?></label></th>
 				<td>
 					<input type="text" id="client_name" name="client_name" class="regular-text"
-					       placeholder="<?php esc_attr_e( 'es. Claude.ai', 'ai-bridge' ); ?>" required>
+					       placeholder="<?php esc_attr_e( 'es. Claude.ai', 'jmc-ai-bridge' ); ?>" required>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="client_redirect_uris"><?php esc_html_e( 'Redirect URI', 'ai-bridge' ); ?></label></th>
+				<th><label for="client_redirect_uris"><?php esc_html_e( 'Redirect URI', 'jmc-ai-bridge' ); ?></label></th>
 				<td>
 					<textarea id="client_redirect_uris" name="client_redirect_uris" rows="3" class="large-text" required
 					          placeholder="<?php echo esc_attr( "https://claude.ai/api/mcp/auth_callback\nhttps://claude.ai/api/oauth/callback" ); ?>"></textarea>
-					<p class="description"><?php esc_html_e( 'Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali). Il confronto è esatto: la URI registrata deve coincidere carattere per carattere con quella inviata dal client.', 'ai-bridge' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Una URI per riga. Devono iniziare con https:// (oppure http://localhost per test locali). Il confronto è esatto: la URI registrata deve coincidere carattere per carattere con quella inviata dal client.', 'jmc-ai-bridge' ); ?></p>
 				</td>
 			</tr>
 		</table>
 
-		<?php submit_button( __( 'Crea client', 'ai-bridge' ) ); ?>
+		<?php submit_button( __( 'Crea client', 'jmc-ai-bridge' ) ); ?>
 	</form>
 </div>

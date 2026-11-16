@@ -15,16 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
-<h2><?php esc_html_e( 'AI Bridge — API Keys & MCP Connector', 'ai-bridge' ); ?></h2>
+<h2><?php esc_html_e( 'JMC AI Bridge — API Keys & MCP Connector', 'jmc-ai-bridge' ); ?></h2>
 
 <?php if ( '' === get_option( 'permalink_structure' ) ) : ?>
 <div class="notice notice-warning" style="padding:12px 16px; margin-bottom:16px; border-left-color:#f59e0b;">
 	<p style="margin:0; font-size:13px;">
-		<strong><?php esc_html_e( 'Permalink non configurati.', 'ai-bridge' ); ?></strong>
+		<strong><?php esc_html_e( 'Permalink non configurati.', 'jmc-ai-bridge' ); ?></strong>
 		<?php
 		printf(
 			/* translators: 1: link apertura, 2: link chiusura */
-			esc_html__( 'Gli URL REST usano il formato query string (?rest_route=…) invece di /wp-json/…. %1$sAbilita i permalink%2$s per URL più puliti e compatibili con tutti i client AI.', 'ai-bridge' ),
+			esc_html__( 'Gli URL REST usano il formato query string (?rest_route=…) invece di /wp-json/…. %1$sAbilita i permalink%2$s per URL più puliti e compatibili con tutti i client AI.', 'jmc-ai-bridge' ),
 			'<a href="' . esc_url( admin_url( 'options-permalink.php' ) ) . '">',
 			'</a>'
 		);
@@ -36,18 +36,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div id="wpaib_notice_container">
 	<?php if ( ! empty( $just_generated ) ) : ?>
 		<div class="notice notice-success" style="padding:16px; margin-bottom:20px; border-left-color:#0284c7; background:#f0f9ff;">
-			<p style="font-size:15px; color:#0369a1; margin-top:0;"><strong><?php esc_html_e( 'Nuova API key generata con successo!', 'ai-bridge' ); ?></strong></p>
-			<p><?php esc_html_e( 'Copia la chiave ora: per motivi di sicurezza non sarà mai più visualizzabile in chiaro.', 'ai-bridge' ); ?></p>
+			<p style="font-size:15px; color:#0369a1; margin-top:0;"><strong><?php esc_html_e( 'Nuova API key generata con successo!', 'jmc-ai-bridge' ); ?></strong></p>
+			<p><?php esc_html_e( 'Copia la chiave ora: per motivi di sicurezza non sarà mai più visualizzabile in chiaro.', 'jmc-ai-bridge' ); ?></p>
 			<p>
 				<code style="display:block; padding:12px; background:#fff; border:1px solid #bae6fd; border-radius:6px; font-size:14px; color:#0f172a; word-break:break-all; user-select:all;">
 					<?php echo esc_html( $just_generated ); ?>
 				</code>
 			</p>
 			<p style="color:#b45309; font-size:13px;">
-				<?php esc_html_e( 'Conservala in un password manager sicuro.', 'ai-bridge' ); ?>
+				<?php esc_html_e( 'Conservala in un password manager sicuro.', 'jmc-ai-bridge' ); ?>
 			</p>
 			<p style="margin-bottom:0;">
-				<button type="button" class="button button-primary wpaib-btn-mcp-new" style="background:#0284c7; border-color:#0369a1;" data-key="<?php echo esc_attr( $just_generated ); ?>"><?php esc_html_e( '✨ Visualizza Configurazione MCP Completa', 'ai-bridge' ); ?></button>
+				<button type="button" class="button button-primary wpaib-btn-mcp-new" style="background:#0284c7; border-color:#0369a1;" data-key="<?php echo esc_attr( $just_generated ); ?>"><?php esc_html_e( '✨ Visualizza Configurazione MCP Completa', 'jmc-ai-bridge' ); ?></button>
 			</p>
 		</div>
 	<?php endif; ?>
@@ -55,36 +55,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <table class="form-table" role="presentation">
 	<tr>
-		<th scope="row"><label for="wpaib_label"><?php esc_html_e( 'Genera nuova chiave', 'ai-bridge' ); ?></label></th>
+		<th scope="row"><label for="wpaib_label"><?php esc_html_e( 'Genera nuova chiave', 'jmc-ai-bridge' ); ?></label></th>
 		<td>
 			<div style="display:inline-block;">
 				<input type="hidden" id="wpaib_user_id" value="<?php echo esc_attr( $user->ID ); ?>" />
-				<input type="text" id="wpaib_label" placeholder="<?php esc_attr_e( 'Etichetta (es. Server MCP, App Mobile)', 'ai-bridge' ); ?>" class="regular-text" maxlength="100" />
-				<button type="button" id="wpaib_btn_generate" class="button button-primary"><?php esc_html_e( 'Genera chiave', 'ai-bridge' ); ?></button>
+				<input type="text" id="wpaib_label" placeholder="<?php esc_attr_e( 'Etichetta (es. Server MCP, App Mobile)', 'jmc-ai-bridge' ); ?>" class="regular-text" maxlength="100" />
+				<button type="button" id="wpaib_btn_generate" class="button button-primary"><?php esc_html_e( 'Genera chiave', 'jmc-ai-bridge' ); ?></button>
 				<span id="wpaib_spinner" class="spinner" style="float:none; margin:0 5px;"></span>
 			</div>
 			<p class="description">
-				<?php esc_html_e( 'Ogni chiave è personale, protetta da crittografia SHA-256 e provvista di rate limiting nativo.', 'ai-bridge' ); ?>
+				<?php esc_html_e( 'Ogni chiave è personale, protetta da crittografia SHA-256 e provvista di rate limiting nativo.', 'jmc-ai-bridge' ); ?>
 			</p>
 		</td>
 	</tr>
 </table>
 
-<h3 style="margin-top:30px;"><?php esc_html_e( 'Le tue chiavi attive e configurazioni', 'ai-bridge' ); ?></h3>
+<h3 style="margin-top:30px;"><?php esc_html_e( 'Le tue chiavi attive e configurazioni', 'jmc-ai-bridge' ); ?></h3>
 
 <p id="wpaib_no_keys_msg" style="<?php echo empty( $keys ) ? '' : 'display:none;'; ?>">
-	<?php esc_html_e( 'Nessuna chiave generata al momento.', 'ai-bridge' ); ?>
+	<?php esc_html_e( 'Nessuna chiave generata al momento.', 'jmc-ai-bridge' ); ?>
 </p>
 
 <table id="wpaib_keys_table" class="wp-list-table widefat striped" style="<?php echo empty( $keys ) ? 'display:none;' : ''; ?>">
 	<thead>
 		<tr>
-			<th><?php esc_html_e( 'Etichetta', 'ai-bridge' ); ?></th>
-			<th><?php esc_html_e( 'Creata il', 'ai-bridge' ); ?></th>
-			<th><?php esc_html_e( 'Ultimo utilizzo', 'ai-bridge' ); ?></th>
-			<th><?php esc_html_e( 'IP', 'ai-bridge' ); ?></th>
-			<th><?php esc_html_e( 'Stato', 'ai-bridge' ); ?></th>
-			<th><?php esc_html_e( 'Azioni & MCP', 'ai-bridge' ); ?></th>
+			<th><?php esc_html_e( 'Etichetta', 'jmc-ai-bridge' ); ?></th>
+			<th><?php esc_html_e( 'Creata il', 'jmc-ai-bridge' ); ?></th>
+			<th><?php esc_html_e( 'Ultimo utilizzo', 'jmc-ai-bridge' ); ?></th>
+			<th><?php esc_html_e( 'IP', 'jmc-ai-bridge' ); ?></th>
+			<th><?php esc_html_e( 'Stato', 'jmc-ai-bridge' ); ?></th>
+			<th><?php esc_html_e( 'Azioni & MCP', 'jmc-ai-bridge' ); ?></th>
 		</tr>
 	</thead>
 	<tbody id="wpaib_keys_tbody">
@@ -97,15 +97,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<td><?php echo esc_html( $k->last_used_ip ? $k->last_used_ip : '—' ); ?></td>
 					<td class="wpaib-key-status">
 						<?php if ( null === $k->revoked_at ) : ?>
-							<span style="color:#16a34a; font-weight:600;">● <?php esc_html_e( 'Attiva', 'ai-bridge' ); ?></span>
+							<span style="color:#16a34a; font-weight:600;">● <?php esc_html_e( 'Attiva', 'jmc-ai-bridge' ); ?></span>
 						<?php else : ?>
-							<span style="color:#94a3b8;">○ <?php echo esc_html__( 'Revocata', 'ai-bridge' ) . ' ' . esc_html( $k->revoked_at ); ?></span>
+							<span style="color:#94a3b8;">○ <?php echo esc_html__( 'Revocata', 'jmc-ai-bridge' ) . ' ' . esc_html( $k->revoked_at ); ?></span>
 						<?php endif; ?>
 					</td>
 					<td class="wpaib-key-actions">
 						<?php if ( null === $k->revoked_at ) : ?>
-							<button type="button" class="button button-secondary wpaib-btn-mcp" style="margin-right:6px; border-color:#cbd5e1;" data-label="<?php echo esc_attr( $k->label ); ?>"><?php esc_html_e( '🌐 Integrazione AI (OpenAPI)', 'ai-bridge' ); ?></button>
-							<button type="button" class="button button-link-delete wpaib-btn-revoke" data-key-id="<?php echo esc_attr( $k->id ); ?>"><?php esc_html_e( 'Revoca', 'ai-bridge' ); ?></button>
+							<button type="button" class="button button-secondary wpaib-btn-mcp" style="margin-right:6px; border-color:#cbd5e1;" data-label="<?php echo esc_attr( $k->label ); ?>"><?php esc_html_e( '🌐 Integrazione AI (OpenAPI)', 'jmc-ai-bridge' ); ?></button>
+							<button type="button" class="button button-link-delete wpaib-btn-revoke" data-key-id="<?php echo esc_attr( $k->id ); ?>"><?php esc_html_e( 'Revoca', 'jmc-ai-bridge' ); ?></button>
 						<?php else : ?>
 							—
 						<?php endif; ?>
@@ -215,12 +215,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <script>
 var wpaibL10n = {
-	copyError:      <?php echo wp_json_encode( __( 'Impossibile copiare il testo automaticamente.', 'ai-bridge' ) ); ?>,
-	generateError:  <?php echo wp_json_encode( __( 'Impossibile generare la chiave.', 'ai-bridge' ) ); ?>,
-	generateNetErr: <?php echo wp_json_encode( __( 'Errore di rete durante la generazione della chiave.', 'ai-bridge' ) ); ?>,
-	revokeError:    <?php echo wp_json_encode( __( 'Impossibile revocare la chiave.', 'ai-bridge' ) ); ?>,
-	revokeNetErr:   <?php echo wp_json_encode( __( 'Errore di rete durante la revoca della chiave.', 'ai-bridge' ) ); ?>,
-	errorPrefix:    <?php echo wp_json_encode( __( 'Errore: ', 'ai-bridge' ) ); ?>
+	copyError:      <?php echo wp_json_encode( __( 'Impossibile copiare il testo automaticamente.', 'jmc-ai-bridge' ) ); ?>,
+	generateError:  <?php echo wp_json_encode( __( 'Impossibile generare la chiave.', 'jmc-ai-bridge' ) ); ?>,
+	generateNetErr: <?php echo wp_json_encode( __( 'Errore di rete durante la generazione della chiave.', 'jmc-ai-bridge' ) ); ?>,
+	revokeError:    <?php echo wp_json_encode( __( 'Impossibile revocare la chiave.', 'jmc-ai-bridge' ) ); ?>,
+	revokeNetErr:   <?php echo wp_json_encode( __( 'Errore di rete durante la revoca della chiave.', 'jmc-ai-bridge' ) ); ?>,
+	errorPrefix:    <?php echo wp_json_encode( __( 'Errore: ', 'jmc-ai-bridge' ) ); ?>
 };
 document.addEventListener('DOMContentLoaded', function() {
 	const btnGenerate = document.getElementById('wpaib_btn_generate');
@@ -283,14 +283,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		const openapiObj = {
 			"openapi": "3.0.3",
 			"info": {
-				"title": "AI Bridge Connector (" + (serverName || "Sito WP") + ")",
+				"title": "JMC AI Bridge Connector (" + (serverName || "Sito WP") + ")",
 				"description": "API REST standard per connettere agenti AI in modo sicuro al sito WordPress per la gestione integrata di articoli, media e tassonomie.",
 				"version": "1.0.0"
 			},
 			"servers": [
 				{
 					"url": baseUrl,
-					"description": "Endpoint REST AI Bridge"
+					"description": "Endpoint REST JMC AI Bridge"
 				}
 			],
 			"components": {
@@ -554,16 +554,16 @@ document.addEventListener('DOMContentLoaded', function() {
 					// Mostra la notifica con la chiave e il bottone MCP
 					noticeContainer.innerHTML = `
 						<div class="notice notice-success" style="padding:16px; margin-bottom:20px; border-left-color:#0284c7; background:#f0f9ff;">
-							<p style="font-size:15px; color:#0369a1; margin-top:0;"><strong><?php esc_html_e( 'Nuova API key generata con successo!', 'ai-bridge' ); ?></strong></p>
-							<p><?php esc_html_e( 'Copia la chiave ora: per motivi di sicurezza non sarà mai più visualizzabile in chiaro.', 'ai-bridge' ); ?></p>
+							<p style="font-size:15px; color:#0369a1; margin-top:0;"><strong><?php esc_html_e( 'Nuova API key generata con successo!', 'jmc-ai-bridge' ); ?></strong></p>
+							<p><?php esc_html_e( 'Copia la chiave ora: per motivi di sicurezza non sarà mai più visualizzabile in chiaro.', 'jmc-ai-bridge' ); ?></p>
 							<p>
 								<code style="display:block; padding:12px; background:#fff; border:1px solid #bae6fd; border-radius:6px; font-size:14px; color:#0f172a; word-break:break-all; user-select:all;">${res.data.key}</code>
 							</p>
 							<p style="color:#b45309; font-size:13px;">
-								<?php esc_html_e( 'Conservala in un password manager sicuro.', 'ai-bridge' ); ?>
+								<?php esc_html_e( 'Conservala in un password manager sicuro.', 'jmc-ai-bridge' ); ?>
 							</p>
 							<p style="margin-bottom:0;">
-								<button type="button" class="button button-primary wpaib-btn-mcp-new" style="background:#0284c7; border-color:#0369a1;" data-key="${res.data.key}"><?php esc_html_e( '✨ Guida Integrazione OpenAPI', 'ai-bridge' ); ?></button>
+								<button type="button" class="button button-primary wpaib-btn-mcp-new" style="background:#0284c7; border-color:#0369a1;" data-key="${res.data.key}"><?php esc_html_e( '✨ Guida Integrazione OpenAPI', 'jmc-ai-bridge' ); ?></button>
 							</p>
 						</div>
 					`;
@@ -589,10 +589,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						<td>${escHtml(res.data.created_at)}</td>
 						<td>—</td>
 						<td>—</td>
-						<td class="wpaib-key-status"><span style="color:#16a34a; font-weight:600;">● <?php esc_html_e( 'Attiva', 'ai-bridge' ); ?></span></td>
+						<td class="wpaib-key-status"><span style="color:#16a34a; font-weight:600;">● <?php esc_html_e( 'Attiva', 'jmc-ai-bridge' ); ?></span></td>
 						<td class="wpaib-key-actions">
-							<button type="button" class="button button-secondary wpaib-btn-mcp" style="margin-right:6px; border-color:#cbd5e1;" data-label="${escHtml(res.data.label)}"><?php esc_html_e( '🌐 Integrazione AI (OpenAPI)', 'ai-bridge' ); ?></button>
-							<button type="button" class="button button-link-delete wpaib-btn-revoke" data-key-id="${res.data.id}"><?php esc_html_e( 'Revoca', 'ai-bridge' ); ?></button>
+							<button type="button" class="button button-secondary wpaib-btn-mcp" style="margin-right:6px; border-color:#cbd5e1;" data-label="${escHtml(res.data.label)}"><?php esc_html_e( '🌐 Integrazione AI (OpenAPI)', 'jmc-ai-bridge' ); ?></button>
+							<button type="button" class="button button-link-delete wpaib-btn-revoke" data-key-id="${res.data.id}"><?php esc_html_e( 'Revoca', 'jmc-ai-bridge' ); ?></button>
 						</td>
 					`;
 					if (keysTbody) {
@@ -624,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.addEventListener('click', function(e) {
 		if (e.target && e.target.classList.contains('wpaib-btn-revoke')) {
 			e.preventDefault();
-			if (!confirm('<?php echo esc_js( __( 'Confermi la revoca? Non sarà più reversibile.', 'ai-bridge' ) ); ?>')) {
+			if (!confirm('<?php echo esc_js( __( 'Confermi la revoca? Non sarà più reversibile.', 'jmc-ai-bridge' ) ); ?>')) {
 				return;
 			}
 
@@ -653,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					const actionsTd = tr.querySelector('.wpaib-key-actions');
 					
 					if (statusTd) {
-						statusTd.innerHTML = `<span style="color:#94a3b8;">○ <?php esc_html_e( 'Revocata', 'ai-bridge' ); ?> ${escHtml(res.data.revoked_at)}</span>`;
+						statusTd.innerHTML = `<span style="color:#94a3b8;">○ <?php esc_html_e( 'Revocata', 'jmc-ai-bridge' ); ?> ${escHtml(res.data.revoked_at)}</span>`;
 					}
 					if (actionsTd) {
 						actionsTd.innerHTML = '—';

@@ -147,10 +147,10 @@ class WPAIB_Pages_Controller {
 		$page = get_post( $id );
 
 		if ( ! $page || 'page' !== $page->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Page not found.', 'ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Page not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this page.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this page.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		return new WP_REST_Response( $this->prepare_page( $page, (bool) $request->get_param( 'content_rendered' ) ), 200 );
@@ -165,12 +165,12 @@ class WPAIB_Pages_Controller {
 	public function create_page( WP_REST_Request $request ) {
 		$params = $request->get_json_params();
 		if ( empty( $params ) || ! is_array( $params ) ) {
-			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$title = isset( $params['title'] ) ? sanitize_text_field( $params['title'] ) : '';
 		if ( empty( $title ) ) {
-			return new WP_Error( 'wpaib_missing_title', __( 'Title is required.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_title', __( 'Title is required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$content  = isset( $params['content'] ) ? wp_kses_post( $params['content'] ) : '';
@@ -213,15 +213,15 @@ class WPAIB_Pages_Controller {
 		$page = get_post( $id );
 
 		if ( ! $page || 'page' !== $page->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Page not found.', 'ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Page not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot edit this page.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot edit this page.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$params = $request->get_json_params();
 		if ( empty( $params ) || ! is_array( $params ) ) {
-			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$update = array( 'ID' => $id );
@@ -266,15 +266,15 @@ class WPAIB_Pages_Controller {
 		$page  = get_post( $id );
 
 		if ( ! $page || 'page' !== $page->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Page not found.', 'ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Page not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'delete_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this page.', 'ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this page.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$result = wp_delete_post( $id, $force );
 		if ( ! $result ) {
-			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete page.', 'ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete page.', 'jmc-ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response(
