@@ -1,4 +1,4 @@
-# WP AI Bridge
+# JMC AI Bridge
 
 [![GitHub Release](https://img.shields.io/github/v/release/jeanmarieclement/wp-ai-bridge?style=flat-square&color=blue)](https://github.com/jeanmarieclement/wp-ai-bridge/releases)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/jeanmarieclement/wp-ai-bridge/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/jeanmarieclement/wp-ai-bridge/actions)
@@ -38,10 +38,26 @@ Two authentication methods are supported and can be used interchangeably on any 
 
 ---
 
+## Screenshots
+
+**Connections audit log**: every API and MCP request with user, key, endpoint, method, status and IP.
+
+![Connections audit log](screenshots/connections-log.png)
+
+**Tool permissions**: choose which MCP tools are exposed, with a live ChatGPT Actions counter (max 30).
+
+![Tool permissions](screenshots/tool-permissions.png)
+
+**Generated API key**: shown only once, stored as a SHA-256 hash, revocable at any time.
+
+![Generated API key](screenshots/api-key-generated.png)
+
+---
+
 ## Installation
 
-1. Upload the `wp-ai-bridge` folder to `wp-content/plugins/`
-2. Go to **WordPress → Plugins** and activate "WP AI Bridge"
+1. Upload the `jmc-ai-bridge` folder (from the release ZIP) to `wp-content/plugins/`
+2. Go to **WordPress → Plugins** and activate "JMC AI Bridge"
 
 > **Troubleshooting:** If OAuth2 endpoints (`/authorize`, `/token`) or the MCP endpoint return 404 after installation or update, go to **Settings → Permalinks** and click **Save Changes** to flush WordPress rewrite rules.
 
@@ -50,7 +66,7 @@ Two authentication methods are supported and can be used interchangeably on any 
 ## Authentication — API Key
 
 1. Go to **Users → Profile** (or edit any user as admin)
-2. Scroll down to **"WP AI Bridge — API Keys"**
+2. Scroll down to **"JMC AI Bridge — API Keys & MCP Connector"**
 3. Enter a label (e.g. `Home laptop`) and click **Generate key**
 4. **Copy the key immediately** — it will not be shown again
 
@@ -63,11 +79,11 @@ curl https://your-site.com/wp-json/wpaib/v1/posts \
 
 ## Authentication — OAuth2
 
-WP AI Bridge acts as an **OAuth2 Authorization Server** (Authorization Code flow). Use this when connecting via ChatGPT Custom Actions, Claude.ai tools, or any OAuth2-capable client.
+JMC AI Bridge acts as an **OAuth2 Authorization Server** (Authorization Code flow). Use this when connecting via ChatGPT Custom Actions, Claude.ai tools, or any OAuth2-capable client.
 
 ### Setup
 
-1. Go to **Settings → WP AI Bridge → OAuth2 Clients**
+1. Go to **Settings → JMC AI Bridge → OAuth2 Clients**
 2. Click **Aggiungi client**, enter a name and the redirect URI(s) provided by the platform
 3. Copy the `client_id` and `client_secret` shown immediately (secret not shown again)
 

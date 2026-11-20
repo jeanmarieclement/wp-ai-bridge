@@ -25,7 +25,4 @@ build/
 build.sh
 dist/
 bin/
-deploy-to-svn.sh
 
-# WordPress.org assets (these belong in SVN /assets/, not /trunk/ or /tags/)
-.wordpress-org/
