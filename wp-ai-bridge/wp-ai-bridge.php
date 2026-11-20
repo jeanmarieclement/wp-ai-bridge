@@ -3,7 +3,7 @@
  * Plugin Name:       WP AI Bridge
  * Plugin URI:        https://github.com/jeanmarieclement/wp-ai-bridge
  * Description:       Espone endpoint REST sicuri e tool MCP per gestione contenuti tramite API key per utente e OAuth2. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni).
- * Version:           1.6.1
+ * Version:           1.6.2
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Jean-Marie Clément
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Costanti del plugin.
-define( 'WPAIB_VERSION', '1.6.1' );
+define( 'WPAIB_VERSION', '1.6.2' );
 define( 'WPAIB_PLUGIN_FILE', __FILE__ );
 define( 'WPAIB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPAIB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

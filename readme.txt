@@ -5,7 +5,7 @@ Tags: ai, rest-api, mcp, claude, chatgpt
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,12 @@ Deactivating the plugin simply stops the REST and MCP endpoints. Uninstalling th
 
 == Changelog ==
 
+= 1.6.2 =
+* Security: audit log queries fully prepared with %i table identifiers.
+* Security: sanitized HTTP_HOST check; hardened CLI guard in mcp-connector.php.
+* Fixed: translators comments, ordered placeholders, wp_delete_file() on upload rollback.
+* Changed: requires WordPress 6.2; Tested up to 7.1.
+
 = 1.6.1 =
 * Fixed: OpenAPI response status code map keys for ChatGPT Actions.
 * Added: Dynamic MCP tools counter and ChatGPT compatibility badge in settings.
@@ -110,6 +116,9 @@ Deactivating the plugin simply stops the REST and MCP endpoints. Uninstalling th
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.6.2 =
+Security hardening of the audit log queries. Requires WordPress 6.2 or later.
 
 = 1.6.1 =
 Improves OpenAPI compatibility with ChatGPT Custom Actions and adds dynamic tool filtering in settings.

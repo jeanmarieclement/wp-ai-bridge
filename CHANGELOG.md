@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] - 2026-11-20
+
+### Security
+- **Audit log queries fully prepared**: the Connections screen built its `WHERE` clause by concatenation and ran the count and list queries with interpolated SQL. Each query is now a single static statement passed to `$wpdb->prepare()`, with table names as `%i` identifiers and every filter as a placeholder; an empty filter disables its own condition. The filter dropdown queries use `%i` as well.
+- **`HTTP_HOST` unslashed and sanitized** before the local-environment check in `WPAIB_Plugin`.
+- **`mcp-connector.php`**: the CLI guard refuses every web request through an `ABSPATH`-style check, and its global functions are prefixed (`wpaib_send_mcp_response`, `wpaib_probe_url`, `wpaib_fallback_url`).
+
+### Fixed
+- Translatable strings with placeholders carry `translators:` comments, and the OAuth consent page title uses ordered placeholders (`%1$s`, `%2$s`).
+- Media upload rollback uses `wp_delete_file()` instead of `@unlink()`.
+- Every translatable string uses the `wp-ai-bridge` text domain declared in the plugin header, and `languages/wp-ai-bridge.pot` is regenerated with all of them.
+
+### Changed
+- **Requires WordPress 6.2** (was 6.0), needed for `%i` identifiers in `$wpdb->prepare()`.
+- "Tested up to" (7.1) is declared only in `readme.txt`; the Plugin URI now points to the GitHub repository.
+- User-facing labels say "WP AI Bridge" consistently (admin pages, profile section, OpenAPI title).
+- README: screenshots of the Connections log, the tool permissions screen and a freshly generated API key.
+
+The main file is still `wp-ai-bridge/wp-ai-bridge.php`: updating from 1.6.1 keeps the plugin active.
+
+---
+
 ## [1.6.1] - 2026-09-08
 
 ### Fixed
