@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * JMC AI Bridge — MCP Stdio Connector in PHP nativo
+ * WP AI Bridge — MCP Stdio Connector in PHP nativo
  *
  * Fa da ponte sul protocollo JSON-RPC 2.0 (stdio) tra i client/IDE locali 
  * (Cursor, Roo Code, Claude Desktop, Antigravity) e l'istanza WordPress locale o remota.

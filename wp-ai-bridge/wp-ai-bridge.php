@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       JMC AI Bridge
+ * Plugin Name:       WP AI Bridge
  * Plugin URI:        https://github.com/jeanmarieclement/wp-ai-bridge
  * Description:       Espone endpoint REST sicuri e tool MCP per gestione contenuti tramite API key per utente e OAuth2. Pensato per integrazione con servizi AI esterni (Claude, ChatGPT, automazioni).
  * Version:           1.6.1
@@ -10,7 +10,7 @@
  * Author URI:        https://jmclement.net
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       jmc-ai-bridge
+ * Text Domain:       wp-ai-bridge
  * Domain Path:       /languages
  *
  * @package WPAIBridge

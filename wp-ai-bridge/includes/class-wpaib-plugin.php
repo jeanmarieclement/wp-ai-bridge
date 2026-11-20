@@ -104,7 +104,7 @@ class WPAIB_Plugin {
 		if ( ! is_ssl() && ! $is_local ) {
 			return new WP_Error(
 				'wpaib_https_required',
-				__( 'HTTPS is required for this endpoint.', 'jmc-ai-bridge' ),
+				__( 'HTTPS is required for this endpoint.', 'wp-ai-bridge' ),
 				array( 'status' => 403 )
 			);
 		}

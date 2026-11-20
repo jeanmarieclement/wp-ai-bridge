@@ -235,7 +235,7 @@ class WPAIB_Posts_Controller {
 	public function create_post( WP_REST_Request $request ) {
 		$params = $request->get_json_params();
 		if ( empty( $params ) || ! is_array( $params ) ) {
-			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$title   = isset( $params['title'] ) ? sanitize_text_field( $params['title'] ) : '';
@@ -255,7 +255,7 @@ class WPAIB_Posts_Controller {
 		}
 
 		if ( empty( $title ) ) {
-			return new WP_Error( 'wpaib_missing_title', __( 'Title is required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_title', __( 'Title is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$post_arr = array(
@@ -273,7 +273,7 @@ class WPAIB_Posts_Controller {
 		if ( ! empty( $params['date'] ) ) {
 			$timestamp = strtotime( sanitize_text_field( $params['date'] ) );
 			if ( false === $timestamp ) {
-				return new WP_Error( 'wpaib_invalid_date', __( 'Invalid date format. Use ISO 8601.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+				return new WP_Error( 'wpaib_invalid_date', __( 'Invalid date format. Use ISO 8601.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 			}
 			$post_arr['post_date']     = get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp ) );
 			$post_arr['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $timestamp );
@@ -317,11 +317,11 @@ class WPAIB_Posts_Controller {
 		$id   = (int) $request['id'];
 		$post = get_post( $id );
 		if ( ! $post || 'post' !== $post->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
 		}
 
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this post.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot read this post.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		return new WP_REST_Response( $this->prepare_post( $post, (bool) $request->get_param( 'content_rendered' ) ), 200 );
@@ -337,15 +337,15 @@ class WPAIB_Posts_Controller {
 		$id   = (int) $request['id'];
 		$post = get_post( $id );
 		if ( ! $post || 'post' !== $post->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot edit this post.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot edit this post.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$params = $request->get_json_params();
 		if ( empty( $params ) || ! is_array( $params ) ) {
-			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_body', __( 'Invalid JSON body.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$update = array( 'ID' => $id );
@@ -376,7 +376,7 @@ class WPAIB_Posts_Controller {
 		if ( isset( $params['date'] ) ) {
 			$timestamp = strtotime( sanitize_text_field( $params['date'] ) );
 			if ( false === $timestamp ) {
-				return new WP_Error( 'wpaib_invalid_date', __( 'Invalid date format. Use ISO 8601.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+				return new WP_Error( 'wpaib_invalid_date', __( 'Invalid date format. Use ISO 8601.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 			}
 			$update['post_date']     = get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp ) );
 			$update['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $timestamp );
@@ -417,15 +417,15 @@ class WPAIB_Posts_Controller {
 
 		$post = get_post( $id );
 		if ( ! $post || 'post' !== $post->post_type ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'delete_post', $id ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this post.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Cannot delete this post.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$result = wp_delete_post( $id, $force );
 		if ( ! $result ) {
-			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete post.', 'jmc-ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_delete_failed', __( 'Could not delete post.', 'wp-ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id, 'force' => $force ), 200 );
@@ -441,16 +441,16 @@ class WPAIB_Posts_Controller {
 		$params = $request->get_json_params();
 
 		if ( empty( $params['ids'] ) || ! is_array( $params['ids'] ) || empty( $params['status'] ) ) {
-			return new WP_Error( 'wpaib_missing_params', __( 'IDs array and status are required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_params', __( 'IDs array and status are required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$status           = sanitize_key( $params['status'] );
 		$allowed_statuses = array( 'publish', 'draft', 'pending', 'private' );
 		if ( ! in_array( $status, $allowed_statuses, true ) ) {
-			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 		if ( 'publish' === $status && ! current_user_can( 'publish_posts' ) ) {
-			return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
+			return new WP_Error( 'wpaib_forbidden', __( 'Insufficient permissions.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 		}
 
 		$updated = array();
@@ -545,7 +545,7 @@ class WPAIB_Posts_Controller {
 
 		$allowed_statuses = array( 'approve', 'hold', 'spam', 'trash', 'all' );
 		if ( ! in_array( $status, $allowed_statuses, true ) ) {
-			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		// I commenti non approvati — e i dati personali di chi li ha scritti —
@@ -554,7 +554,7 @@ class WPAIB_Posts_Controller {
 		if ( 'approve' !== $status && ! $can_moderate ) {
 			return new WP_Error(
 				'wpaib_forbidden',
-				__( 'Insufficient permissions.', 'jmc-ai-bridge' ),
+				__( 'Insufficient permissions.', 'wp-ai-bridge' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -569,10 +569,10 @@ class WPAIB_Posts_Controller {
 		if ( $post_id > 0 ) {
 			$post = get_post( $post_id );
 			if ( ! $post ) {
-				return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
+				return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
 			}
 			if ( ! WPAIB_Rest_Helper::can_read_comment_post( $post ) ) {
-				return new WP_Error( 'wpaib_forbidden', __( 'Cannot read comments on this post.', 'jmc-ai-bridge' ), array( 'status' => 403 ) );
+				return new WP_Error( 'wpaib_forbidden', __( 'Cannot read comments on this post.', 'wp-ai-bridge' ), array( 'status' => 403 ) );
 			}
 			$args['post_id'] = $post_id;
 		}
@@ -681,12 +681,12 @@ class WPAIB_Posts_Controller {
 		$params = $request->get_json_params();
 
 		if ( empty( $params['content'] ) ) {
-			return new WP_Error( 'wpaib_missing_content', __( 'Comment content is required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_content', __( 'Comment content is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$post = get_post( $id );
 		if ( ! $post ) {
-			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'Post not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
 		}
 
 		$user = wp_get_current_user();
@@ -704,7 +704,7 @@ class WPAIB_Posts_Controller {
 		$comment_id = wp_insert_comment( $comment_data );
 
 		if ( ! $comment_id ) {
-			return new WP_Error( 'wpaib_comment_failed', __( 'Could not create comment.', 'jmc-ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_comment_failed', __( 'Could not create comment.', 'wp-ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		$comment = get_comment( $comment_id );
@@ -731,17 +731,17 @@ class WPAIB_Posts_Controller {
 		$params = $request->get_json_params();
 
 		if ( empty( $params['status'] ) ) {
-			return new WP_Error( 'wpaib_missing_status', __( 'Status is required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_status', __( 'Status is required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$status = sanitize_key( $params['status'] );
 		$allowed = array( 'approve', 'hold', 'spam', 'trash' );
 		if ( ! in_array( $status, $allowed, true ) ) {
-			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		if ( ! wp_set_comment_status( $id, $status ) ) {
-			return new WP_Error( 'wpaib_moderate_failed', __( 'Could not update comment status.', 'jmc-ai-bridge' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wpaib_moderate_failed', __( 'Could not update comment status.', 'wp-ai-bridge' ), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( array( 'id' => $id, 'status' => $status ), 200 );
@@ -757,13 +757,13 @@ class WPAIB_Posts_Controller {
 		$params = $request->get_json_params();
 
 		if ( empty( $params['ids'] ) || ! is_array( $params['ids'] ) || empty( $params['status'] ) ) {
-			return new WP_Error( 'wpaib_missing_params', __( 'IDs array and status are required.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_missing_params', __( 'IDs array and status are required.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$status = sanitize_key( $params['status'] );
 		$allowed = array( 'approve', 'hold', 'spam', 'trash' );
 		if ( ! in_array( $status, $allowed, true ) ) {
-			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'jmc-ai-bridge' ), array( 'status' => 400 ) );
+			return new WP_Error( 'wpaib_invalid_status', __( 'Invalid status.', 'wp-ai-bridge' ), array( 'status' => 400 ) );
 		}
 
 		$results = array(

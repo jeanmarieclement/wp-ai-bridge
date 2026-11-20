@@ -138,7 +138,7 @@ class WPAIB_Users_Controller {
 		$user = get_userdata( (int) $request['id'] );
 
 		if ( ! $user ) {
-			return new WP_Error( 'wpaib_not_found', __( 'User not found.', 'jmc-ai-bridge' ), array( 'status' => 404 ) );
+			return new WP_Error( 'wpaib_not_found', __( 'User not found.', 'wp-ai-bridge' ), array( 'status' => 404 ) );
 		}
 
 		return new WP_REST_Response( $this->prepare_user( $user ), 200 );

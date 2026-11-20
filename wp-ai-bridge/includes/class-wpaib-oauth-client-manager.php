@@ -27,19 +27,19 @@ class WPAIB_OAuth_Client_Manager {
 
 		$name = substr( sanitize_text_field( $name ), 0, 100 );
 		if ( empty( $name ) ) {
-			return new WP_Error( 'wpaib_invalid_name', __( 'Client name required.', 'jmc-ai-bridge' ) );
+			return new WP_Error( 'wpaib_invalid_name', __( 'Client name required.', 'wp-ai-bridge' ) );
 		}
 
 		$uris = self::parse_redirect_uris( $redirect_uris );
 		if ( empty( $uris ) ) {
-			return new WP_Error( 'wpaib_invalid_redirect', __( 'At least one redirect URI required.', 'jmc-ai-bridge' ) );
+			return new WP_Error( 'wpaib_invalid_redirect', __( 'At least one redirect URI required.', 'wp-ai-bridge' ) );
 		}
 
 		try {
 			$id_bytes     = random_bytes( 16 );
 			$secret_bytes = random_bytes( 32 );
 		} catch ( Exception $e ) {
-			return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate secure random values.', 'jmc-ai-bridge' ) );
+			return new WP_Error( 'wpaib_random_failed', __( 'Cannot generate secure random values.', 'wp-ai-bridge' ) );
 		}
 
 		$client_id     = 'wpaib_c_' . bin2hex( $id_bytes );
@@ -59,7 +59,7 @@ class WPAIB_OAuth_Client_Manager {
 		);
 
 		if ( false === $result ) {
-			return new WP_Error( 'wpaib_db_error', __( 'Unable to save OAuth2 client.', 'jmc-ai-bridge' ) );
+			return new WP_Error( 'wpaib_db_error', __( 'Unable to save OAuth2 client.', 'wp-ai-bridge' ) );
 		}
 
 		return array(
